@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% macro Card(title, description) %}
+    <div class="card">
+      <div class="card-content">
+        <p class="title is-4">{{ title }}</p>
+
+        <div class="content">
+          {{ description }}
+          <br><br>
+        </div>
+      </div>
+    </div>
+{% endmacro %}
+
+{% block page %}
+<section class="hero is-warning is-medium">
+  <div class="hero-body">
+    <p class="title">Self Hosting 101</p>
+    <p class="subtitle">Learn to self-host your applications on your own server.</p>
+    <p>Guided learning journey with carefully crafted byte-sized tasks with live feedback.</p>
+    <br>
+    <p>
+      <a class="button is-dark" href="/login">Sign up to get started!</a>
+    </p>
+  </div>
+</section>
+
+<div class="container mt-5">
+
+  <h2 class="title is-2">Outline</h2>
+
+<div class="columns">
+  <div class="column">
+    {{ Card(title="Create a Droplet",
+            description="Create a droplet and install self-hosting-agent to track your progress.") }}
+  </div>
+  <div class="column">
+    {{ Card(title="Deploy a static website",
+            description="Learn how to configure nginx webserver to deploy simple static websites.") }}
+  </div>
+  <div class="column">
+    {{ Card(title="Deploy a python webapp",
+            description="Learn how to configure deploy a python webapp running as a service and configure it to run behind nginx.") }}
+    </div>
+  </div>
+</div>
+
+
+</div>
+{% endblock %}

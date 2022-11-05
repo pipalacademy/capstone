@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block page %}
+<div id="leader-board" class="container mt-5">
+  <h2 class="title">Leader Board</h2>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Tasks Completed</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for site in sites %}
+      <tr>
+        <td>{{site.name}}</td>
+        <td>{{site.score}}</td>
+        <td>{{datestr(site.last_updated)}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

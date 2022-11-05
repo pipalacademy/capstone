@@ -1,0 +1,7 @@
+Flask
+Jinja2==3.0.3
+web.py
+markdown
+requests
+pyyaml==6.0
+beautifulsoup4==4.11.1

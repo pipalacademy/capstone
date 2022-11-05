@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block navbar_menu_extra %}
+<div class="navbar-item navbar-progress">
+  <progress class="progress is-medium is-info" value="15" max="100">15%</progress>
+</div>
+{% endblock %}
+
+
+{% block content %}
+<div class="dashboard">
+  <div class="mt-5"></div>
+
+  <article class="message is-info">
+    <div class="message-body">
+      Welcome to Self Hosting 101, Alice!
+    </div>
+  </article>
+
+  <div class="columns">
+    <!-- <div class="column is-3">
+      <nav class="panel">
+        <p class="panel-heading">
+          Tasks
+        </p>
+    </div> -->
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">1</span> Create a Droplet &nbsp; <i class="fas fa-check-circle has-text-success-dark"></i>
+          </p>
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-angle-right" aria-hidden="true"></i>
+            </span>
+          </button>
+        </header>
+
+        <div class="card-content">
+          <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.
+            </p>
+
+            <h4>Checks</h4>
+
+            <div class="box is-check has-background-success-light">
+              <p class="has-text-success-dark">
+                <span class="icon"><i class="fas fa-check"></i></span>
+                Search Trains: BCT -> ADI
+              </p>
+            </div>
+
+            <div class="box is-check has-background-danger-light">
+                <p class="has-text-danger-dark">
+                <span class="icon"><i class="fas fa-times"></i></span> Search Trains: BCT -> ADI</p>
+<pre>
+The result of search_trains('BCT', 'ADI')
+is expected to include trains: 12901, 59439, 59441, 09001
+but found: 12009, 12267, 12901, 12933, 19011, 59439, 59441, 09001</pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card is-active has-background-warning-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">2</span> Install Self Hosting Agent
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-angle-down" aria-hidden="true"></i>
+            </span>
+          </button>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus nec iaculis mauris.
+            </p>
+
+            <h4>Checks</h4>
+
+            <div class="box is-check has-background-success-light">
+                  <p class="has-text-success-dark">
+                    <span class="icon"><i class="fas fa-check"></i></span>
+                    Search Trains: BCT -> ADI
+                  </p>
+            </div>
+
+            <div class="box is-check has-background-danger-light">
+                  <p class="has-text-danger-dark">
+                  <span class="icon"><i class="fas fa-times"></i></span> Search Trains: BCT -> ADI</p>
+<pre>
+The result of search_trains('BCT', 'ADI')
+is expected to include trains: 12901, 59439, 59441, 09001
+but found: 12009, 12267, 12901, 12933, 19011, 59439, 59441, 09001</pre>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">3</span> Install nginx Web Server
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">4</span> Setup a static website
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">5</span> Setup an SSL certificate
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">6</span> Setup a static blog using pelican
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">7</span> Deploy a python webapp
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+      <div class="card  has-background-light">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="task-number">8</span> Setup Munin for monitoring the server
+          </p>
+
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-lock"></i>
+            </span>
+          </button>
+        </header>
+      </div>
+
+
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
