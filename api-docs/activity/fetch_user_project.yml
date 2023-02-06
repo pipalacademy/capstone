@@ -20,164 +20,140 @@ request:
 response:
   type: object
   required: true
-  description: A list of activity objects (project and status information) for all the projects user has signed up for
+  description: The activity status for a user on a project
   example: |
-    [
-      {
-        "slug": "build-your-own-shell",
-        "title": "Build your own Shell",
-        "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-        "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
-        "is_active": true,
-        "tags": ["Python", "Unix"],
-        "status": "Completed",
-        "tasks": [
-          {
-            "slug": "stdin-and-stdout",
-            "position": 1,
-            "title": "Stdin and stdout",
-            "description": "Take input from stdin and simply echo it to stdout in a loop.",
-            "status": "completed",
-            "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n",
-          },
-          {
-            "slug": "write-a-parser",
-            "position": 2,
-            "title": "Write a parser",
-            "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
-            "status": "completed",
-            "status_description": "Test case 1: parse simple - passed\nTest case 2: parse with quotes - passed\n",
-          }
-        ],
-      },
-      {
-        "slug": "rajdhani",
-        "title": "Rajdhani",
-        "short_description": "Build a booking system for Indian railways",
-        "description": "We will learn SQL by building a booking system for Indian railways",
-        "is_active": true,
-        "tags": ["Python", "Webapp", "Database"],
-        "status": "In Progress",
-        "tasks": [
-          {
-            "slug": "enable-homepage",
-            "position": 1,
-            "title": "Enable homepage",
-            "description": "Set `flag_homepage` in `config.py` to `true`.",
-            "status": "in_progress",
-            "status_description": "Test case 1: check flag: failed\n",
-          },
-          {
-            "slug": "search-trains",  #
-            "position": 2,
-            "title": "Implement trains search for two stations",
-            "description": "Implement search_trains in db.py",
-          },
-        ]
-      }
-    ]
-  each:
-    type: object
-    properties:
-      - name: slug
-        type: string
-        description: |
-          Project slug that can be used in API requests and URLs. If a user is not
-          enrolled in a project with this slug (or such a project doesn't exist),
-          a 404 response will be returned.
-        example: build-your-own-shell
-        required: true
-      - name: title
-        type: string
-        description: Human readable title of the project
-        example: Build your own Shell
-        required: true
-      - name: short_description
-        type: string
-        description: |
-          A short description of the project, in Markdown format. This is displayed
-          on the Project's card on the home page and dashboard.
-        example: Learn the internals of Unix system by building your own Unix shell.
-        required: true
-      - name: description
-        type: string
-        description: |
-          A longer description of the project in Markdown format. This is displayed
-          on the Project's own page in the UI.
-        example: |
-          In this project, we will build a Unix shell from scratch.
+    {
+      "slug": "build-your-own-shell",
+      "title": "Build your own Shell",
+      "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+      "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+      "is_active": true,
+      "tags": ["Python", "Unix"],
+      "status": "Completed",
+      "tasks": [
+        {
+          "slug": "stdin-and-stdout",
+          "position": 1,
+          "title": "Stdin and stdout",
+          "description": "Take input from stdin and simply echo it to stdout in a loop.",
+          "status": "completed",
+          "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
+        },
+        {
+          "slug": "write-a-parser",
+          "position": 2,
+          "title": "Write a parser",
+          "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
+          "status": "completed",
+          "status_description": "Test case 1: parse simple - passed\nTest case 2: parse with quotes - passed\n"
+        }
+      ]
+    }
+  properties:
+    - name: slug
+      type: string
+      description: |
+        Project slug that can be used in API requests and URLs. If a user is not
+        enrolled in a project with this slug (or such a project doesn't exist),
+        a 404 response will be returned.
+      example: build-your-own-shell
+      required: true
+    - name: title
+      type: string
+      description: Human readable title of the project
+      example: Build your own Shell
+      required: true
+    - name: short_description
+      type: string
+      description: |
+        A short description of the project, in Markdown format. This is displayed
+        on the Project's card on the home page and dashboard.
+      example: Learn the internals of Unix system by building your own Unix shell.
+      required: true
+    - name: description
+      type: string
+      description: |
+        A longer description of the project in Markdown format. This is displayed
+        on the Project's own page in the UI.
+      example: |
+        In this project, we will build a Unix shell from scratch.
 
-          We'll use the Python's `subprocess` library to build shell.
+        We'll use the Python's `subprocess` library to build shell.
 
-          # Learning outcomes
-          - Unix
-          - Python
-        required: true
-      - name: is_active
-        type: boolean
-        description: Whether the project is active and available for users to take up. (optional, defaults to `true`)
-        required: false
-        default: true
-      - name: tags
-        type: array[string]
-        description: Tags associated with this project.
-        each:
-          - type: string
-        example: |
-          ["Python", "Unix"]
-        required: true
-      - name: tasks
-        type: array[task_status]
-        description: Array of tasks associated with this Project along with the status of each task for this user.
-        required: true
-        each:
-          - type: object
-            properties:
-              - name: slug
-                type: string
-                description: The unique identifier for this task, as defined by the course creator.
-                example: "write-a-parser"
-                required: true
-              - name: position
-                type: Integer
-                description: The position of the Task in sequence
-                example: 2
-                required: true
-              - name: title
-                type: string
-                description: Title of the Task
-                example: "Write a parser"
-                required: true
-              - name: description
-                type: string
-                description: Description of the task in markdown format.
-                example: |
-                  Write a parser for shell. This part of description can
-                  include *italic*, **bold**, `code`, and other markdown formatting.
-                required: true
-              - name: status
-                type: string
-                description: |
-                  The status of the task. Is one of "Completed", "In Progress", or "Failing".
-                  This field is omitted when that task hasn't been attempted yet.
-                example: Completed
-                required: false
-              - name: status_description
-                type: string
-                description: |
-                  The detailed status of the task. This describes the status of each individual check
-                  in markdown format, along with detailed error logs when appropriate for debugging.
-                example: |
-                  Test case 1: echo without spaces - passed
-                  Test case 2: echo with whitespace - passed
+        # Learning outcomes
+        - Unix
+        - Python
+      required: true
+    - name: is_active
+      type: boolean
+      description: Whether the project is active and available for users to take up. (optional, defaults to `true`)
+      required: false
+      default: true
+    - name: tags
+      type: array[string]
+      description: Tags associated with this project.
+      each:
+        - type: string
+      example: |
+        ["Python", "Unix"]
+      required: true
+    - name: status
+      type: string
+      description: Either "Completed" or "In Progress".
+      example: In Progress
+      required: true
+    - name: tasks
+      type: array[task_status]
+      description: Array of tasks associated with this Project along with the status of each task for this user.
+      required: true
+      each:
+        - type: object
+          properties:
+            - name: slug
+              type: string
+              description: The unique identifier for this task, as defined by the course creator.
+              example: "write-a-parser"
+              required: true
+            - name: position
+              type: Integer
+              description: The position of the Task in sequence
+              example: 2
+              required: true
+            - name: title
+              type: string
+              description: Title of the Task
+              example: "Write a parser"
+              required: true
+            - name: description
+              type: string
+              description: Description of the task in markdown format.
+              example: |
+                Write a parser for shell. This part of description can
+                include *italic*, **bold**, `code`, and other markdown formatting.
+              required: true
+            - name: status
+              type: string
+              description: |
+                The status of the task. Is one of "Completed", "In Progress", or "Failing".
+                This field is omitted when that task hasn't been attempted yet.
+              example: Completed
+              required: false
+            - name: status_description
+              type: string
+              description: |
+                The detailed status of the task. This describes the status of each individual check
+                in markdown format, along with detailed error logs when appropriate for debugging.
+              example: |
+                Test case 1: echo without spaces - passed
+                Test case 2: echo with whitespace - passed
 
-                required: false
-            example: |
-              {
-                "slug": "write-a-parser",
-                "position": 2,
-                "title": "Write a parser",
-                "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
-                "status": "Completed",
-                "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
-              }
+              required: false
+          example: |
+            {
+              "slug": "write-a-parser",
+              "position": 2,
+              "title": "Write a parser",
+              "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
+              "status": "Completed",
+              "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
+            }
