@@ -4,12 +4,7 @@ title: List all projects that any user has signed up for
 description: Returns a JSON list of all projects that a user has signed up for, with details about the completion status
 authenticated: true
 request:
-  path_parameters:
-    - name: username
-      type: string
-      description: The unique username to use to fetch details about a user. Username is case-insensitive.
-      example: eva
-      required: true
+  path_parameters: []
   query_parameters: []
   body: {}
 response:
