@@ -8,71 +8,71 @@ request:
   query_parameters: []
   body: {}
 response:
-  - type: array[project]
-    required: true
-    description: A list of projects returned.
-    example: |
-      [
-        {
-          "slug": "build-your-own-shell",
-          "title": "Build your own Shell",
-          "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-          "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
-          "is_active": true,
-          "tags": ["Python", "Unix"]
-        },
-        {
-          "slug": "rajdhani",
-          "title": "Rajdhani",
-          "short_description": "Build a booking system for Indian railways",
-          "description": "We will learn SQL by building a booking system for Indian railways",
-          "is_active": true,
-          "tags": ["Python", "Webapp", "Database"]
-        }
-      ]
-    each:
-      - type: object
-        properties:
-          - name: slug
-            type: string
-            description: Project slug that can be used in API requests and URLs
-            example: build-your-own-shell
-            required: true
-          - name: title
-            type: string
-            description: Human readable title of the project
-            example: Build your own Shell
-            required: true
-          - name: short_description
-            type: string
-            description: |
-              A short description of the project, in Markdown format. This is displayed
-              on the Project's card on the home page and dashboard.
-            example: Learn the internals of Unix system by building your own Unix shell.
-            required: true
-          - name: description
-            type: string
-            description: |
-              A longer description of the project in Markdown format. This is displayed
-              on the Project's own page in the UI.
-            example: |
-              In this project, we will build a Unix shell from scratch.
+  type: array[project]
+  required: true
+  description: A list of projects returned.
+  example: |
+    [
+      {
+        "slug": "build-your-own-shell",
+        "title": "Build your own Shell",
+        "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+        "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+        "is_active": true,
+        "tags": ["Python", "Unix"]
+      },
+      {
+        "slug": "rajdhani",
+        "title": "Rajdhani",
+        "short_description": "Build a booking system for Indian railways",
+        "description": "We will learn SQL by building a booking system for Indian railways",
+        "is_active": true,
+        "tags": ["Python", "Webapp", "Database"]
+      }
+    ]
+  each:
+    - type: object
+      properties:
+        - name: slug
+          type: string
+          description: Project slug that can be used in API requests and URLs
+          example: build-your-own-shell
+          required: true
+        - name: title
+          type: string
+          description: Human readable title of the project
+          example: Build your own Shell
+          required: true
+        - name: short_description
+          type: string
+          description: |
+            A short description of the project, in Markdown format. This is displayed
+            on the Project's card on the home page and dashboard.
+          example: Learn the internals of Unix system by building your own Unix shell.
+          required: true
+        - name: description
+          type: string
+          description: |
+            A longer description of the project in Markdown format. This is displayed
+            on the Project's own page in the UI.
+          example: |
+            In this project, we will build a Unix shell from scratch.
 
-              We'll use the Python's `subprocess` library to build shell.
+            We'll use the Python's `subprocess` library to build shell.
 
-              # Learning outcomes
-              - Unix
-              - Python
-            required: true
-          - name: is_active
-            type: boolean
-            description: Whether the project is active and available for users to take up.
-            required: true
-          - name: tags
-            type: array[string]
-            description: Tags associated with this project.
-            each:
-              - type: string
-            example: |
-              ["Python", "Unix"]
-            required: true
+            # Learning outcomes
+            - Unix
+            - Python
+          required: true
+        - name: is_active
+          type: boolean
+          description: Whether the project is active and available for users to take up.
+          required: true
+        - name: tags
+          type: array[string]
+          description: Tags associated with this project.
+          each:
+            - type: string
+          example: |
+            ["Python", "Unix"]
+          required: true
