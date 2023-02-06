@@ -1,0 +1,14 @@
+endpoint: /api/users/<username>/projects
+method: POST
+description: Sign up a user for a project
+authenticated: true
+request:
+  path_parameters:
+    - name: username
+      type: string
+      description: The unique username of the user
+      example: eva
+      required: true
+  query_parameters: []
+  body:
+    - name: 

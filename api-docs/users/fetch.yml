@@ -1,0 +1,38 @@
+endpoint: /api/users/<username>
+method: GET
+title: Fetch a single user by their username
+description: Fetch a single user by their unique username. This will return a status 404 response when a user with this username doesn't exist.
+authenticated: true
+request:
+  path_parameters:
+    - name: username
+      type: string
+      description: The unique username to use to fetch details about a user. Username is case-insensitive.
+      example: eva
+      required: true
+  query_parameters: []
+  body: {}
+response:
+  type: object
+  example: |
+    {
+      "username": "eva",
+      "full_name": "Eva Lu Ator",
+      "email_address": "evaluator@example.com"
+    }
+  properties:
+    - name: username
+      type: string
+      description: Unique username of this user
+      example: eva
+      required: true
+    - name: full_name
+      type: string
+      description: Full name of the user
+      example: Eva Lu Ator
+      required: true
+    - name: email_address
+      type: string
+      description: Email address of this user
+      example: evaluator@example.com
+      required: true
