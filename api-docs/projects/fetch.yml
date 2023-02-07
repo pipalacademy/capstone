@@ -22,6 +22,8 @@ response:
       "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
       "is_active": true,
       "tags": ["Python", "Unix"],
+      "created": "2023-02-07T06:50:07.984844+00:00",
+      "last_modified": "2023-02-07T06:50:07.984844+00:00",
       "tasks": [
           {
             "name": "stdin-and-stdout",
@@ -77,6 +79,16 @@ response:
       example: |
         ["Python", "Unix"]
       required: true
+    - name: created
+      type: string
+      required: true
+      description: Creation timestamp as an ISO8601 date string
+      example: "2023-02-07T06:50:07.984844+00:00"
+    - name: last_modified
+      type: string
+      required: true
+      description: Last modified timestamp as an ISO8601 date string
+      example: "2023-02-07T06:50:07.984844+00:00"
     - name: tasks
       type: array[task]
       description: Array of task objects contained in this project
