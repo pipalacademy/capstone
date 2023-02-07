@@ -13,10 +13,10 @@ Signup a user for a project
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |The unique username of the user |
-| project-name |string |required |build-your-own-shell |The unique name of the project |
+| username |eva |string |required |Username of user |
+| project-name |build-your-own-shell |string |required |Project name |
 
 
 #### Body
@@ -33,23 +33,23 @@ Signup a user for a project
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. If a user is not enrolled in a project with this slug (or such a project doesn't exist), a 404 response will be returned.  |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| status |string |required |In Progress |Either "Completed" or "In Progress". |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| name |build-your-own-shell |string |required |Project name that can be used in API requests and URLs. If a user is not enrolled in a project with this name (or such a project doesn't exist), a 404 response will be returned.  |
+| title |Build your own Shell |string |required |Human readable title of the project |
+| short_description |Learn the internals of Unix system by building your own Unix shell. |string |required |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
+| is_active | |boolean |optional |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Tags associated with this project. |
+| status |In Progress |string |required |Either "Completed" or "In Progress". |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
 
 ```json
 {
-  "slug": "build-your-own-shell",
+  "name": "build-your-own-shell",
   "title": "Build your own Shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -58,7 +58,7 @@ Signup a user for a project
   "status": "Completed",
   "tasks": [
     {
-      "slug": "stdin-and-stdout",
+      "name": "stdin-and-stdout",
       "position": 1,
       "title": "Stdin and stdout",
       "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -66,7 +66,7 @@ Signup a user for a project
       "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
     },
     {
-      "slug": "write-a-parser",
+      "name": "write-a-parser",
       "position": 2,
       "title": "Write a parser",
       "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -85,23 +85,23 @@ Signup a user for a project
 The request body should be empty.
 
 
-## Activity in a particular project
+## Get activity
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
-| **GET** |`/api/users/<username>/projects/<project-slug>` |Admin-only |
+| **GET** |`/api/users/<username>/projects/<project-name>` |Admin-only |
 
 
-Returns the activity (progress) of the user on a particular project. Will return 404 if either the username or project-slug doesn't exist.
+Get activity of a user on a project
 
 
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |The unique username to use to fetch details about a user. Username is case-insensitive. |
-| project-slug |string |required |build-your-own-shell |The unique project slug for a project that the user has signed up for |
+| username |eva |string |required |Username of user |
+| project-name |build-your-own-shell |string |required |Project name |
 
 
 ### Response
@@ -110,27 +110,28 @@ Returns the activity (progress) of the user on a particular project. Will return
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. If a user is not enrolled in a project with this slug (or such a project doesn't exist), a 404 response will be returned.  |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| status |string |required |In Progress |Either "Completed" or "In Progress". |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| name |build-your-own-shell |string |required |Project name that can be used in API requests and URLs. If a user is not enrolled in a project with this name (or such a project doesn't exist), a 404 response will be returned.  |
+| title |Build your own Shell |string |required |Human readable title of the project |
+| short_description |Learn the internals of Unix system by building your own Unix shell. |string |required |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
+| is_active | |boolean |optional |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Tags associated with this project. |
+| status |In Progress |string |required |Either "Completed" or "In Progress". |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
 
 ```json
+# TODO: format change for activity
 {
   "user": {
     "username": "eva"
   },
   "project": {
-    "slug": ...,
+    "name": ...,
     "title": ...,
     "short_description": ...,
   },
@@ -142,7 +143,7 @@ Returns the activity (progress) of the user on a particular project. Will return
   },
   "tasks": [
     {
-      "slug": "write-parser",
+      "name": "write-parser",
       "status": "Completed",
       "checks": [
         {
@@ -158,7 +159,7 @@ Returns the activity (progress) of the user on a particular project. Will return
 }
 
 {
-  "slug": "build-your-own-shell",
+  "name": "build-your-own-shell",
   "title": "Build your own Shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -167,7 +168,7 @@ Returns the activity (progress) of the user on a particular project. Will return
   "status": "Completed",
   "tasks": [
     {
-      "slug": "stdin-and-stdout",
+      "name": "stdin-and-stdout",
       "position": 1,
       "title": "Stdin and stdout",
       "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -175,7 +176,7 @@ Returns the activity (progress) of the user on a particular project. Will return
       "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
     },
     {
-      "slug": "write-a-parser",
+      "name": "write-a-parser",
       "position": 2,
       "title": "Write a parser",
       "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -189,11 +190,11 @@ Returns the activity (progress) of the user on a particular project. Will return
 
 
 
-## Update project progress
+## Update activity
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
-| **PUT** |`/api/users/<username>/projects/<project-slug>/tasks` |Admin-only |
+| **PUT** |`/api/users/<username>/projects/<project-name>/tasks` |Admin-only |
 
 
 This is invoked by the checker to update the progress on the project.
@@ -202,20 +203,20 @@ This is invoked by the checker to update the progress on the project.
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |The unique username of the user |
-| project-slug |string |required |build-your-own-shell |The unique project slug for a project that the user has signed up for |
+| username |eva |string |required |Username of user |
+| project-name |build-your-own-shell |string |required |Project name |
 
 
 #### Body
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| status |string |required |In Progress |Either "Completed" or "In Progress". |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| status |In Progress |string |required |Either "Completed" or "In Progress". |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
@@ -225,7 +226,7 @@ This is invoked by the checker to update the progress on the project.
   "status": "Completed",
   "tasks": [
     {
-      "slug": "stdin-and-stdout",
+      "name": "stdin-and-stdout",
       "position": 1,
       "title": "Stdin and stdout",
       "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -233,7 +234,7 @@ This is invoked by the checker to update the progress on the project.
       "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
     },
     {
-      "slug": "write-a-parser",
+      "name": "write-a-parser",
       "position": 2,
       "title": "Write a parser",
       "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -253,23 +254,23 @@ This is invoked by the checker to update the progress on the project.
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. If a user is not enrolled in a project with this slug (or such a project doesn't exist), a 404 response will be returned.  |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| status |string |required |In Progress |Either "Completed" or "In Progress". |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| name |build-your-own-shell |string |required |Project name that can be used in API requests and URLs. If a user is not enrolled in a project with this name (or such a project doesn't exist), a 404 response will be returned.  |
+| title |Build your own Shell |string |required |Human readable title of the project |
+| short_description |Learn the internals of Unix system by building your own Unix shell. |string |required |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
+| is_active | |boolean |optional |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Tags associated with this project. |
+| status |In Progress |string |required |Either "Completed" or "In Progress". |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
 
 ```json
 {
-  "slug": "build-your-own-shell",
+  "name": "build-your-own-shell",
   "title": "Build your own Shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -278,7 +279,7 @@ This is invoked by the checker to update the progress on the project.
   "status": "Completed",
   "tasks": [
     {
-      "slug": "stdin-and-stdout",
+      "name": "stdin-and-stdout",
       "position": 1,
       "title": "Stdin and stdout",
       "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -286,7 +287,7 @@ This is invoked by the checker to update the progress on the project.
       "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
     },
     {
-      "slug": "write-a-parser",
+      "name": "write-a-parser",
       "position": 2,
       "title": "Write a parser",
       "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -300,14 +301,14 @@ This is invoked by the checker to update the progress on the project.
 
 
 
-## List all projects that any user has signed up for
+## List all activity
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
 | **GET** |`/api/activity` |Admin-only |
 
 
-Returns a JSON list of all projects that a user has signed up for, with details about the completion status
+Get a list of all project activity
 
 
 
@@ -323,16 +324,16 @@ Array where each item is a activity_with_username:
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. If a user is not enrolled in a project with this slug (or such a project doesn't exist), a 404 response will be returned.  |
-| username |string |required |eva |Username of the user whom this activity belongs to.  |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| name |build-your-own-shell |string |required |Project name that can be used in API requests and URLs. If a user is not enrolled in a project with this name (or such a project doesn't exist), a 404 response will be returned.  |
+| username |eva |string |required |Username of the user whom this activity belongs to.  |
+| title |Build your own Shell |string |required |Human readable title of the project |
+| short_description |Learn the internals of Unix system by building your own Unix shell. |string |required |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
+| is_active | |boolean |optional |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Tags associated with this project. |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
@@ -341,7 +342,7 @@ Array where each item is a activity_with_username:
 # TODO: same format as list-user-projects
 [
   {
-    "slug": "build-your-own-shell",
+    "name": "build-your-own-shell",
     "username": "eva",
     "title": "Build your own Shell",
     "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
@@ -351,7 +352,7 @@ Array where each item is a activity_with_username:
     "status": "Completed",
     "tasks": [
       {
-        "slug": "stdin-and-stdout",
+        "name": "stdin-and-stdout",
         "position": 1,
         "title": "Stdin and stdout",
         "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -359,7 +360,7 @@ Array where each item is a activity_with_username:
         "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n"
       },
       {
-        "slug": "write-a-parser",
+        "name": "write-a-parser",
         "position": 2,
         "title": "Write a parser",
         "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -369,7 +370,7 @@ Array where each item is a activity_with_username:
     ]
   },
   {
-    "slug": "rajdhani",
+    "name": "rajdhani",
     "username": "alice",
     "title": "Rajdhani",
     "short_description": "Build a booking system for Indian railways",
@@ -379,7 +380,7 @@ Array where each item is a activity_with_username:
     "status": "In Progress",
     "tasks": [
       {
-        "slug": "enable-homepage",
+        "name": "enable-homepage",
         "position": 1,
         "title": "Enable homepage",
         "description": "Set `flag_homepage` in `config.py` to `true`.",
@@ -387,7 +388,7 @@ Array where each item is a activity_with_username:
         "status_description": "Test case 1: check flag: failed\n"
       },
       {
-        "slug": "search-trains",  # doesn't have status because it's unattempted
+        "name": "search-trains",  # doesn't have status because it's unattempted
         "position": 2,
         "title": "Implement trains search for two stations",
         "description": "Implement search_trains in db.py"
@@ -400,22 +401,22 @@ Array where each item is a activity_with_username:
 
 
 
-## List all projects that a user has signed up for
+## List a user's activity
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
 | **GET** |`/api/users/<username>/projects` |Admin-only |
 
 
-Returns a JSON list of all projects that a user has signed up for, with details about the completion status
+Get a list of user's activity in all projects they are enrolled in
 
 
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |The unique username to use to fetch details about a user. Username is case-insensitive. |
+| username |eva |string |required |Username of user |
 
 
 ### Response
@@ -426,15 +427,15 @@ Array where each item is a activity_teaser:
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. If a user is not enrolled in a project with this slug (or such a project doesn't exist), a 404 response will be returned.  |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[task_status] |required | |Array of tasks associated with this Project along with the status of each task for this user. |
+| name |build-your-own-shell |string |required |Project name that can be used in API requests and URLs. If a user is not enrolled in a project with this name (or such a project doesn't exist), a 404 response will be returned.  |
+| title |Build your own Shell |string |required |Human readable title of the project |
+| short_description |Learn the internals of Unix system by building your own Unix shell. |string |required |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
+| is_active | |boolean |optional |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Tags associated with this project. |
+| tasks | |array[task_status] |required |Array of tasks associated with this Project along with the status of each task for this user. |
 
 
 **Example:**
@@ -443,7 +444,7 @@ Array where each item is a activity_teaser:
 # TODO: should be same as fetch-user format, but without tasks
 [
   {
-    "slug": "build-your-own-shell",
+    "name": "build-your-own-shell",
     "title": "Build your own Shell",
     "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
     "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -452,7 +453,7 @@ Array where each item is a activity_teaser:
     "status": "Completed",
     "tasks": [
       {
-        "slug": "stdin-and-stdout",
+        "name": "stdin-and-stdout",
         "position": 1,
         "title": "Stdin and stdout",
         "description": "Take input from stdin and simply echo it to stdout in a loop.",
@@ -460,7 +461,7 @@ Array where each item is a activity_teaser:
         "status_description": "Test case 1: echo without spaces - passed\nTest case 2: echo with whitespace - passed\n",
       },
       {
-        "slug": "write-a-parser",
+        "name": "write-a-parser",
         "position": 2,
         "title": "Write a parser",
         "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
@@ -470,7 +471,7 @@ Array where each item is a activity_teaser:
     ],
   },
   {
-    "slug": "rajdhani",
+    "name": "rajdhani",
     "title": "Rajdhani",
     "short_description": "Build a booking system for Indian railways",
     "description": "We will learn SQL by building a booking system for Indian railways",
@@ -479,7 +480,7 @@ Array where each item is a activity_teaser:
     "status": "In Progress",
     "tasks": [
       {
-        "slug": "enable-homepage",
+        "name": "enable-homepage",
         "position": 1,
         "title": "Enable homepage",
         "description": "Set `flag_homepage` in `config.py` to `true`.",
@@ -487,7 +488,7 @@ Array where each item is a activity_teaser:
         "status_description": "Test case 1: check flag: failed\n",
       },
       {
-        "slug": "search-trains",  #
+        "name": "search-trains",  #
         "position": 2,
         "title": "Implement trains search for two stations",
         "description": "Implement search_trains in db.py",
@@ -502,22 +503,22 @@ Array where each item is a activity_teaser:
 
 # Projects
 
-## Fetch a single project by its unique slug
+## Get a project
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
 | **GET** |`/api/projects/<name>` |Open |
 
 
-Fetch a single project by its unique slug. This will return a status 404 response when a project with this slug doesn't exist.
+Get a single project by its unique name.
 
 
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| name |string |required |build-your-own-shell |The unique project name to get details for |
+| name |build-your-own-shell |string |required |Project name |
 
 
 ### Response
@@ -526,23 +527,22 @@ Fetch a single project by its unique slug. This will return a status 404 respons
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |required | |Whether the project is active and available for users to take up. |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[tasks] |required | |Array of tasks associated with this Project |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |required |Whether project is visible on projects page |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
+| tasks | |array[task] |required |Array of task objects contained in this project |
 
 
 **Example:**
 
 ```json
-# TODO: rename slug to name
 {
-  "slug": "build-your-own-shell",
+  "name": "build-your-own-shell",
   "title": "Build your own Shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -585,15 +585,15 @@ Create a new project. The request body should have all the initial fields for th
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. Should not exist already. If it does, response will be a 400 Bad Request. |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |optional | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[tasks] |required | |Array of tasks associated with this Project |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |optional |Whether project is visible on projects page (default: `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
+| tasks | |array[task] |required |Array of tasks associated with this Project |
 
 
 **Example:**
@@ -601,20 +601,20 @@ Create a new project. The request body should have all the initial fields for th
 ```json
 # TODO: no need to take position for tasks
 {
-  "slug": "build-your-own-shell",
+  "name": "build-your-own-shell",
   "title": "build your own shell",
   "short_description": "a short description of the project, in markdown format. this is displayed on the project's card on the home page and dashboard.",
   "description": "in this project, we will build a unix shell from scratch.\n\nwe'll use the python's `subprocess` library to build shell.\n\n# learning outcomes\n- unix\n- python\n",
   "tags": ["Python", "Unix"],
   "tasks": [
       {
-        "slug": "stdin-and-stdout",
+        "name": "stdin-and-stdout",
         "position": 1,
         "title": "stdin and stdout",
         "description": "take input from stdin and simply echo it to stdout in a loop."
       },
       {
-        "slug": "write-a-parser",
+        "name": "write-a-parser",
         "position": 2,
         "title": "write a parser",
         "description": "write a parser for shell. this part of description can include *italic*, **bold**, `code`, and other markdown formatting."
@@ -632,39 +632,37 @@ Create a new project. The request body should have all the initial fields for th
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. Should not exist already. If it does, response will be a 400 Bad Request. |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |required | |Whether the project is active and available for users to take up. |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[tasks] |required | |Array of tasks associated with this Project |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |required |Whether project is visible on projects page |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
+| tasks | |array[task] |required |Array of task objects contained in this project |
 
 
 **Example:**
 
 ```json
 {
-  "slug": "build-your-own-shell",
-  "title": "build your own shell",
-  "short_description": "a short description of the project, in markdown format. this is displayed on the project's card on the home page and dashboard.",
-  "description": "in this project, we will build a unix shell from scratch.\n\nwe'll use the python's `subprocess` library to build shell.\n\n# learning outcomes\n- unix\n- python\n",
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
   "is_active": true,
   "tags": ["Python", "Unix"],
   "tasks": [
       {
-        "slug": "stdin-and-stdout",
-        "position": 1,
-        "title": "stdin and stdout",
-        "description": "take input from stdin and simply echo it to stdout in a loop."
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
       },
       {
-        "slug": "write-a-parser",
-        "position": 2,
-        "title": "write a parser",
-        "description": "write a parser for shell. this part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
       }
   ]
 }
@@ -701,14 +699,14 @@ Array where each item is a project:
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |required | |Whether the project is active and available for users to take up. |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |required |Whether project is visible on projects page |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
 
 
 **Example:**
@@ -725,7 +723,7 @@ Array where each item is a project:
     "tags": ["Python", "Unix"]
   },
   {
-    "slug": "rajdhani",
+    "name": "rajdhani",
     "title": "Rajdhani",
     "short_description": "Build a booking system for Indian railways",
     "description": "We will learn SQL by building a booking system for Indian railways",
@@ -738,58 +736,59 @@ Array where each item is a project:
 
 
 
-## Update a single project
+## Update a project
 
 | Method |Endpoint |Authentication |
 | --- |--- |--- |
-| **PUT** |`/api/projects/<project-slug>` |Admin-only |
+| **PUT** |`/api/projects/<project-name>` |Admin-only |
 
 
-Update a single project. Its ID is given by the slug, and the body should have all the project fields as a JSON. This will return a status 404 response when a project with this slug doesn't exist. This will return a status 400 response when the body doesn't have all the required fields.
+Update a project.
 
 
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| project-slug |string |required |build-your-own-shell |The unique project slug to use to fetch details about a project. |
+| name |build-your-own-shell |string |required |Project name |
 
 
 #### Body
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required | |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard. example: Learn the internals of Unix system by building your own Unix shell.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |required | |Whether the project is active and available for users to take up. (optional, defaults to `true`) |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[tasks] |required | |Array of tasks associated with this Project |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |optional |Whether project is visible on projects page (default: `true`) |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
+| tasks | |array[task] |required |Array of tasks associated with this Project |
 
 
 **Example:**
 
 ```json
+# TODO: no need to take position for tasks
 {
-  "title": "build your own shell",
-  "short_description": "a short description of the project, in markdown format. this is displayed on the project's card on the home page and dashboard.",
-  "description": "in this project, we will build a unix shell from scratch.\n\nwe'll use the python's `subprocess` library to build shell.\n\n# learning outcomes\n- unix\n- python\n",
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
   "tags": ["Python", "Unix"],
   "tasks": [
       {
-        "slug": "stdin-and-stdout",
-        "position": 1,
-        "title": "stdin and stdout",
-        "description": "take input from stdin and simply echo it to stdout in a loop."
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
       },
       {
-        "slug": "write-a-parser",
-        "position": 2,
-        "title": "write a parser",
-        "description": "write a parser for shell. this part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
       }
   ]
 }
@@ -804,37 +803,37 @@ Update a single project. Its ID is given by the slug, and the body should have a
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| slug |string |required |build-your-own-shell |Project slug that can be used in API requests and URLs. Should not exist already. If it does, response will be a 400 Bad Request. |
-| title |string |required |Build your own Shell |Human readable title of the project |
-| short_description |string |required |Learn the internals of Unix system by building your own Unix shell. |A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.  |
-| description |string |required |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |A longer description of the project in Markdown format. This is displayed on the Project's own page in the UI.  |
-| is_active |boolean |required | |Whether the project is active and available for users to take up. |
-| tags |array[string] |required |["Python", "Unix"]  |Tags associated with this project. |
-| tasks |array[tasks] |required | |Array of tasks associated with this Project |
+| name |build-your-own-shell |string |required |Project name |
+| title |Build your own Shell |string |required |Human readable title of project |
+| short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
+| description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
+| is_active | |boolean |required |Whether project is visible on projects page |
+| tags |["Python", "Unix"]  |array[string] |required |Project tags |
+| tasks | |array[task] |required |Array of task objects contained in this project |
 
 
 **Example:**
 
 ```json
-{ "slug": "build-your-own-shell", "title": "build your own shell",
-  "short_description": "a short description of the project, in markdown format. this is displayed on the project's card on the home page and dashboard.",
-  "description": "in this project, we will build a unix shell from scratch.\n\nwe'll use the python's `subprocess` library to build shell.\n\n# learning outcomes\n- unix\n- python\n",
+{
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
   "is_active": true,
   "tags": ["Python", "Unix"],
   "tasks": [
       {
-        "slug": "stdin-and-stdout",
-        "position": 1,
-        "title": "stdin and stdout",
-        "description": "take input from stdin and simply echo it to stdout in a loop."
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
       },
       {
-        "slug": "write-a-parser",
-        "position": 2,
-        "title": "write a parser",
-        "description": "write a parser for shell. this part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
       }
   ]
 }
@@ -842,6 +841,10 @@ Update a single project. Its ID is given by the slug, and the body should have a
 ```
 
 
+
+### Notes
+
+The body should have all the project fields as a JSON. This will return a status 404 response when a project with this name doesn't exist. This will return a status 400 response when the body doesn't have all the required fields.
 
 # Users
 
@@ -858,9 +861,9 @@ Fetch a single user by their unique username. This will return a status 404 resp
 
 #### Path parameters
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |The unique username to use to fetch details about a user. Username is case-insensitive. |
+| username |eva |string |required |The unique username to use to fetch details about a user. Username is case-insensitive. |
 
 
 ### Response
@@ -869,11 +872,11 @@ Fetch a single user by their unique username. This will return a status 404 resp
 
 **Object properties:**
 
-| Name |Type |Required |Example |Description |
+| Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
-| username |string |required |eva |Unique username of this user |
-| full_name |string |required |Eva Lu Ator |Full name of the user |
-| email_address |string |required |evaluator@example.com |Email address of this user |
+| username |eva |string |required |Unique username of this user |
+| full_name |Eva Lu Ator |string |required |Full name of the user |
+| email_address |evaluator@example.com |string |required |Email address of this user |
 
 
 **Example:**

@@ -1,6 +1,6 @@
 endpoint: /api/users/<username>
 method: GET
-title: Fetch a single user by their username
+title: Get a user
 description: Fetch a single user by their unique username. This will return a status 404 response when a user with this username doesn't exist.
 authenticated: true
 request:

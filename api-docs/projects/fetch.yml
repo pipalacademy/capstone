@@ -1,13 +1,13 @@
-endpoint: /api/projects/<project-slug>
+endpoint: /api/projects/<name>
 method: GET
-title: Fetch a single project by its unique slug
-description: Fetch a single project by its unique slug. This will return a status 404 response when a project with this slug doesn't exist.
+title: Get a project
+description: Get a single project by its unique name.
 authenticated: false
 request:
   path_parameters:
-    - name: project-slug
+    - name: name
       type: string
-      description: The unique project slug to use to fetch details about a project.
+      description: Project name
       example: build-your-own-shell
       required: true
   query_parameters: []
@@ -16,7 +16,7 @@ response:
   type: object
   example: |
     {
-      "slug": "build-your-own-shell",
+      "name": "build-your-own-shell",
       "title": "Build your own Shell",
       "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
       "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
@@ -24,42 +24,38 @@ response:
       "tags": ["Python", "Unix"],
       "tasks": [
           {
-            "slug": "stdin-and-stdout",
-            "position": 1,
+            "name": "stdin-and-stdout",
             "title": "Stdin and stdout",
             "description": "Take input from stdin and simply echo it to stdout in a loop."
           },
           {
-            "slug": "write-a-parser",
-            "position": 2,
+            "name": "write-a-parser",
             "title": "Write a parser",
             "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
           }
       ]
     }
   properties:
-    - name: slug
+    - name: name
       type: string
-      description: Project slug that can be used in API requests and URLs
+      description: Project name
       example: build-your-own-shell
       required: true
     - name: title
       type: string
-      description: Human readable title of the project
+      description: Human readable title of project
       example: Build your own Shell
       required: true
     - name: short_description
       type: string
       description: |
-        A short description of the project, in Markdown format. This is displayed
-        on the Project's card on the home page and dashboard.
-      example: Learn the internals of Unix system by building your own Unix shell.
+        Short description in Markdown format
+      example: Learn the internals of Unix system by building your own Unix shell
       required: true
     - name: description
       type: string
       description: |
-        A longer description of the project in Markdown format. This is displayed
-        on the Project's own page in the UI.
+        A long description in Markdown format
       example: |
         In this project, we will build a Unix shell from scratch.
 
@@ -71,49 +67,49 @@ response:
       required: true
     - name: is_active
       type: boolean
-      description: Whether the project is active and available for users to take up.
+      description: Whether project is visible on projects page
       required: true
     - name: tags
       type: array[string]
-      description: Tags associated with this project.
+      description: Project tags
       each:
-        - type: string
+        type: string
       example: |
         ["Python", "Unix"]
       required: true
     - name: tasks
-      type: array[tasks]
-      description: Array of tasks associated with this Project
+      type: array[task]
+      description: Array of task objects contained in this project
       required: true
       each:
-        - type: object
-          properties:
-            - name: slug
-              type: string
-              description: The unique identifier for this task, as defined by the course creator.
-              example: "write-a-parser"
-              required: true
-            - name: position
-              type: Integer
-              description: The position of the Task in sequence
-              example: 2
-              required: true
-            - name: title
-              type: string
-              description: Title of the Task
-              example: "Write a parser"
-              required: true
-            - name: description
-              type: string
-              description: Description of the task in markdown format.
-              example: |
-                Write a parser for shell. This part of description can
-                include *italic*, **bold**, `code`, and other markdown formatting.
-              required: true
-          example: |
-            {
-              "slug": "write-a-parser",
-              "position": 2,
-              "title": "Write a parser",
-              "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
-            }
+        type: object
+        properties:
+          - name: name
+            type: string
+            description: The unique identifier for this task, as defined by the course creator.
+            example: "write-a-parser"
+            required: true
+          - name: position
+            type: Integer
+            description: The position of the Task in sequence
+            example: 2
+            required: true
+          - name: title
+            type: string
+            description: Title of the Task
+            example: "Write a parser"
+            required: true
+          - name: description
+            type: string
+            description: Description of the task in markdown format.
+            example: |
+              Write a parser for shell. This part of description can
+              include *italic*, **bold**, `code`, and other markdown formatting.
+            required: true
+        example: |
+          {
+            "name": "write-a-parser",
+            "position": 2,
+            "title": "Write a parser",
+            "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
+          }
