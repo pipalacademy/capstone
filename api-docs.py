@@ -41,7 +41,7 @@ def make_attr_table(attrs, items):
 
 def make_named_param_table(items):
     return make_attr_table(
-        ["name", "type", "required", "example", "description"],
+        ["name", "example", "type", "required", "description"],
         items,
     )
 
