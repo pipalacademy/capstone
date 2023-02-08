@@ -117,6 +117,7 @@ class Endpoint:
         result += "\n"
 
         if self.request.body:
+            result += "\n"
             result += self.request.body[0].example
 
         result += "---\n"

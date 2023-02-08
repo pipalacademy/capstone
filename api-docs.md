@@ -518,6 +518,7 @@ PUT /api/users/eva/projects/build-your-own-shell/tasks
 Host: ...
 Authorization: Bearer ...
 Content-Type: application/json
+
 [
   {
     "name": "write-a-parser",
@@ -1296,6 +1297,7 @@ PUT /api/projects/<project-name>
 Host: ...
 Authorization: Bearer ...
 Content-Type: application/json
+
 {
   "name": "build-your-own-shell",
   "title": "Build your own Shell",
