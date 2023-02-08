@@ -56,6 +56,7 @@ Signup a user for a project
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
 | tags |["Python", "Unix"]  |array[string] |required |Project tags |
@@ -222,6 +223,7 @@ Get activity of a user on a project
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
 | tags |["Python", "Unix"]  |array[string] |required |Project tags |
@@ -532,6 +534,7 @@ Array where each item is a activity_teaser:
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
 | tags |["Python", "Unix"]  |array[string] |required |Project tags |
@@ -637,6 +640,7 @@ Array where each item is a activity_teaser:
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
 | tags |["Python", "Unix"]  |array[string] |required |Project tags |
@@ -812,6 +816,7 @@ Get a single project by its unique name.
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
@@ -827,6 +832,7 @@ Get a single project by its unique name.
 {
   "name": "build-your-own-shell",
   "title": "Build your own Shell",
+  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
   "is_active": true,
@@ -923,6 +929,7 @@ Create a new project or update it if it already exists
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | description |In this project, we will build a Unix shell from scratch.\nWe'll use the Python's `subprocess` library to build shell.\n# Learning outcomes - Unix - Python  |string |required |A long description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
@@ -938,6 +945,7 @@ Create a new project or update it if it already exists
 {
   "name": "build-your-own-shell",
   "title": "Build your own Shell",
+  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
   "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
   "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
   "is_active": true,
@@ -991,6 +999,7 @@ Array where each item is a project_teaser:
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 | title |Build your own Shell |string |required |Human readable title of project |
+| url |https://capstone.example.com/api/projects/build-your-own-shell |string |required |API URL of the project |
 | short_description |Learn the internals of Unix system by building your own Unix shell |string |required |Short description in Markdown format  |
 | is_active | |boolean |required |Whether project is visible on projects page |
 | tags |["Python", "Unix"]  |array[string] |required |Project tags |

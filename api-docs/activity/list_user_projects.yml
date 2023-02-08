@@ -68,6 +68,11 @@ response:
             description: Human readable title of project
             example: Build your own Shell
             required: true
+          - name: url
+            type: string
+            description: API URL of the project
+            example: https://capstone.example.com/api/projects/build-your-own-shell
+            required: true
           - name: short_description
             type: string
             description: |

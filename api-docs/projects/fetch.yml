@@ -18,6 +18,7 @@ response:
     {
       "name": "build-your-own-shell",
       "title": "Build your own Shell",
+      "url": "https://capstone.example.com/api/projects/build-your-own-shell",
       "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
       "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
       "is_active": true,
@@ -47,6 +48,11 @@ response:
       type: string
       description: Human readable title of project
       example: Build your own Shell
+      required: true
+    - name: url
+      type: string
+      description: API URL of the project
+      example: https://capstone.example.com/api/projects/build-your-own-shell
       required: true
     - name: short_description
       type: string
