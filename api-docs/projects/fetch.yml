@@ -1,0 +1,127 @@
+endpoint: /api/projects/<name>
+method: GET
+title: Get a project
+description: Get a single project by its unique name.
+authenticated: false
+request:
+  path_parameters:
+    - name: name
+      type: string
+      description: Project name
+      example: build-your-own-shell
+      required: true
+  query_parameters: []
+  body: {}
+response:
+  type: object
+  example: |
+    {
+      "name": "build-your-own-shell",
+      "title": "Build your own Shell",
+      "url": "https://capstone.example.com/api/projects/build-your-own-shell",
+      "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+      "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+      "is_active": true,
+      "tags": ["Python", "Unix"],
+      "created": "2023-02-07T06:50:07.984844+00:00",
+      "last_modified": "2023-02-07T06:50:07.984844+00:00",
+      "tasks": [
+          {
+            "name": "stdin-and-stdout",
+            "title": "Stdin and stdout",
+            "description": "Take input from stdin and simply echo it to stdout in a loop."
+          },
+          {
+            "name": "write-a-parser",
+            "title": "Write a parser",
+            "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+          }
+      ]
+    }
+  properties:
+    - name: name
+      type: string
+      description: Project name
+      example: build-your-own-shell
+      required: true
+    - name: title
+      type: string
+      description: Human readable title of project
+      example: Build your own Shell
+      required: true
+    - name: url
+      type: string
+      description: API URL of the project
+      example: https://capstone.example.com/api/projects/build-your-own-shell
+      required: true
+    - name: short_description
+      type: string
+      description: |
+        Short description in Markdown format
+      example: Learn the internals of Unix system by building your own Unix shell
+      required: true
+    - name: description
+      type: string
+      description: |
+        A long description in Markdown format
+      example: |
+        In this project, we will build a Unix shell from scratch.
+
+        We'll use the Python's `subprocess` library to build shell.
+
+        # Learning outcomes
+        - Unix
+        - Python
+      required: true
+    - name: is_active
+      type: boolean
+      description: Whether project is visible on projects page
+      required: true
+    - name: tags
+      type: array[string]
+      description: Project tags
+      each:
+        type: string
+      example: |
+        ["Python", "Unix"]
+      required: true
+    - name: created
+      type: string
+      required: true
+      description: Creation timestamp as an ISO8601 date string
+      example: "2023-02-07T06:50:07.984844+00:00"
+    - name: last_modified
+      type: string
+      required: true
+      description: Last modified timestamp as an ISO8601 date string
+      example: "2023-02-07T06:50:07.984844+00:00"
+    - name: tasks
+      type: array[task]
+      description: Array of task objects contained in this project
+      required: true
+      each:
+        type: object
+        properties:
+          - name: name
+            type: string
+            description: The unique identifier for this task, as defined by the course creator.
+            example: "write-a-parser"
+            required: true
+          - name: title
+            type: string
+            description: Title of the Task
+            example: "Write a parser"
+            required: true
+          - name: description
+            type: string
+            description: Description of the task in markdown format.
+            example: |
+              Write a parser for shell. This part of description can
+              include *italic*, **bold**, `code`, and other markdown formatting.
+            required: true
+        example: |
+          {
+            "name": "write-a-parser",
+            "title": "Write a parser",
+            "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
+          }

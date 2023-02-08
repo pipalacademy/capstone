@@ -1,0 +1,82 @@
+endpoint: /api/projects/
+method: GET
+title: List all projects
+description: Returns a JSON list of all projects
+authenticated: false
+request:
+  path_parameters: []
+  query_parameters: []
+  body: {}
+response:
+  type: array[project_teaser]
+  required: true
+  description: A list of projects returned.
+  example: |
+    [
+      {
+        "name": "build-your-own-shell",
+        "title": "Build your own Shell",
+        "url": "https://capstone.example.com/api/projects/build-your-own-shell",
+        "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+        "is_active": true,
+        "tags": ["Python", "Unix"],
+        "created": "2023-02-07T06:50:07.984844+00:00",
+        "last_modified": "2023-02-07T06:50:07.984844+00:00"
+      },
+      {
+        "name": "rajdhani",
+        "title": "Rajdhani",
+        "url": "https://capstone.example.com/api/projects/rajdhani",
+        "short_description": "Build a booking system for Indian railways",
+        "is_active": true,
+        "tags": ["Python", "Webapp", "Database"],
+        "created": "2023-02-07T06:50:07.984844+00:00",
+        "last_modified": "2023-02-07T06:50:07.984844+00:00"
+      }
+    ]
+  each:
+    type: object
+    properties:
+      - name: name
+        type: string
+        description: Project name
+        example: build-your-own-shell
+        required: true
+      - name: title
+        type: string
+        description: Human readable title of project
+        example: Build your own Shell
+        required: true
+      - name: url
+        type: string
+        description: API URL of the project
+        example: https://capstone.example.com/api/projects/build-your-own-shell
+        required: true
+      - name: short_description
+        type: string
+        description: |
+          Short description in Markdown format
+        example: Learn the internals of Unix system by building your own Unix shell
+        required: true
+      - name: is_active
+        type: boolean
+        description: Whether project is visible on projects page
+        required: true
+      - name: tags
+        type: array[string]
+        description: Project tags
+        each:
+          type: string
+        example: |
+          ["Python", "Unix"]
+        required: true
+      - name: created
+        type: string
+        required: true
+        description: Creation timestamp as an ISO8601 date string
+        example: "2023-02-07T06:50:07.984844+00:00"
+      - name: last_modified
+        type: string
+        required: true
+        description: Last modified timestamp as an ISO8601 date string
+        example: "2023-02-07T06:50:07.984844+00:00"

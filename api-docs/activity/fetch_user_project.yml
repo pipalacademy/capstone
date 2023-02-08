@@ -1,0 +1,219 @@
+endpoint: /api/users/<username>/projects/<project-name>
+method: GET
+title: Get activity
+description: Get activity of a user on a project
+authenticated: true
+request:
+  path_parameters:
+    - name: username
+      type: string
+      description: Username of user
+      example: eva
+      required: true
+    - name: project-name
+      type: string
+      description: Project name
+      example: build-your-own-shell
+      required: true
+  query_parameters: []
+  body: {}
+response:
+  type: object
+  required: true
+  description: The activity status for a user on a project
+  example: |
+    {
+      "user": {
+        "username": "eva"
+      },
+      "project": {
+        "name": "build-your-own-shell",
+        "title": "Build your own Shell",
+        "url": "https://capstone.example.com/api/projects/build-your-own-shell"
+        "short_description": "Learn the internals of the Unix system by building your own shell.",
+        "is_active": true,
+        "tags": ["Unix", "Python"],
+        "created": "2023-02-07T06:50:07.984844+00:00",
+        "last_modified": "2023-02-07T06:50:07.984844+00:00"
+      },
+      "progress": {
+        "total_tasks": 3,
+        "completed_tasks": 1,
+        "percentage": 33.33,
+        "status": "In Progress",
+      },
+      "tasks": [
+        {
+          "name": "write-a-parser",
+          "title": "Write a Parser",
+          "status": "Completed",
+          "checks": [
+            {
+              "name": "test-case-1",
+              "title": "Test Case 1",
+              "status": "pass",
+              "message": "",
+            },
+            {
+              "name": "test-case-2",
+              "title": "Test Case 2",
+              "status": "pass",
+              "message": "",
+            }
+          ]
+        },
+        {
+          "name": "handle-quotes",
+          "title": "Handle quotes while parsing",
+          "status": "In Progress",
+          "checks": [
+            {
+              "name": "test-quotes",
+              "title": "Test shell args with quotes", "status": "fail",
+              "message": "Failed to parse quoted arg with single quote"
+            }
+          ]
+        },
+        {
+          "name": "echo-input",
+          "title": "Echo parsed input",
+          "status": "Pending",
+          "checks": [
+            {
+              "name": "echo-input-1",
+              "title": "Test echo input",
+              "status": "pending",
+              "message": null,
+            }
+          ]
+        }
+      ]
+    }
+  properties:
+    - name: user
+      type: object
+      description: Object with user information
+      required: true
+      properties:
+        - name: username
+          type: string
+          example: eva
+          required: true
+          description: Username of user
+    - name: project
+      type: object
+      description: Project teaser with limited information about the project
+      required: true
+      properties:
+        - name: name
+          type: string
+          description: Project name
+          example: build-your-own-shell
+          required: true
+        - name: title
+          type: string
+          description: Human readable title of project
+          example: Build your own Shell
+          required: true
+        - name: url
+          type: string
+          description: API URL of the project
+          example: https://capstone.example.com/api/projects/build-your-own-shell
+          required: true
+        - name: short_description
+          type: string
+          description: |
+            Short description in Markdown format
+          example: Learn the internals of Unix system by building your own Unix shell
+          required: true
+        - name: is_active
+          type: boolean
+          description: Whether project is visible on projects page
+          required: true
+        - name: tags
+          type: array[string]
+          description: Project tags
+          each:
+            type: string
+          example: |
+            ["Python", "Unix"]
+          required: true
+        - name: created
+          type: string
+          required: true
+          description: Creation timestamp as an ISO8601 date string
+          example: "2023-02-07T06:50:07.984844+00:00"
+        - name: last_modified
+          type: string
+          required: true
+          description: Last modified timestamp as an ISO8601 date string
+          example: "2023-02-07T06:50:07.984844+00:00"
+    - name: progress
+      type: object
+      required: true
+      properties:
+        - name: total_tasks
+          type: integer
+          required: true
+          description: Total number of tasks in the project
+          example: 3
+        - name: completed_tasks
+          type: integer
+          required: true
+          description: Number of tasks completed by the user
+          example: 1
+        - name: percentage
+          type: float
+          required: true
+          description: Completion percentage
+          example: 33.33
+        - name: status
+          type: string
+          required: true
+          description: Completion status of the task. One of "Completed", "In Progress", "Failing", and "Pending".
+          example: Completed
+    - name: tasks
+      type: array[task_progress]
+      required: true
+      description: Array of task progress
+      each:
+        type: object
+        required: true
+        properties:
+          - name: name
+            type: string
+            required: true
+            description: Task name
+          - name: title
+            type: string
+            required: true
+            description: Task title
+          - name: status
+            type: string
+            required: true
+            description: Task status - one of "Completed", "In Progress", "Failing", and "Pending"
+          - name: checks
+            type: array
+            required: true
+            each:
+              type: object
+              properties:
+                - name: name
+                  type: string
+                  required: true
+                  description: Name of check
+                  example: parser-check-1
+                - name: title
+                  type: string
+                  required: true
+                  description: Title of check
+                  example: Parser Check 1
+                - name: status
+                  type: string
+                  required: true
+                  description: Status of check. One of "pass", "fail", and "pending".
+                  example: pass
+                - name: message
+                  type: string
+                  required: false
+                  description: Full message about the check. Could be `null` when check is pending.
