@@ -101,11 +101,6 @@ response:
             description: The unique identifier for this task, as defined by the course creator.
             example: "write-a-parser"
             required: true
-          - name: position
-            type: Integer
-            description: The position of the Task in sequence
-            example: 2
-            required: true
           - name: title
             type: string
             description: Title of the Task
@@ -121,7 +116,6 @@ response:
         example: |
           {
             "name": "write-a-parser",
-            "position": 2,
             "title": "Write a parser",
             "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting.",
           }

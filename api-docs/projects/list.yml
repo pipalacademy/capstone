@@ -8,7 +8,7 @@ request:
   query_parameters: []
   body: {}
 response:
-  type: array[project]
+  type: array[project_teaser]
   required: true
   description: A list of projects returned.
   example: |
@@ -16,23 +16,22 @@ response:
       {
         "name": "build-your-own-shell",
         "title": "Build your own Shell",
-        "url": "https://.../api/projects/build-your-own-shell",
+        "url": "https://capstone.example.com/api/projects/build-your-own-shell",
         "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-        "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
         "is_active": true,
+        "tags": ["Python", "Unix"],
         "created": "2023-02-07T06:50:07.984844+00:00",
-        "last_modified": "2023-02-07T06:50:07.984844+00:00",
-        "tags": ["Python", "Unix"]
+        "last_modified": "2023-02-07T06:50:07.984844+00:00"
       },
       {
         "name": "rajdhani",
         "title": "Rajdhani",
+        "url": "https://capstone.example.com/api/projects/rajdhani",
         "short_description": "Build a booking system for Indian railways",
-        "description": "We will learn SQL by building a booking system for Indian railways",
         "is_active": true,
+        "tags": ["Python", "Webapp", "Database"],
         "created": "2023-02-07T06:50:07.984844+00:00",
-        "last_modified": "2023-02-07T06:50:07.984844+00:00",
-        "tags": ["Python", "Webapp", "Database"]
+        "last_modified": "2023-02-07T06:50:07.984844+00:00"
       }
     ]
   each:
@@ -53,19 +52,6 @@ response:
         description: |
           Short description in Markdown format
         example: Learn the internals of Unix system by building your own Unix shell
-        required: true
-      - name: description
-        type: string
-        description: |
-          A long description in Markdown format
-        example: |
-          In this project, we will build a Unix shell from scratch.
-
-          We'll use the Python's `subprocess` library to build shell.
-
-          # Learning outcomes
-          - Unix
-          - Python
         required: true
       - name: is_active
         type: boolean
