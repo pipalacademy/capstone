@@ -16,7 +16,7 @@ def make_table(headers, rows):
         return (
             "| " +
             " |".join(
-                item.replace("\n\n", "\\n").replace("\n", " ")
+                str(item).replace("\n\n", "\\n").replace("\n", " ")
                 for item in items) +
             " |" +
             "\n"
