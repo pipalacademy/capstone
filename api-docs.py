@@ -91,13 +91,54 @@ class Endpoint:
         self.response = Response(**response)
         self.notes = notes
 
+    def make_example_url(self):
+        params = [(p.name, p.example) for p in self.request.path_parameters]
+        url = self.endpoint
+        for name, example in params:
+            url = url.replace(f"<{name}>", example)
+        return url
+
+    def make_example_headers(self):
+        headers = []
+        headers.append("Host: ...")
+        if self.authenticated != "Open":
+            headers.append("Authorization: Bearer ...")
+        if self.request.body:
+            headers.append("Content-Type: application/json")
+        return headers
+
+    def make_example(self):
+        result = ""
+
+        url = self.make_example_url()
+        result += f"{self.method} {url}\n"
+
+        result += "\n".join(self.make_example_headers())
+        result += "\n"
+
+        if self.request.body:
+            result += self.request.body[0].example
+
+        result += "---\n"
+        result += "HTTP/1.1 200 OK\n"
+        result += "Content-Type: application/json\n"
+        result += "\n"
+        result += self.response.example
+
+        return result
+
     def render(self):
-        result = f"## {self.title}"
-        result += "\n\n"
+        result = f"## {self.title}\n\n"
+
         result += make_table(
             ["Method", "Endpoint", "Authentication"],
             [[f"**{self.method}**", f"`{self.endpoint}`", self.authenticated]])
         result += "\n\n" + self.description
+
+        result += "\n\n"
+        result += "### Example\n\n"
+        result += "```\n" + self.make_example() + "```\n"
+
         result += "\n\n" + self.request.render()
         result += "\n\n### Response\n\n"
         result += "\n\n" + self.response.render()
@@ -116,7 +157,7 @@ class Request:
     def render(self):
         result = ""
 
-        result += "\n\n#### Path parameters\n\n"
+        result += "\n\n### Path parameters\n\n"
         if self.path_parameters:
             table = make_named_param_table(self.path_parameters)
             result += table
@@ -127,7 +168,7 @@ class Request:
         # if self.query_parameters:
         # result += "\n\n".join(param.render() for param in self.query_parameters)
         if self.method != "GET":
-            result += "\n\n#### Body\n\n"
+            result += "\n\n### Request Body\n\n"
             if self.body:
                 result += "\n\n".join(b.render() for b in self.body)
             else:
@@ -177,7 +218,7 @@ class TypedParameter:
             result += make_typed_param_table([self]) + "\n\n"
 
         if (self.is_array() or self.is_object()) and self.example:
-            result += "**Example:**\n\n"
+            result += "**Response Example:**\n\n"
             result += f"```json\n{self.example}\n```\n\n"
 
         return result

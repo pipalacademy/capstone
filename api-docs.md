@@ -9,9 +9,89 @@
 
 Signup a user for a project
 
+### Example
+
+```
+PUT /api/users/eva/projects/build-your-own-shell
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "user": {
+    "username": "eva"
+  },
+  "project": {
+    "name": "build-your-own-shell",
+    "title": "Build your own Shell",
+    "url": "https://capstone.example.com/api/projects/build-your-own-shell"
+    "short_description": "Learn the internals of the Unix system by building your own shell.",
+    "is_active": true,
+    "tags": ["Unix", "Python"],
+    "created": "2023-02-07T06:50:07.984844+00:00",
+    "last_modified": "2023-02-07T06:50:07.984844+00:00"
+  },
+  "progress": {
+    "total_tasks": 3,
+    "completed_tasks": 1,
+    "percentage": 33.33,
+    "status": "In Progress",
+  },
+  "tasks": [
+    {
+      "name": "write-a-parser",
+      "title": "Write a Parser",
+      "status": "Completed",
+      "checks": [
+        {
+          "name": "test-case-1",
+          "title": "Test Case 1",
+          "status": "pass",
+          "message": "",
+        },
+        {
+          "name": "test-case-2",
+          "title": "Test Case 2",
+          "status": "pass",
+          "message": "",
+        }
+      ]
+    },
+    {
+      "name": "handle-quotes",
+      "title": "Handle quotes while parsing",
+      "status": "In Progress",
+      "checks": [
+        {
+          "name": "test-quotes",
+          "title": "Test shell args with quotes", "status": "fail",
+          "message": "Failed to parse quoted arg with single quote"
+        }
+      ]
+    },
+    {
+      "name": "echo-input",
+      "title": "Echo parsed input",
+      "status": "Pending",
+      "checks": [
+        {
+          "name": "echo-input-1",
+          "title": "Test echo input",
+          "status": "pending",
+          "message": null,
+        }
+      ]
+    }
+  ]
+}
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -19,7 +99,7 @@ Signup a user for a project
 | project-name |build-your-own-shell |string |required |Project name |
 
 
-#### Body
+### Request Body
 
 
 
@@ -100,7 +180,7 @@ Array where each item is a task_progress:
 
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
@@ -184,9 +264,89 @@ Array where each item is a task_progress:
 
 Get activity of a user on a project
 
+### Example
+
+```
+GET /api/users/eva/projects/build-your-own-shell
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "user": {
+    "username": "eva"
+  },
+  "project": {
+    "name": "build-your-own-shell",
+    "title": "Build your own Shell",
+    "url": "https://capstone.example.com/api/projects/build-your-own-shell"
+    "short_description": "Learn the internals of the Unix system by building your own shell.",
+    "is_active": true,
+    "tags": ["Unix", "Python"],
+    "created": "2023-02-07T06:50:07.984844+00:00",
+    "last_modified": "2023-02-07T06:50:07.984844+00:00"
+  },
+  "progress": {
+    "total_tasks": 3,
+    "completed_tasks": 1,
+    "percentage": 33.33,
+    "status": "In Progress",
+  },
+  "tasks": [
+    {
+      "name": "write-a-parser",
+      "title": "Write a Parser",
+      "status": "Completed",
+      "checks": [
+        {
+          "name": "test-case-1",
+          "title": "Test Case 1",
+          "status": "pass",
+          "message": "",
+        },
+        {
+          "name": "test-case-2",
+          "title": "Test Case 2",
+          "status": "pass",
+          "message": "",
+        }
+      ]
+    },
+    {
+      "name": "handle-quotes",
+      "title": "Handle quotes while parsing",
+      "status": "In Progress",
+      "checks": [
+        {
+          "name": "test-quotes",
+          "title": "Test shell args with quotes", "status": "fail",
+          "message": "Failed to parse quoted arg with single quote"
+        }
+      ]
+    },
+    {
+      "name": "echo-input",
+      "title": "Echo parsed input",
+      "status": "Pending",
+      "checks": [
+        {
+          "name": "echo-input-1",
+          "title": "Test echo input",
+          "status": "pending",
+          "message": null,
+        }
+      ]
+    }
+  ]
+}
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -267,7 +427,7 @@ Array where each item is a task_progress:
 
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
@@ -351,9 +511,106 @@ Array where each item is a task_progress:
 
 This is invoked by the checker to update the progress on the project
 
+### Example
+
+```
+PUT /api/users/eva/projects/build-your-own-shell/tasks
+Host: ...
+Authorization: Bearer ...
+Content-Type: application/json
+[
+  {
+    "name": "write-a-parser",
+    "checks": [
+      {
+        "name": "test-case-1",
+        "status": "pass",
+        "message": "",
+      },
+      {
+        "name": "test-case-2",
+        "status": "pass",
+        "message": "",
+      }
+    ]
+  },
+  {
+    "name": "handle-quotes",
+    "checks": [
+      {
+        "name": "test-quotes",
+        "status": "fail",
+        "message": "Failed to parse quoted arg with single quote"
+      }
+    ]
+  },
+  {
+    "name": "echo-input",
+    "checks": [
+      {
+        "name": "echo-input-1",
+        "status": "pending",
+        "message": null,
+      }
+    ]
+  }
+]
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "name": "write-a-parser",
+    "title": "Write a Parser",
+    "status": "Completed",
+    "checks": [
+      {
+        "name": "test-case-1",
+        "title": "Test Case 1",
+        "status": "pass",
+        "message": "",
+      },
+      {
+        "name": "test-case-2",
+        "title": "Test Case 2",
+        "status": "pass",
+        "message": "",
+      }
+    ]
+  },
+  {
+    "name": "handle-quotes",
+    "title": "Handle quotes while parsing",
+    "status": "In Progress",
+    "checks": [
+      {
+        "name": "test-quotes",
+        "title": "Test shell args with quotes", "status": "fail",
+        "message": "Failed to parse quoted arg with single quote"
+      }
+    ]
+  },
+  {
+    "name": "echo-input",
+    "title": "Echo parsed input",
+    "status": "Pending",
+    "checks": [
+      {
+        "name": "echo-input-1",
+        "title": "Test echo input",
+        "status": "pending",
+        "message": null,
+      }
+    ]
+  }
+]
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -361,7 +618,7 @@ This is invoked by the checker to update the progress on the project
 | project-name |build-your-own-shell |string |required |Project name |
 
 
-#### Body
+### Request Body
 
 Array where each item is a task_progress:
 
@@ -373,7 +630,7 @@ Array where each item is a task_progress:
 | checks | |array |required | |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -434,7 +691,7 @@ Array where each item is a task_progress:
 | checks | |array |required | |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -497,9 +754,45 @@ Array where each item is a task_progress:
 
 Get a list of all project activity
 
+### Example
+
+```
+GET /api/activity
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "user": {
+      "username": "eva"
+    },
+    "project": {
+      "name": "build-your-own-shell",
+      "title": "Build your own Shell",
+      "url": "https://capstone.example.com/api/projects/build-your-own-shell"
+      "short_description": "Learn the internals of the Unix system by building your own shell.",
+      "is_active": true,
+      "tags": ["Unix", "Python"],
+      "created": "2023-02-07T06:50:07.984844+00:00",
+      "last_modified": "2023-02-07T06:50:07.984844+00:00"
+    },
+    "progress": {
+      "total_tasks": 3,
+      "completed_tasks": 1,
+      "percentage": 33.33,
+      "status": "In Progress",
+    }
+  }
+]
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 *This endpoint doesn't take any path parameters.*
 
@@ -560,7 +853,7 @@ Array where each item is a activity_teaser:
 
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -600,9 +893,45 @@ Array where each item is a activity_teaser:
 
 Get a list of user's activity in all projects they have signed up for
 
+### Example
+
+```
+GET /api/users/eva/projects
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "user": {
+      "username": "eva"
+    },
+    "project": {
+      "name": "build-your-own-shell",
+      "title": "Build your own Shell",
+      "url": "https://capstone.example.com/api/projects/build-your-own-shell"
+      "short_description": "Learn the internals of the Unix system by building your own shell.",
+      "is_active": true,
+      "tags": ["Unix", "Python"],
+      "created": "2023-02-07T06:50:07.984844+00:00",
+      "last_modified": "2023-02-07T06:50:07.984844+00:00"
+    },
+    "progress": {
+      "total_tasks": 3,
+      "completed_tasks": 1,
+      "percentage": 33.33,
+      "status": "In Progress",
+    }
+  }
+]
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -666,7 +995,7 @@ Array where each item is a activity_teaser:
 
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -706,9 +1035,68 @@ Array where each item is a activity_teaser:
 
 Get progress of all tasks for a user on a project
 
+### Example
+
+```
+GET /api/users/eva/projects/build-your-own-shell/tasks
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "name": "write-a-parser",
+    "title": "Write a Parser",
+    "status": "Completed",
+    "checks": [
+      {
+        "name": "test-case-1",
+        "title": "Test Case 1",
+        "status": "pass",
+        "message": "",
+      },
+      {
+        "name": "test-case-2",
+        "title": "Test Case 2",
+        "status": "pass",
+        "message": "",
+      }
+    ]
+  },
+  {
+    "name": "handle-quotes",
+    "title": "Handle quotes while parsing",
+    "status": "In Progress",
+    "checks": [
+      {
+        "name": "test-quotes",
+        "title": "Test shell args with quotes", "status": "fail",
+        "message": "Failed to parse quoted arg with single quote"
+      }
+    ]
+  },
+  {
+    "name": "echo-input",
+    "title": "Echo parsed input",
+    "status": "Pending",
+    "checks": [
+      {
+        "name": "echo-input-1",
+        "title": "Test echo input",
+        "status": "pending",
+        "message": null,
+      }
+    ]
+  }
+]
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -732,7 +1120,7 @@ Array where each item is a task_progress:
 | checks | |array |required | |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -797,9 +1185,44 @@ Array where each item is a task_progress:
 
 Get a single project by its unique name.
 
+### Example
+
+```
+GET /api/projects/build-your-own-shell
+Host: ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+  "is_active": true,
+  "tags": ["Python", "Unix"],
+  "created": "2023-02-07T06:50:07.984844+00:00",
+  "last_modified": "2023-02-07T06:50:07.984844+00:00",
+  "tasks": [
+      {
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
+      },
+      {
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+      }
+  ]
+}
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -826,7 +1249,7 @@ Get a single project by its unique name.
 | tasks | |array[task] |required |Array of task objects contained in this project |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
@@ -866,16 +1289,72 @@ Get a single project by its unique name.
 
 Create a new project or update it if it already exists
 
+### Example
+
+```
+PUT /api/projects/<project-name>
+Host: ...
+Authorization: Bearer ...
+Content-Type: application/json
+{
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+  "tags": ["Python", "Unix"],
+  "created": "2023-02-07T06:50:07.984844+00:00",
+  "last_modified": "2023-02-07T06:50:07.984844+00:00",
+  "tasks": [
+      {
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
+      },
+      {
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+      }
+  ]
+}
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "name": "build-your-own-shell",
+  "title": "Build your own Shell",
+  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
+  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
+  "is_active": true,
+  "tags": ["Python", "Unix"],
+  "tasks": [
+      {
+        "name": "stdin-and-stdout",
+        "title": "Stdin and stdout",
+        "description": "Take input from stdin and simply echo it to stdout in a loop."
+      },
+      {
+        "name": "write-a-parser",
+        "title": "Write a parser",
+        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
+      }
+  ]
+}
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
 | name |build-your-own-shell |string |required |Project name |
 
 
-#### Body
+### Request Body
 
 **Object properties:**
 
@@ -890,7 +1369,7 @@ Create a new project or update it if it already exists
 | tasks | |array[task] |required |Array of tasks associated with this Project |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
@@ -939,7 +1418,7 @@ Create a new project or update it if it already exists
 | tasks | |array[task] |required |Array of task objects contained in this project |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
@@ -981,9 +1460,43 @@ The body should have all the project fields as a JSON. This will return a status
 
 Returns a JSON list of all projects
 
+### Example
+
+```
+GET /api/projects/
+Host: ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "name": "build-your-own-shell",
+    "title": "Build your own Shell",
+    "url": "https://capstone.example.com/api/projects/build-your-own-shell",
+    "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
+    "is_active": true,
+    "tags": ["Python", "Unix"],
+    "created": "2023-02-07T06:50:07.984844+00:00",
+    "last_modified": "2023-02-07T06:50:07.984844+00:00"
+  },
+  {
+    "name": "rajdhani",
+    "title": "Rajdhani",
+    "url": "https://capstone.example.com/api/projects/rajdhani",
+    "short_description": "Build a booking system for Indian railways",
+    "is_active": true,
+    "tags": ["Python", "Webapp", "Database"],
+    "created": "2023-02-07T06:50:07.984844+00:00",
+    "last_modified": "2023-02-07T06:50:07.984844+00:00"
+  }
+]
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 *This endpoint doesn't take any path parameters.*
 
@@ -1007,7 +1520,7 @@ Array where each item is a project_teaser:
 | last_modified |2023-02-07T06:50:07.984844+00:00 |string |required |Last modified timestamp as an ISO8601 date string |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 [
@@ -1048,9 +1561,27 @@ Array where each item is a project_teaser:
 
 Fetch a single user by their unique username. This will return a status 404 response when a user with this username doesn't exist.
 
+### Example
+
+```
+GET /api/users/eva
+Host: ...
+Authorization: Bearer ...
+---
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "username": "eva",
+  "full_name": "Eva Lu Ator",
+  "email_address": "evaluator@example.com"
+}
+```
 
 
-#### Path parameters
+
+
+### Path parameters
 
 | Name |Example |Type |Required |Description |
 | --- |--- |--- |--- |--- |
@@ -1070,7 +1601,7 @@ Fetch a single user by their unique username. This will return a status 404 resp
 | email_address |evaluator@example.com |string |required |Email address of this user |
 
 
-**Example:**
+**Response Example:**
 
 ```json
 {
