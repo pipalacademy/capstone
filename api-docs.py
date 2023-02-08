@@ -218,9 +218,9 @@ class TypedParameter:
         else:
             result += make_typed_param_table([self]) + "\n\n"
 
-        if (self.is_array() or self.is_object()) and self.example:
-            result += "**Response Example:**\n\n"
-            result += f"```json\n{self.example}\n```\n\n"
+        # if (self.is_array() or self.is_object()) and self.example:
+        #     result += "**Response Example:**\n\n"
+        #     result += f"```json\n{self.example}\n```\n\n"
 
         return result
 

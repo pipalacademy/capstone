@@ -180,79 +180,6 @@ Array where each item is a task_progress:
 
 
 
-**Response Example:**
-
-```json
-{
-  "user": {
-    "username": "eva"
-  },
-  "project": {
-    "name": "build-your-own-shell",
-    "title": "Build your own Shell",
-    "url": "https://capstone.example.com/api/projects/build-your-own-shell"
-    "short_description": "Learn the internals of the Unix system by building your own shell.",
-    "is_active": true,
-    "tags": ["Unix", "Python"],
-    "created": "2023-02-07T06:50:07.984844+00:00",
-    "last_modified": "2023-02-07T06:50:07.984844+00:00"
-  },
-  "progress": {
-    "total_tasks": 3,
-    "completed_tasks": 1,
-    "percentage": 33.33,
-    "status": "In Progress",
-  },
-  "tasks": [
-    {
-      "name": "write-a-parser",
-      "title": "Write a Parser",
-      "status": "Completed",
-      "checks": [
-        {
-          "name": "test-case-1",
-          "title": "Test Case 1",
-          "status": "pass",
-          "message": "",
-        },
-        {
-          "name": "test-case-2",
-          "title": "Test Case 2",
-          "status": "pass",
-          "message": "",
-        }
-      ]
-    },
-    {
-      "name": "handle-quotes",
-      "title": "Handle quotes while parsing",
-      "status": "In Progress",
-      "checks": [
-        {
-          "name": "test-quotes",
-          "title": "Test shell args with quotes", "status": "fail",
-          "message": "Failed to parse quoted arg with single quote"
-        }
-      ]
-    },
-    {
-      "name": "echo-input",
-      "title": "Echo parsed input",
-      "status": "Pending",
-      "checks": [
-        {
-          "name": "echo-input-1",
-          "title": "Test echo input",
-          "status": "pending",
-          "message": null,
-        }
-      ]
-    }
-  ]
-}
-
-```
-
 
 
 ## Get activity
@@ -427,79 +354,6 @@ Array where each item is a task_progress:
 
 
 
-**Response Example:**
-
-```json
-{
-  "user": {
-    "username": "eva"
-  },
-  "project": {
-    "name": "build-your-own-shell",
-    "title": "Build your own Shell",
-    "url": "https://capstone.example.com/api/projects/build-your-own-shell"
-    "short_description": "Learn the internals of the Unix system by building your own shell.",
-    "is_active": true,
-    "tags": ["Unix", "Python"],
-    "created": "2023-02-07T06:50:07.984844+00:00",
-    "last_modified": "2023-02-07T06:50:07.984844+00:00"
-  },
-  "progress": {
-    "total_tasks": 3,
-    "completed_tasks": 1,
-    "percentage": 33.33,
-    "status": "In Progress",
-  },
-  "tasks": [
-    {
-      "name": "write-a-parser",
-      "title": "Write a Parser",
-      "status": "Completed",
-      "checks": [
-        {
-          "name": "test-case-1",
-          "title": "Test Case 1",
-          "status": "pass",
-          "message": "",
-        },
-        {
-          "name": "test-case-2",
-          "title": "Test Case 2",
-          "status": "pass",
-          "message": "",
-        }
-      ]
-    },
-    {
-      "name": "handle-quotes",
-      "title": "Handle quotes while parsing",
-      "status": "In Progress",
-      "checks": [
-        {
-          "name": "test-quotes",
-          "title": "Test shell args with quotes", "status": "fail",
-          "message": "Failed to parse quoted arg with single quote"
-        }
-      ]
-    },
-    {
-      "name": "echo-input",
-      "title": "Echo parsed input",
-      "status": "Pending",
-      "checks": [
-        {
-          "name": "echo-input-1",
-          "title": "Test echo input",
-          "status": "pending",
-          "message": null,
-        }
-      ]
-    }
-  ]
-}
-
-```
-
 
 
 ## Update activity tasks
@@ -631,49 +485,6 @@ Array where each item is a task_progress:
 | checks | |array |required | |
 
 
-**Response Example:**
-
-```json
-[
-  {
-    "name": "write-a-parser",
-    "checks": [
-      {
-        "name": "test-case-1",
-        "status": "pass",
-        "message": "",
-      },
-      {
-        "name": "test-case-2",
-        "status": "pass",
-        "message": "",
-      }
-    ]
-  },
-  {
-    "name": "handle-quotes",
-    "checks": [
-      {
-        "name": "test-quotes",
-        "status": "fail",
-        "message": "Failed to parse quoted arg with single quote"
-      }
-    ]
-  },
-  {
-    "name": "echo-input",
-    "checks": [
-      {
-        "name": "echo-input-1",
-        "status": "pending",
-        "message": null,
-      }
-    ]
-  }
-]
-
-```
-
 
 
 ### Response
@@ -691,58 +502,6 @@ Array where each item is a task_progress:
 | status | |string |required |Task status - one of "Completed", "In Progress", "Failing", and "Pending" |
 | checks | |array |required | |
 
-
-**Response Example:**
-
-```json
-[
-  {
-    "name": "write-a-parser",
-    "title": "Write a Parser",
-    "status": "Completed",
-    "checks": [
-      {
-        "name": "test-case-1",
-        "title": "Test Case 1",
-        "status": "pass",
-        "message": "",
-      },
-      {
-        "name": "test-case-2",
-        "title": "Test Case 2",
-        "status": "pass",
-        "message": "",
-      }
-    ]
-  },
-  {
-    "name": "handle-quotes",
-    "title": "Handle quotes while parsing",
-    "status": "In Progress",
-    "checks": [
-      {
-        "name": "test-quotes",
-        "title": "Test shell args with quotes", "status": "fail",
-        "message": "Failed to parse quoted arg with single quote"
-      }
-    ]
-  },
-  {
-    "name": "echo-input",
-    "title": "Echo parsed input",
-    "status": "Pending",
-    "checks": [
-      {
-        "name": "echo-input-1",
-        "title": "Test echo input",
-        "status": "pending",
-        "message": null,
-      }
-    ]
-  }
-]
-
-```
 
 
 
@@ -853,35 +612,6 @@ Array where each item is a activity_teaser:
 
 
 
-
-**Response Example:**
-
-```json
-[
-  {
-    "user": {
-      "username": "eva"
-    },
-    "project": {
-      "name": "build-your-own-shell",
-      "title": "Build your own Shell",
-      "url": "https://capstone.example.com/api/projects/build-your-own-shell"
-      "short_description": "Learn the internals of the Unix system by building your own shell.",
-      "is_active": true,
-      "tags": ["Unix", "Python"],
-      "created": "2023-02-07T06:50:07.984844+00:00",
-      "last_modified": "2023-02-07T06:50:07.984844+00:00"
-    },
-    "progress": {
-      "total_tasks": 3,
-      "completed_tasks": 1,
-      "percentage": 33.33,
-      "status": "In Progress",
-    }
-  }
-]
-
-```
 
 
 
@@ -996,35 +726,6 @@ Array where each item is a activity_teaser:
 
 
 
-**Response Example:**
-
-```json
-[
-  {
-    "user": {
-      "username": "eva"
-    },
-    "project": {
-      "name": "build-your-own-shell",
-      "title": "Build your own Shell",
-      "url": "https://capstone.example.com/api/projects/build-your-own-shell"
-      "short_description": "Learn the internals of the Unix system by building your own shell.",
-      "is_active": true,
-      "tags": ["Unix", "Python"],
-      "created": "2023-02-07T06:50:07.984844+00:00",
-      "last_modified": "2023-02-07T06:50:07.984844+00:00"
-    },
-    "progress": {
-      "total_tasks": 3,
-      "completed_tasks": 1,
-      "percentage": 33.33,
-      "status": "In Progress",
-    }
-  }
-]
-
-```
-
 
 
 ## Get activity tasks
@@ -1121,58 +822,6 @@ Array where each item is a task_progress:
 | checks | |array |required | |
 
 
-**Response Example:**
-
-```json
-[
-  {
-    "name": "write-a-parser",
-    "title": "Write a Parser",
-    "status": "Completed",
-    "checks": [
-      {
-        "name": "test-case-1",
-        "title": "Test Case 1",
-        "status": "pass",
-        "message": "",
-      },
-      {
-        "name": "test-case-2",
-        "title": "Test Case 2",
-        "status": "pass",
-        "message": "",
-      }
-    ]
-  },
-  {
-    "name": "handle-quotes",
-    "title": "Handle quotes while parsing",
-    "status": "In Progress",
-    "checks": [
-      {
-        "name": "test-quotes",
-        "title": "Test shell args with quotes", "status": "fail",
-        "message": "Failed to parse quoted arg with single quote"
-      }
-    ]
-  },
-  {
-    "name": "echo-input",
-    "title": "Echo parsed input",
-    "status": "Pending",
-    "checks": [
-      {
-        "name": "echo-input-1",
-        "title": "Test echo input",
-        "status": "pending",
-        "message": null,
-      }
-    ]
-  }
-]
-
-```
-
 
 
 # Projects
@@ -1249,35 +898,6 @@ Content-Type: application/json
 | last_modified |2023-02-07T06:50:07.984844+00:00 |string |required |Last modified timestamp as an ISO8601 date string |
 | tasks | |array[task] |required |Array of task objects contained in this project |
 
-
-**Response Example:**
-
-```json
-{
-  "name": "build-your-own-shell",
-  "title": "Build your own Shell",
-  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
-  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
-  "is_active": true,
-  "tags": ["Python", "Unix"],
-  "created": "2023-02-07T06:50:07.984844+00:00",
-  "last_modified": "2023-02-07T06:50:07.984844+00:00",
-  "tasks": [
-      {
-        "name": "stdin-and-stdout",
-        "title": "Stdin and stdout",
-        "description": "Take input from stdin and simply echo it to stdout in a loop."
-      },
-      {
-        "name": "write-a-parser",
-        "title": "Write a parser",
-        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
-      }
-  ]
-}
-
-```
 
 
 
@@ -1371,33 +991,6 @@ Content-Type: application/json
 | tasks | |array[task] |required |Array of tasks associated with this Project |
 
 
-**Response Example:**
-
-```json
-{
-  "name": "build-your-own-shell",
-  "title": "Build your own Shell",
-  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
-  "tags": ["Python", "Unix"],
-  "created": "2023-02-07T06:50:07.984844+00:00",
-  "last_modified": "2023-02-07T06:50:07.984844+00:00",
-  "tasks": [
-      {
-        "name": "stdin-and-stdout",
-        "title": "Stdin and stdout",
-        "description": "Take input from stdin and simply echo it to stdout in a loop."
-      },
-      {
-        "name": "write-a-parser",
-        "title": "Write a parser",
-        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
-      }
-  ]
-}
-
-```
-
 
 
 ### Response
@@ -1419,33 +1012,6 @@ Content-Type: application/json
 | last_modified |2023-02-07T06:50:07.984844+00:00 |string |required |Last modified timestamp as an ISO8601 date string |
 | tasks | |array[task] |required |Array of task objects contained in this project |
 
-
-**Response Example:**
-
-```json
-{
-  "name": "build-your-own-shell",
-  "title": "Build your own Shell",
-  "url": "https://capstone.example.com/api/projects/build-your-own-shell",
-  "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-  "description": "In this project, we will build a Unix shell from scratch.\n\nWe'll use the Python's `subprocess` library to build shell.\n\n# Learning outcomes\n- Unix\n- Python\n",
-  "is_active": true,
-  "tags": ["Python", "Unix"],
-  "tasks": [
-      {
-        "name": "stdin-and-stdout",
-        "title": "Stdin and stdout",
-        "description": "Take input from stdin and simply echo it to stdout in a loop."
-      },
-      {
-        "name": "write-a-parser",
-        "title": "Write a parser",
-        "description": "Write a parser for shell. This part of description can include *italic*, **bold**, `code`, and other markdown formatting."
-      }
-  ]
-}
-
-```
 
 
 
@@ -1522,34 +1088,6 @@ Array where each item is a project_teaser:
 | last_modified |2023-02-07T06:50:07.984844+00:00 |string |required |Last modified timestamp as an ISO8601 date string |
 
 
-**Response Example:**
-
-```json
-[
-  {
-    "name": "build-your-own-shell",
-    "title": "Build your own Shell",
-    "url": "https://capstone.example.com/api/projects/build-your-own-shell",
-    "short_description": "A short description of the project, in Markdown format. This is displayed on the Project's card on the home page and dashboard.",
-    "is_active": true,
-    "tags": ["Python", "Unix"],
-    "created": "2023-02-07T06:50:07.984844+00:00",
-    "last_modified": "2023-02-07T06:50:07.984844+00:00"
-  },
-  {
-    "name": "rajdhani",
-    "title": "Rajdhani",
-    "url": "https://capstone.example.com/api/projects/rajdhani",
-    "short_description": "Build a booking system for Indian railways",
-    "is_active": true,
-    "tags": ["Python", "Webapp", "Database"],
-    "created": "2023-02-07T06:50:07.984844+00:00",
-    "last_modified": "2023-02-07T06:50:07.984844+00:00"
-  }
-]
-
-```
-
 
 
 # Users
@@ -1602,16 +1140,5 @@ Content-Type: application/json
 | full_name |Eva Lu Ator |string |required |Full name of the user |
 | email_address |evaluator@example.com |string |required |Email address of this user |
 
-
-**Response Example:**
-
-```json
-{
-  "username": "eva",
-  "full_name": "Eva Lu Ator",
-  "email_address": "evaluator@example.com"
-}
-
-```
 
 
