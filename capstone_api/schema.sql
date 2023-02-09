@@ -24,5 +24,17 @@ create table users (
     id integer primary key,
     username text unique,
     email_address text unique,
-    full_name text
+    full_name text,
+    created text,
+    last_modified text
+);
+
+create table activity (
+    id integer primary key,
+    username text,
+    project_id id,
+    project_name text,
+    created text,
+    last_modified text,
+    unique(username, project_id)
 );
