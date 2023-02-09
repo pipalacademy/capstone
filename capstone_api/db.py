@@ -28,7 +28,7 @@ class Document:
         should be overloaded.
         """
         d = asdict(self)
-        d.pop("id", None)
+        d.pop("id")
         return d
 
     def _to_db(self):
@@ -127,7 +127,7 @@ class Project(Document):
 
     def get_teaser(self):
         d = self._to_json()
-        d.pop("description", None)
+        d.pop("description")
         return d
 
     def get_tasks(self):
@@ -160,7 +160,7 @@ class User(Document):
 
     def _to_json(self):
         d = super()._to_json()
-        d.pop("password", None)
+        d.pop("password")
         return d
 
     def get_teaser(self):
@@ -175,7 +175,7 @@ class User(Document):
         return self
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Task(Document):
     _tablename = "tasks"
 
@@ -187,12 +187,50 @@ class Task(Document):
 
     def _to_json(self):
         d = super()._to_json()
-        d.pop("project_id", None)
+        d.pop("project_id")
         return d
 
     def get_teaser(self):
         return {
             "name": self.name,
+        }
+
+
+@dataclass(kw_only=True)
+class Activity(Document):
+    _tablename = "activity"
+
+    username: str
+    project_id: int
+    project_name: str
+
+    def _to_json(self):
+        d = super()._to_json()
+        d.pop("project_id")
+        return d
+
+    def get_user(self):
+        return User.find(username=self.username)
+
+    def get_project(self):
+        return Project.find(id=self.project_id)
+
+    def get_json(self):
+        user = self.get_user()
+        project = self.get_project()
+        return {
+            "user": user.get_teaser(),
+            "project": project.get_teaser(),
+            # TODO: add progress and tasks keys
+        }
+
+    def get_teaser(self):
+        user = self.get_user()
+        project = self.get_project()
+        return {
+            "user": user.get_teaser(),
+            "project": project.get_teaser(),
+            # TODO: add progress key
         }
 
 
