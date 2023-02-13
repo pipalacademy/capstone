@@ -111,7 +111,7 @@ class Project(Document):
     url: str = field(init=False)
     short_description: str
     description: str
-    is_active: bool
+    is_active: bool = True
     tags: list[str]
 
     def __post_init__(self):
@@ -129,8 +129,12 @@ class Project(Document):
         d.pop("description")
         return d
 
+    def update_tasks(self, tasks):
+        # TODO: implement this
+        ...
+
     def get_tasks(self):
-        return self.id and Task.find_all(project_id=self.id) or None
+        return self.id and Task.find_all(project_id=self.id) or []
 
     def get_json(self):
         project = self._to_json()

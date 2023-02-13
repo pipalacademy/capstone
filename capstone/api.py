@@ -67,13 +67,18 @@ def get_or_upsert_project(name):
     else:
         if not is_authorized(request):
             return Unauthorized()
+
+        # TODO: validate body
+        args = request.json
+        tasks = args.pop("tasks")
+
         project = Project.find(name=name)
         if project is None:
-            return NotFound("Project not found")
+            project = Project(**args)
+        else:
+            project.update(**args)
 
-        new = request.json
-        # TODO: validate body
-        project.update(**new)
+        project.update_tasks(tasks)
         project.save()
         return project.get_json()
 

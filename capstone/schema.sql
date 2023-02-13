@@ -25,6 +25,7 @@ create table users (
     username text unique,
     email_address text unique,
     full_name text,
+    password text,
     created text,
     last_modified text
 );
