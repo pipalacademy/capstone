@@ -16,6 +16,8 @@ create table tasks (
     title text,
     description text,
     project_id int,
+    position int,
+    checks text,
     created text,
     last_modified
 );
@@ -43,6 +45,8 @@ create table task_activity (
     id integer primary key,
     activity_id integer,
     task_id integer,
+    checks text,
+    status text,
     created text,
     last_modified text,
     unique(activity_id, task_id)

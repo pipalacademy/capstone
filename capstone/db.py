@@ -195,6 +195,7 @@ class Task(Document):
     name: str
     title: str
     description: str
+    position: int
     checks: list[Check]
 
     project_id: int
@@ -214,7 +215,7 @@ class Task(Document):
 
     def _to_db(self):
         d = super()._to_db()
-        d["checks"] = [c.get_json() for c in d["checks"]]
+        d["checks"] = json.dumps([c.get_json() for c in d["checks"]])
         return d
 
     def get_teaser(self):
@@ -286,6 +287,11 @@ class TaskActivity(Document):
             **kwargs,
             checks=[CheckStatus(**kw) for kw in json.loads(checks)],
         )
+
+    def _to_db(self):
+        d = super()._to_db()
+        d["checks"] = json.dumps(d["checks"])
+        return d
 
 
 @dataclass
