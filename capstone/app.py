@@ -51,7 +51,7 @@ def authenticated(handler):
     @wraps(handler)
     def wrapper(*args, **kwargs):
         # TODO: implement this
-        user = User.find(username="kaustubh")
+        user = User.find(username="test")
         return handler(*args, user=user, **kwargs)
     return wrapper
 
