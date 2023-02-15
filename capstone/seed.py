@@ -1,4 +1,4 @@
-from db import Activity, Project, User
+from db import Activity, Project, Task, TaskActivity, User
 
 
 if not User.find(username="test"):
@@ -21,6 +21,22 @@ if not Project.find(name="build-your-own-shell"):
         tags=["Unix", "Python"],
     ).save()
 
+project = Project.find(name="build-your-own-shell")
+if not Task.find(name="write-parser", project_id=project.id):
+    Task(name="write-parser",
+         title="Write a parser",
+         description="## Write a parser",
+         checks=[],
+         position=1,
+         project_id=project.id).save()
+
+if not Task.find(name="echo", project_id=project.id):
+    Task(name="echo",
+         title="Build echo",
+         description="Echo command",
+         checks=[],
+         position=2,
+         project_id=project.id).save()
 
 if not Project.find(name="pippet"):
     Project(
@@ -34,3 +50,13 @@ if not Project.find(name="pippet"):
 
 if not Activity.find(username="test", project_name="build-your-own-shell"):
     Activity(username="test", project_name="build-your-own-shell").save()
+
+activity = Activity.find(username="test", project_name=project.name)
+task = project.get_tasks()[0]
+
+if not TaskActivity.find(activity_id=activity.id, task_id=task.id):
+    TaskActivity(
+        activity_id=activity.id,
+        task_id=task.id,
+        status="Completed",
+        checks=[]).save()
