@@ -84,6 +84,9 @@ class Document:
             )
         return self
 
+    def delete(self):
+        db.delete(self._tablename, where="id=$id", vars={"id": self.id})
+
     def get_json(self):
         """Method to convert self to detailed JSON.
 
