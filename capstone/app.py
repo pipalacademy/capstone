@@ -134,17 +134,19 @@ def dashboard(user):
             short_description=project.short_description,
             tags=project.tags,
         )
+
+        continue_button = html.div(
+            html.button("Continue ›", class_="btn btn-secondary"),
+            class_="d-flex justify-content-end mt-2")
         if user.has_started_project(project.name):
-            card.body.add(
-                html.div(
-                    html.button("Continue ›", class_="btn btn-secondary"),
-                    class_="d-flex justify-content-end mt-2")
-            )
+            card.body.add(continue_button)
             your_projects.add_column(card)
         else:
             explore.add_column(card)
+
     if not your_projects.is_empty():
         page << html.div(class_="mt-2").add(html.h2("Your Projects"), your_projects)
     if not explore.is_empty():
         page << html.div(class_="mt-2").add(html.h2("Explore"), explore)
+
     return layout.render_page(page)
