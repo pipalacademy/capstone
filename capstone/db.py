@@ -180,6 +180,13 @@ class User(Document):
         self.update(password=hashed)
         return self
 
+    def has_started_project(self, project_name):
+        started_activity = Activity.find_all(username=self.username)
+        started_projects = [
+            activity.project_name for activity in started_activity
+        ]
+        return project_name in started_projects
+
 
 @dataclass(kw_only=True)
 class Task(Document):
