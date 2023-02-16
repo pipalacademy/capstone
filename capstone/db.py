@@ -112,6 +112,7 @@ class Project(Document):
     name: str
     title: str
     url: str = field(init=False)
+    html_url: str = field(init=False)
     short_description: str
     description: str
     is_active: bool = True
@@ -119,13 +120,36 @@ class Project(Document):
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
+        self.html_url = get_project_html_url(self.name)
+
+    def _to_json(self):
+        d = super()._to_json()
+        # TODO: maybe keep html_url in the response
+        d.pop("html_url")
+        return d
 
     def _to_db(self):
         d = super()._to_db()
         d["tags"] = json.dumps(d["tags"])
         d["is_active"] = 1 if d["is_active"] else 0
         d.pop("url")
+        d.pop("html_url")
         return d
+
+    @classmethod
+    def _from_db(cls, name, tags, is_active, **kwargs):
+        return super()._from_db(
+            **kwargs,
+            name=name,
+            tags=json.loads(tags),
+            is_active=True if is_active else False,
+        )
+
+    def get_json(self):
+        project = self._to_json()
+        tasks = self.get_tasks()
+        project["tasks"] = [task.get_json() for task in tasks]
+        return project
 
     def get_teaser(self):
         d = self._to_json()
@@ -138,21 +162,6 @@ class Project(Document):
 
     def get_tasks(self):
         return self.id and Task.find_all(project_id=self.id) or []
-
-    def get_json(self):
-        project = self._to_json()
-        tasks = self.get_tasks()
-        project["tasks"] = [task.get_json() for task in tasks]
-        return project
-
-    @classmethod
-    def _from_db(cls, name, tags, is_active, **kwargs):
-        return super()._from_db(
-            **kwargs,
-            name=name,
-            tags=json.loads(tags),
-            is_active=True if is_active else False,
-        )
 
 
 @dataclass(kw_only=True)
@@ -324,6 +333,9 @@ def generate_salt(length=16):
 
 def get_project_url(name):
     return f"http://{config.hostname}/api/projects/{name}"
+
+def get_project_html_url(name):
+    return f"http://{config.hostname}/projects/{name}"
 
 def get_current_timestamp():
     return datetime.now(tz=timezone.utc)
