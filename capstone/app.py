@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Flask, abort, request
+from flask import Flask, abort, redirect, request
 from kutty import html, Markdown
 from kutty.bootstrap import Layout, Page, Card, Hero
 from kutty.bootstrap.card import CardBody, CardText, CardTitle
@@ -35,7 +35,7 @@ class Badge(html.HTMLElement):
     CLASS = "badge badge-primary"
 
 
-def make_project_card(title, short_description, tags, *extra):
+def make_project_card(title, short_description, tags, url, show_continue_button=False):
     card = Card(
         title=title,
         text=short_description,
@@ -44,8 +44,10 @@ def make_project_card(title, short_description, tags, *extra):
         badge = Badge(tag)
         badge.add_class("mr-2 p-2")
         card.body << badge
-    card.body.add(*extra)
-    return card
+    if show_continue_button:
+        card.body << html.div(class_="d-flex justify-content-end mt-3").add(
+                html.button("Continue ›", class_="btn btn-secondary"))
+    return html.a(card, class_="text-decoration-none text-reset", href=url)
 
 
 green_tick_mark = html.span(
@@ -96,6 +98,15 @@ def authenticated(handler):
 
 def get_authenticated_user(request):
     return User.find(username="test")
+
+
+@app.route("/")
+def index():
+    user = get_authenticated_user(request)
+    if user:
+        return redirect("/dashboard")
+    else:
+        return redirect("/projects")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -156,7 +167,8 @@ def projects():
         card = make_project_card(
             title=project.title,
             short_description=project.short_description,
-            tags=project.tags)
+            tags=project.tags,
+            url=project.html_url)
         grid.add_column(card)
 
     page << grid
@@ -171,17 +183,15 @@ def dashboard(user):
     your_projects = Grid(col_class="col-6")
     explore = Grid(col_class="col-6")
     for project in projects:
+        is_started = user.has_started_project(project.name)
         card = make_project_card(
             title=project.title,
             short_description=project.short_description,
             tags=project.tags,
-        )
+            url=project.html_url,
+            show_continue_button=is_started)
 
-        continue_button = html.div(
-            html.button("Continue ›", class_="btn btn-secondary"),
-            class_="d-flex justify-content-end mt-3")
-        if user.has_started_project(project.name):
-            card.body.add(continue_button)
+        if is_started:
             your_projects.add_column(card)
         else:
             explore.add_column(card)
@@ -198,13 +208,13 @@ def dashboard(user):
 @authenticated
 def project(name, user):
     project = Project.find(name=name)
-    page = html.div()
+    page = Page("", container=html.div())
     hero = Hero(
         title=project.title,
         subtitle=project.short_description,
         text=Markdown(project.description),
     )
-    main = Page("")
+    main = html.div(class_="container")
     page << hero
     page << main
 
