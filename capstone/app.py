@@ -11,7 +11,7 @@ from .components import (
 )
 
 app = Flask(__name__)
-app.secret_key = "hello, world!"
+app.secret_key = "hello, world!"  # TODO: change this
 app.register_blueprint(api, url_prefix="/api")
 
 layout = Layout("Capstone")
