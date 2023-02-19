@@ -2,12 +2,12 @@ from functools import wraps
 
 from flask import Flask, abort, flash, redirect, request, session
 from kutty import html, Markdown
-from kutty.bootstrap import Card, Layout, Page, Hero
+from kutty.bootstrap import Layout, Hero
 
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, Grid, make_login_card, make_project_card, make_task_card,
+    AbsoluteCenter, Grid, Page, make_login_card, make_project_card, make_task_card,
 )
 
 app = Flask(__name__)
@@ -68,7 +68,8 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        page = html.div(id="page", class_="w-100 h-100")
+        container = html.div(id="page", class_="w-100 h-100")
+        page = Page("", container=container)
         page.add(html.tag("style", "body { background-color: #D3D3D3; }"))
         page.add(AbsoluteCenter(make_login_card(method="POST")))
         return layout.render_page(page)
@@ -76,15 +77,16 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         if not username or not password:
-            flash("Missing username or password")
+            flash("Missing username or password", "error")
             return redirect("/login")
         user = User.find(username=username)
         if (not user or
                 not check_password(password, user.password)):
-            flash("Invalid username or password")
+            flash("Invalid username or password", "error")
             return redirect("/login")
 
         login_user(user.username)
+        flash("Logged in successfully", "success")
         return redirect("/")
     else:
         abort(405)

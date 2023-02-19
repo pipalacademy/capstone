@@ -1,11 +1,81 @@
 from textwrap import dedent
 
+from flask import get_flashed_messages
+
 from kutty import html
-from kutty.bootstrap import Layout, Page, Card
+from kutty.bootstrap import Layout, Page as _Page, Card, Hero
+from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardBody, CardText, CardTitle
 
 
-class Grid(html.HTMLElement):
+class Page(_Page):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for category, message in get_flashed_messages(with_categories=True):
+            alert_style = get_style_by_category(category)
+            alert = Alert(message, style_as=alert_style, is_dismissible=True)
+            alert.add_class("m-2")
+            self << alert
+
+
+def get_style_by_category(category):
+    match category:
+        case "error": return "danger"
+        case "message": return "info"
+        case _: return category
+
+
+class Alert(BootstrapElement):
+    TAG = "div"
+    CLASS = "alert"
+
+    def __init__(self, *args, is_dismissible=False, style_as="primary", **kwargs):
+        self.body = html.div()
+        super().__init__(*args, **kwargs)
+        self.add(self.body, in_body=False)
+
+        self.is_dismissible = is_dismissible
+        self.add_class(f"alert-{style_as}")
+
+        if self.is_dismissible:
+            self.add_class("alert-dismissible fade show")
+
+            self.add(
+                html.button(type="button", class_="close",
+                            data_dismiss="alert").add("&times;"),
+                in_body=False,
+            )
+
+    def add(self, *args, in_body=True):
+        if in_body:
+            self.body.add(*args)
+        else:
+            super().add(*args)
+        return self
+
+    def add_heading(self, text):
+        element = AlertHeading(text)
+        self << element
+        return element
+
+    def add_link(self, title, href):
+        element = AlertLink(title, href=href)
+        self << element
+        return element
+
+
+class AlertHeading(BootstrapElement):
+    TAG = "h4"
+    CLASS = "alert-heading"
+
+
+class AlertLink(BootstrapElement):
+    TAG = "a"
+    CLASS = "alert-link"
+
+
+class Grid(BootstrapElement):
     TAG = "div"
     CLASS = "row"
 
@@ -19,12 +89,12 @@ class Grid(html.HTMLElement):
         return column
 
 
-class Badge(html.HTMLElement):
+class Badge(BootstrapElement):
     TAG = "span"
     CLASS = "badge badge-primary"
 
 
-class AbsoluteCenter(html.HTMLElement):
+class AbsoluteCenter(BootstrapElement):
     TAG = "div"
     CLASS = "absolute-center"
 
