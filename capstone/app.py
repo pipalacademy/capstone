@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Flask, abort, flash, redirect, request, session
+from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown
 from kutty.bootstrap import Layout, Hero
 
@@ -67,27 +67,30 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    next_page = request.args.get("next", "/")
     if request.method == "GET":
         container = html.div(id="page", class_="w-100 h-100")
         page = Page("", container=container)
         page.add(html.tag("style", "body { background-color: #D3D3D3; }"))
-        page.add(AbsoluteCenter(make_login_card(method="POST")))
+        page.add(AbsoluteCenter(
+            make_login_card(
+                method="POST", action=url_for("login", next=next_page))))
         return layout.render_page(page)
     elif request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         if not username or not password:
             flash("Missing username or password", "error")
-            return redirect("/login")
+            return redirect(url_for("login", next=next_page))
         user = User.find(username=username)
         if (not user or
                 not check_password(password, user.password)):
             flash("Invalid username or password", "error")
-            return redirect("/login")
+            return redirect(url_for("login", next=next_page))
 
         login_user(user.username)
         flash("Logged in successfully", "success")
-        return redirect("/")
+        return redirect(next_page)
     else:
         abort(405)
 
@@ -148,9 +151,10 @@ def dashboard(user):
 
 
 @app.route("/projects/<name>")
-@authenticated
-def project(name, user):
+def project(name):
+    user = get_authenticated_user()
     project = Project.find(name=name)
+
     page = Page("", container=html.div())
     hero = Hero(
         title=project.title,
@@ -161,7 +165,7 @@ def project(name, user):
     page << hero
     page << main
 
-    if user.has_started_project(project.name):
+    if user and user.has_started_project(project.name):
         activity = Activity.find(
             username=user.username, project_name=project.name)
 
@@ -176,8 +180,10 @@ def project(name, user):
                 status=task_activity and task_activity.status)
             main << card
     else:
-        hero.add_cta("Start Project", href="#")
-        for task in Project.find(name="build-your-own-shell").get_tasks():
+        href = "#" if user else url_for("login", next=request.path)
+        hero.add_cta("Start Project", href=href)
+
+        for task in project.get_tasks():
             card = make_task_card(
                 position=task.position, title=task.title, text=Markdown(task.description))
             main << card
