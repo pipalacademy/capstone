@@ -7,7 +7,7 @@ from kutty.bootstrap import Layout, Hero
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, Grid, Page, make_login_card, make_project_card, make_task_card,
+    AbsoluteCenter, Grid, Page, LoginCard, make_project_card, make_task_card,
 )
 
 app = Flask(__name__)
@@ -68,25 +68,36 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     next_page = request.args.get("next", "/")
+
+    page = Page(
+        "",
+        container=html.div(class_="w-100 h-100"),
+    )
+    page << html.tag("style", "body { background-color: #D3D3D3; }")
+
+    center = AbsoluteCenter()
+    page << center
+
+    login_card = LoginCard(
+        username_field="username", password_field="password",
+        method="POST", action=url_for("login", next=next_page),
+    )
+    center << login_card
+
     if request.method == "GET":
-        container = html.div(id="page", class_="w-100 h-100")
-        page = Page("", container=container)
-        page.add(html.tag("style", "body { background-color: #D3D3D3; }"))
-        page.add(AbsoluteCenter(
-            make_login_card(
-                method="POST", action=url_for("login", next=next_page))))
         return layout.render_page(page)
+
     elif request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         if not username or not password:
-            flash("Missing username or password", "error")
-            return redirect(url_for("login", next=next_page))
+            login_card.add_error("Missing username or password")
+            return layout.render_page(page)
+
         user = User.find(username=username)
-        if (not user or
-                not check_password(password, user.password)):
-            flash("Invalid username or password", "error")
-            return redirect(url_for("login", next=next_page))
+        if (not user or not check_password(password, user.password)):
+            login_card.add_error("Invalid username or password")
+            return layout.render_page(page)
 
         login_user(user.username)
         flash("Logged in successfully", "success")
