@@ -12,14 +12,15 @@ create table projects (
 
 create table tasks (
     id integer primary key,
-    name text unique,
+    project_id int references projects(id),
+    name text,
     title text,
     description text,
-    project_id int,
     position int,
     checks text,
     created text,
-    last_modified
+    last_modified text,
+    unique(project_id, name)
 );
 
 create table users (
@@ -27,19 +28,32 @@ create table users (
     username text unique,
     email_address text unique,
     full_name text,
-    password text,
+    password text, -- TODO: rename this to show that it's encoded
     created text,
     last_modified text
 );
 
 create table activity (
     id integer primary key,
-    username text not null,
-    project_name text not null,
+    user_id text not null,
+    project_id text not null,
     created text,
     last_modified text,
-    unique(username, project_name)
+    unique(user_id, project_id)
 );
+
+create view activity_view as
+select
+    users.username,
+    projects.name as project_name,
+    activity.id,
+    activity.user_id,
+    activity.project_id,
+    activity.created,
+    activity.last_modified
+from activity
+join users on users.id == activity.user_id
+join projects on projects.id == activity.project_id;
 
 create table task_activity (
     id integer primary key,

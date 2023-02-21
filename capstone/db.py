@@ -113,7 +113,6 @@ class Document:
         return self._to_json()
 
 
-
 @dataclass(kw_only=True)
 class Project(Document):
     _tablename = "projects"
@@ -292,14 +291,40 @@ class Check:
 class Activity(Document):
     _tablename = "activity"
 
-    username: str
-    project_name: str
+    user_id: int
+    project_id: int
+
+    username: str | None = None
+    project_name: str | None = None
+
+    def __post_init__(self):
+        if not self.username:
+            self.username = self.get_user().username
+        if not self.project_name:
+            self.project_name = self.get_project().name
+
+    def _to_db(self):
+        d = super()._to_db()
+        d.pop("username")
+        d.pop("project_name")
+        return d
+
+    def _to_json(self):
+        d = super()._to_json()
+        d.pop("user_id")
+        d.pop("project_id")
+        return d
+
+    @classmethod
+    def find_all(cls, **kwargs):
+        rows = db.where("activity_view", **kwargs)
+        return [cls._from_db(**row) for row in rows]
 
     def get_user(self):
-        return User.find(username=self.username)
+        return User.find(id=self.user_id)
 
     def get_project(self):
-        return Project.find(name=self.project_name)
+        return Project.find(id=self.project_id)
 
     def get_tasks(self):
         return TaskActivity.find_all(activity_id=self.id)

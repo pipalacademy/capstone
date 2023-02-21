@@ -9,6 +9,7 @@ if not User.find(username="test"):
         password=None)
     user.set_password("testpass")
     user.save()
+user = User.find(username="test")
 
 
 if not Project.find(name="build-your-own-shell"):
@@ -48,8 +49,8 @@ if not Project.find(name="pippet"):
         tags=["Python", "Framework"],
     ).save()
 
-if not Activity.find(username="test", project_name="build-your-own-shell"):
-    Activity(username="test", project_name="build-your-own-shell").save()
+if not Activity.find(user_id=user.id, project_id=project.id):
+    Activity(user_id=user.id, project_id=project.id).save()
 
 activity = Activity.find(username="test", project_name=project.name)
 task = project.get_tasks()[0]
