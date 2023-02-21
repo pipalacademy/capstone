@@ -242,7 +242,6 @@ class User(Document):
         activity = Activity(user_id=self.id, project_id=project.id)
         activity.save()
         for i, task in enumerate(project.get_tasks()):
-            print("saving task", task)
             TaskActivity(
                 activity_id=activity.id, task_id=task.id,
                 status="In Progress" if i == 0 else "Pending",
