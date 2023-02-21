@@ -193,12 +193,14 @@ class Project(Document):
             task.save()
 
         for db_task, new_task in zip(self.get_tasks(), new_tasks):
+            # NOTE: maybe check before updating?
             db_task.update(
                 title=new_task.title,
                 description=new_task.description,
                 position=new_task.position,
                 checks=new_task.checks,
             )
+            db_task.save()
 
     def get_tasks(self):
         return self.id and Task.find_all(project_id=self.id, order="position") or []
