@@ -85,9 +85,10 @@ class AlertLink(BootstrapElement):
 class Grid(BootstrapElement):
     TAG = "div"
     CLASS = "row"
+    COL_CLASS = "col"
 
-    def __init__(self, *args, col_class="col", **kwargs):
-        self.col_class = col_class
+    def __init__(self, *args, col_class=None, **kwargs):
+        self.col_class = col_class if col_class is not None else self.COL_CLASS
         super().__init__(*args, **kwargs)
 
     def add_column(self, *children):
@@ -186,7 +187,64 @@ class LoginCardForm(BootstrapElement):
         )
 
 
-def make_project_card(title, short_description, tags, url, show_continue_button=False):
+class ProjectGrid(Grid):
+    COL_CLASS = "col-6"
+
+    def __init__(self, *args, columns=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        for column in columns:
+            self.add_column(column)
+
+
+class ProjectCard(Card):
+    EXTRA_CLASSES = "h-100"
+
+    def __init__(
+        self, *args, title, short_description, tags, is_started, **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+        self.is_started = is_started
+
+        self.body.add_title(title)
+        self.body.add_text(short_description)
+        self.body.add(*[ProjectCardTag(tag) for tag in tags])
+
+        self.body.add(
+            Optional(
+                Right(
+                    ProjectCardButton("Continue ›"),
+                ),
+                render_condition=lambda _: self.is_started,
+            )
+        )
+
+
+class ProjectCardTag(Badge):
+    EXTRA_CLASSES = "m-1 p-2"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+
+class ProjectCardButton(BootstrapElement):
+    TAG = "button"
+    CLASS = "btn btn-secondary"
+
+
+class LinkWithoutDecoration(BootstrapElement):
+    TAG = "a"
+    CLASS = "text-decoration-none text-reset"
+
+
+class Right(BootstrapElement):
+    TAG = "div"
+    CLASS = "d-flex justify-content-end"
+
+
+def make_project_card(title, short_description, tags, show_continue_button=False):
     card = Card(
         title=title,
         text=short_description,

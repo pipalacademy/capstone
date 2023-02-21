@@ -1,13 +1,14 @@
 from functools import wraps
 
 from flask import Flask, abort, flash, redirect, request, session, url_for
-from kutty import html, Markdown
+from kutty import html, Markdown, Optional
 from kutty.bootstrap import Layout, Hero
 
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, Grid, Page, LoginCard, make_project_card, make_task_card,
+    AbsoluteCenter, LinkWithoutDecoration, LoginCard,
+    Page, ProjectCard, ProjectGrid, make_task_card,
 )
 
 app = Flask(__name__)
@@ -15,6 +16,18 @@ app.secret_key = "hello, world!"  # TODO: change this
 app.register_blueprint(api, url_prefix="/api")
 
 layout = Layout("Capstone")
+
+
+def ProjectTeaser(project, is_started):
+    return LinkWithoutDecoration(
+        ProjectCard(
+            title=project.title,
+            short_description=project.short_description,
+            tags=project.tags,
+            is_started=is_started,
+        ),
+        href=project.html_url,
+    )
 
 
 @app.before_request
@@ -118,45 +131,51 @@ def projects():
     projects = Project.find_all(is_active=True)
 
     page = Page("Projects")
-    grid = Grid(col_class="col-6")
-    grid.add_class("mt-3")
-    for project in projects:
-        card = make_project_card(
-            title=project.title,
-            short_description=project.short_description,
-            tags=project.tags,
-            url=project.html_url)
-        grid.add_column(card)
-
-    page << grid
+    page << ProjectGrid(
+        class_="mt-3",
+        columns=[
+            ProjectTeaser(project, is_started=False) for project in projects
+        ]
+    )
     return layout.render_page(page)
 
 
 @app.route("/dashboard")
 @authenticated
 def dashboard(user):
-    projects = Project.find_all()
+    projects = Project.find_all(is_active=True)
+    started_projects = [
+        project
+        for project in projects
+        if user.has_started_project(project.name)
+    ]
+    unstarted_projects = [
+        project
+        for project in projects
+        if not user.has_started_project(project.name)
+    ]
+
     page = Page("Dashboard")
-    your_projects = Grid(col_class="col-6")
-    explore = Grid(col_class="col-6")
-    for project in projects:
-        is_started = user.has_started_project(project.name)
-        card = make_project_card(
-            title=project.title,
-            short_description=project.short_description,
-            tags=project.tags,
-            url=project.html_url,
-            show_continue_button=is_started)
-
-        if is_started:
-            your_projects.add_column(card)
-        else:
-            explore.add_column(card)
-
-    if not your_projects.is_empty():
-        page << html.div(class_="mt-3").add(html.h3("Your Projects"), your_projects)
-    if not explore.is_empty():
-        page << html.div(class_="mt-3").add(html.h3("Explore"), explore)
+    page << Optional(
+        html.div(class_="my-3").add(
+            html.h2("Your Projects"),
+            ProjectGrid(columns=[
+                ProjectTeaser(project, is_started=True)
+                for project in started_projects
+            ]),
+        ),
+        render_condition=lambda _: bool(started_projects),
+    )
+    page << Optional(
+        html.div(class_="my-3").add(
+            html.h2("Explore..."),
+            ProjectGrid(columns=[
+                ProjectTeaser(project, is_started=False)
+                for project in unstarted_projects
+            ]),
+        ),
+        render_condition=lambda _: bool(unstarted_projects),
+    )
 
     return layout.render_page(page)
 
