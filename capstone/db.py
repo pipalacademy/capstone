@@ -32,6 +32,8 @@ class Document:
         """
         d = asdict(self)
         d.pop("id")
+        d["created"] = d["created"].isoformat()
+        d["last_modified"] = d["last_modified"].isoformat()
         return d
 
     @classmethod
