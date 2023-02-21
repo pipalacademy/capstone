@@ -244,22 +244,6 @@ class Right(BootstrapElement):
     CLASS = "d-flex justify-content-end"
 
 
-def make_project_card(title, short_description, tags, show_continue_button=False):
-    card = Card(
-        title=title,
-        text=short_description,
-    )
-    card.add_class("h-100")
-    for tag in tags:
-        badge = Badge(tag)
-        badge.add_class("mr-2 p-2")
-        card.body << badge
-    if show_continue_button:
-        card.body << html.div(class_="d-flex justify-content-end mt-3").add(
-                html.button("Continue ›", class_="btn btn-secondary"))
-    return html.a(card, class_="text-decoration-none text-reset", href=url)
-
-
 def make_task_card(position, title, text, status=None):
     status_marks = {
         "Completed": green_tick_mark,
