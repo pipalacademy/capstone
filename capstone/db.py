@@ -253,6 +253,7 @@ class Task(Document):
         d = super()._to_json()
         d.pop("project_id")
         d.pop("checks")
+        d["checks"] = [c.get_json() for c in self.checks]
         return d
 
     @classmethod
