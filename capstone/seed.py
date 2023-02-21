@@ -1,4 +1,4 @@
-from db import Activity, Project, Task, TaskActivity, User
+from .db import Activity, CheckStatus, Project, Task, TaskActivity, User
 
 
 if not User.find(username="test"):
@@ -53,11 +53,21 @@ if not Activity.find(user_id=user.id, project_id=project.id):
     Activity(user_id=user.id, project_id=project.id).save()
 
 activity = Activity.find(username="test", project_name=project.name)
-task = project.get_tasks()[0]
+task_1, task_2 = project.get_tasks()
 
-if not TaskActivity.find(activity_id=activity.id, task_id=task.id):
+if not TaskActivity.find(activity_id=activity.id, task_id=task_1.id):
     TaskActivity(
         activity_id=activity.id,
-        task_id=task.id,
+        task_id=task_1.id,
         status="Completed",
         checks=[]).save()
+
+if not TaskActivity.find(activity_id=activity.id, task_id=task_2.id):
+    TaskActivity(
+        activity_id=activity.id,
+        task_id=task_2.id,
+        status="In Progress",
+        checks=[
+            CheckStatus(name=c.name, status="pending", message="")
+            for c in task_2.checks
+        ]).save()
