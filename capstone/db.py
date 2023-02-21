@@ -170,9 +170,6 @@ class Project(Document):
 
         Each task dict must have name, title, description, and checks.
         """
-        print("tasks")
-        print(tasks)
-
         if not self.id:
             self.save()
 
@@ -190,14 +187,9 @@ class Project(Document):
             filter(lambda x: x.name not in old_task_names, new_tasks))
 
         for task in to_remove:
-            print("deleted", task.name)
             task.delete()
         for task in to_add:
-            print("added", task.name)
-            print("task", task)
             task.save()
-        print("to_remove", old_tasks)
-        print("to_add", new_tasks)
 
         for db_task, new_task in zip(self.get_tasks(), new_tasks):
             db_task.update(
