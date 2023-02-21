@@ -187,6 +187,29 @@ class LoginCardForm(BootstrapElement):
         )
 
 
+class LinkButton(BootstrapElement):
+    TAG = "a"
+    CLASS = "btn"
+
+    def __init__(self, *args, style_as="primary", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_class(f"btn-{style_as}")
+
+
+class SubmitButton(BootstrapElement):
+    TAG = "button"
+    CLASS = "btn"
+    TYPE = "submit"
+
+    def __init__(self, *args, style_as="primary", **kwargs):
+        super().__init__(*args, type=self.TYPE, **kwargs)
+        self.add_class(f"btn-{style_as}")
+
+
+class Form(BootstrapElement):
+    TAG = "form"
+
+
 class ProjectGrid(Grid):
     COL_CLASS = "col-6"
 
@@ -244,29 +267,65 @@ class Right(BootstrapElement):
     CLASS = "d-flex justify-content-end"
 
 
-def make_task_card(position, title, text, status=None):
-    status_marks = {
-        "Completed": green_tick_mark,
-        "Failing": red_x_mark,
-        "In Progress": yellow_circle_mark,
-    }
-    status_mark = status_marks.get(status, "")
-    collapsible_id = f"task-collapse-{position}"
-    card = Card(
-        CardBody(
-            CardTitle(f"{position}. {title}").add_class("mb-0"),
-            status_mark
-        ).add_class("d-flex justify-content-between"),
-        CardBody(
-            CardText(text),
-            class_="collapse py-0", id=collapsible_id,
-        )
-    ).add_class("my-3")
+class TaskCard(BootstrapElement):
+    TAG = "div"
+    CLASS = "card"
+    EXTRA_CLASSES = "my-3"
 
-    return html.a(card,
-                  class_="text-decoration-none text-reset",
-                  href=f"#{collapsible_id}",
-                  data_toggle="collapse")
+    def __init__(
+            self,
+            *args,
+            position, title, text, status, collapsible_id,
+            **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+        self.heading = TaskCardHeading(
+            f"{position}. {title}",
+            get_status_mark(status),
+        )
+        self.body = TaskCardBody(id=collapsible_id, text=text)
+
+        self << self.heading
+        self << self.body
+
+
+class TaskCardHeading(CardBody):
+    EXTRA_CLASSES = "d-flex justify-content-between"
+
+    def __init__(self, title, *args, **kwargs):
+        super().__init__(TaskCardTitle(title), *args, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+
+class TaskCardBody(CardBody):
+    EXTRA_CLASSES = "collapse py-0"
+
+    def __init__(self, *args, id, **kwargs):
+        super().__init__(*args, id=id, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+
+class TaskCardTitle(CardTitle):
+    EXTRA_CLASSES = "mb-0"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+
+def get_status_mark(status):
+    match status:
+        case "Completed": return green_tick_mark
+        case "Failing": return red_x_mark
+        case "In Progress": return yellow_circle_mark
+        case "Pending": return ""
+        case None: return ""
+
+
+class CollapsibleLink(LinkWithoutDecoration):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, data_toggle="collapse", **kwargs)
 
 
 green_tick_mark = html.span(

@@ -5,10 +5,10 @@ from kutty import html, Markdown, Optional
 from kutty.bootstrap import Layout, Hero
 
 from .api import api
-from .db import Activity, Project, User, check_password
+from .db import Project, User, check_password
 from .components import (
-    AbsoluteCenter, LinkWithoutDecoration, LoginCard,
-    Page, ProjectCard, ProjectGrid, make_task_card,
+    AbsoluteCenter, CollapsibleLink, Form, LinkWithoutDecoration, LoginCard,
+    Page, ProjectCard, ProjectGrid, TaskCard, LinkButton, SubmitButton
 )
 
 app = Flask(__name__)
@@ -27,6 +27,19 @@ def ProjectTeaser(project, is_started):
             is_started=is_started,
         ),
         href=project.html_url,
+    )
+
+
+def TaskDetails(task, status):
+    return CollapsibleLink(
+        TaskCard(
+            position=task.position,
+            title=task.title,
+            text=Markdown(task.description),
+            status=status,
+            collapsible_id=task.name,
+        ),
+        href="#"+task.name,
     )
 
 
@@ -180,10 +193,22 @@ def dashboard(user):
     return layout.render_page(page)
 
 
-@app.route("/projects/<name>")
+@app.route("/projects/<name>", methods=["GET", "POST"])
 def project(name):
     user = get_authenticated_user()
     project = Project.find(name=name)
+    is_authenticated = bool(user)
+    has_started_project = is_authenticated and user.has_started_project(project.name)
+
+    if request.method == "POST":
+        if not is_authenticated:
+            flash("You must login before starting a project", "error")
+        elif has_started_project:
+            flash("You have already started this project!", "error")
+        else:
+            user.start_project(project.name)
+            flash("You have started this project. All the best!", "success")
+            return redirect(request.url)
 
     page = Page("", container=html.div())
     hero = Hero(
@@ -195,27 +220,20 @@ def project(name):
     page << hero
     page << main
 
-    if user and user.has_started_project(project.name):
-        activity = Activity.find(
-            username=user.username, project_name=project.name)
+    if not is_authenticated:
+        hero.body.add(LinkButton("Start Project", href="/login", class_="btn-lg"))
+    elif not has_started_project:
+        hero.body.add(
+            Form(SubmitButton("Start Project", class_="btn-lg"), method="POST")
+        )
 
-        task_activities_list = activity.get_tasks()
-        task_activities = {ta.task_id: ta for ta in task_activities_list}
-        for task in project.get_tasks():
-            task_activity = task_activities.get(task.id)
-            card = make_task_card(
-                position=task.position,
-                title=task.title,
-                text=Markdown(task.description),
-                status=task_activity and task_activity.status)
-            main << card
-    else:
-        href = "#" if user else url_for("login", next=request.path)
-        hero.add_cta("Start Project", href=href)
-
-        for task in project.get_tasks():
-            card = make_task_card(
-                position=task.position, title=task.title, text=Markdown(task.description))
-            main << card
+    activity = has_started_project and user.get_activity(project.name) or None
+    main.add(*[
+        TaskDetails(
+            task,
+            status=activity and activity.get_task_activity(task.id).status,
+        )
+        for task in project.get_tasks()
+    ])
 
     return layout.render_page(page)
