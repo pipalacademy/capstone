@@ -2,7 +2,7 @@ from textwrap import dedent
 
 from flask import get_flashed_messages
 
-from kutty import html
+from kutty import html, Optional
 from kutty.bootstrap import Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardBody, CardText, CardTitle
@@ -40,10 +40,11 @@ class Alert(BootstrapElement):
 
         if self.is_dismissible:
             self.add_class("alert-dismissible fade show")
-
             self.add(
-                html.button(type="button", class_="close",
-                            data_dismiss="alert").add("&times;"),
+                html.button(
+                    "&times;",
+                    type="button", class_="close", data_dismiss="alert",
+                ),
                 in_body=False,
             )
 
@@ -63,6 +64,12 @@ class Alert(BootstrapElement):
         element = AlertLink(title, href=href)
         self << element
         return element
+
+    def is_empty(self):
+        if self.is_dismissible:
+            return len(self.children) > 1
+        else:
+            return super().is_empty()
 
 
 class AlertHeading(BootstrapElement):
@@ -113,29 +120,70 @@ class AbsoluteCenter(BootstrapElement):
         self.add(absolute_center_style)
 
 
-def make_login_card(username_id="username", password_id="password", **form_kwargs):
-    card = Card(
-        CardBody(
-            CardTitle("Login"),
-            html.tag(
-                "form",
-                html.div(class_="form-group").add(
-                    html.tag("label", "Username", for_="username"),
-                    html.input(type="text", class_="form-control",
-                               id=username_id, name=username_id, required="true")
-                ),
-                html.div(class_="form-group").add(
-                    html.tag("label", "Password", for_="password"),
-                    html.input(type="password", class_="form-control",
-                               id=password_id, name=password_id, required="true")
-                ),
-                html.button("Login", type="submit", class_="btn btn-primary"),
-                **form_kwargs,
-            )
+class LoginCard(Card):
+    EXTRA_CLASSES = "p-4"
+
+    def __init__(
+            self,
+            *args, username_field, password_field,
+            error_message=None, method=None, action=None, **kwargs):
+        super().__init__(*args, title="Login", **kwargs)
+        self.add_class(self.EXTRA_CLASSES)
+
+        self.errors = Optional(html.div())
+        if error_message:
+            self.error << error_message
+
+        form_kwargs = {"method": method, "action": action}
+        form_kwargs = {k: v for k, v in form_kwargs.items() if v is not None}
+        self.form = LoginCardForm(
+            username_field=username_field, password_field=password_field,
+            **form_kwargs,
         )
-    )
-    card.add_class("p-4")
-    return card
+
+        self.body << self.errors
+        self.body << self.form
+
+    def add_error(self, content):
+        element = LoginCardError(content)
+        self.errors << element
+        return element
+
+
+class LoginCardError(Alert):
+    STYLE_AS = "danger"
+    IS_DISMISSIBLE = True
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            style_as=self.STYLE_AS, is_dismissible=self.IS_DISMISSIBLE,
+            **kwargs,
+        )
+
+
+class LoginCardForm(BootstrapElement):
+    TAG = "form"
+
+    def __init__(self, *args, username_field, password_field, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.add(
+            html.div(class_="form-group").add(
+                html.tag("label", "Username", for_="username"),
+                html.input(
+                    type="text", class_="form-control",
+                    id=username_field, name=username_field, required="true"
+                ),
+            ),
+            html.div(class_="form-group").add(
+                html.tag("label", "Password", for_="password"),
+                html.input(
+                    type="password", class_="form-control",
+                    id=password_field, name=password_field, required="true"
+                ),
+            ),
+            html.button("Login", type="submit", class_="btn btn-primary"),
+        )
 
 
 def make_project_card(title, short_description, tags, url, show_continue_button=False):
@@ -188,5 +236,3 @@ red_x_mark = html.span(
 yellow_circle_mark = html.span(
         html.HTML("""<svg style="height: 100%;" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256zM256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48z"/></svg>"""),
         style="color: #ffc107;", class_="px-2 mr-2")
-
-
