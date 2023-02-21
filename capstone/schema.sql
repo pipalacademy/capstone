@@ -65,3 +65,16 @@ create table task_activity (
     last_modified text,
     unique(activity_id, task_id)
 );
+
+create view task_activity_view as
+select
+    tasks.position,
+    task_activity.id,
+    task_activity.activity_id,
+    task_activity.task_id,
+    task_activity.checks,
+    task_activity.status,
+    task_activity.created,
+    task_activity.last_modified
+from task_activity
+join tasks on tasks.id == task_activity.task_id;

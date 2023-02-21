@@ -232,11 +232,28 @@ class User(Document):
         return self
 
     def has_started_project(self, project_name):
-        started_activity = Activity.find_all(username=self.username)
-        started_projects = [
-            activity.project_name for activity in started_activity
-        ]
-        return project_name in started_projects
+        return bool(self.get_activity(project_name))
+
+    def get_activity(self, project_name):
+        return Activity.find(user_id=self.id, project_name=project_name)
+
+    def start_project(self, project_name):
+        project = Project.find(name=project_name)
+        activity = Activity(user_id=self.id, project_id=project.id)
+        activity.save()
+        for i, task in enumerate(project.get_tasks()):
+            print("saving task", task)
+            TaskActivity(
+                activity_id=activity.id, task_id=task.id,
+                status="In Progress" if i == 0 else "Pending",
+                checks=[
+                    CheckStatus(
+                        name=check.name, status=CheckStatus.PENDING, message=""
+                    )
+                    for check in task.checks
+                ],
+            ).save()
+        return activity
 
 
 @dataclass(kw_only=True)
@@ -332,7 +349,11 @@ class Activity(Document):
         return Project.find(id=self.project_id)
 
     def get_tasks(self):
-        return TaskActivity.find_all(activity_id=self.id)
+        return TaskActivity.find_all(activity_id=self.id, order="position")
+
+    def get_task_activity(self, task_id):
+        # TODO: task_id -> task?
+        return TaskActivity.find(activity_id=self.id, task_id=task_id)
 
     def update_tasks(self, tasks):
         # TODO: implement this
@@ -366,6 +387,17 @@ class TaskActivity(Document):
     status: str
     checks: list[CheckStatus]
 
+    position: int | None = None
+
+    def __post_init__(self):
+        if not self.position:
+            self.position = self.get_task().position
+
+    @classmethod
+    def find_all(cls, **kwargs):
+        rows = db.where("task_activity_view", **kwargs)
+        return [cls._from_db(**row) for row in rows]
+
     @classmethod
     def _from_db(self, checks, **kwargs):
         return super()._from_db(
@@ -375,8 +407,15 @@ class TaskActivity(Document):
 
     def _to_db(self):
         d = super()._to_db()
+        d.pop("position")
         d["checks"] = json.dumps(d["checks"])
         return d
+
+    def get_task(self):
+        return Task.find(id=self.task_id)
+
+    def get_activity(self):
+        return Activity.find(id=self.activity_id)
 
 
 @dataclass
@@ -387,7 +426,6 @@ class CheckStatus:
     ERROR = "error"
 
     name: str
-    title: str
     status: str
     message: str
 
