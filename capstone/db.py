@@ -34,6 +34,15 @@ class Document:
         d.pop("id")
         return d
 
+    @classmethod
+    def from_json(cls, json_dict):
+        """Private method to convert self from a JSON dict.
+
+        This will return an object with the correct class and
+        attributes.
+        """
+        return cls(**json_dict)
+
     def _to_db(self):
         """Private method to convert self to a database-compatible dict
 
@@ -157,11 +166,49 @@ class Project(Document):
         return d
 
     def update_tasks(self, tasks):
-        # TODO: implement this
-        ...
+        """Takes a list of dicts.
+
+        Each task dict must have name, title, description, and checks.
+        """
+        print("tasks")
+        print(tasks)
+
+        if not self.id:
+            self.save()
+
+        old_tasks = self.get_tasks()
+        new_tasks = [
+            Task.from_json({**t_kwds, "position": idx, "project_id": self.id})
+            for idx, t_kwds in enumerate(tasks, start=1)]
+
+        old_task_names = [t.name for t in old_tasks]
+        new_task_names = [t.name for t in new_tasks]
+
+        to_remove = list(
+            filter(lambda x: x.name not in new_task_names, old_tasks))
+        to_add = list(
+            filter(lambda x: x.name not in old_task_names, new_tasks))
+
+        for task in to_remove:
+            print("deleted", task.name)
+            task.delete()
+        for task in to_add:
+            print("added", task.name)
+            print("task", task)
+            task.save()
+        print("to_remove", old_tasks)
+        print("to_add", new_tasks)
+
+        for db_task, new_task in zip(self.get_tasks(), new_tasks):
+            db_task.update(
+                title=new_task.title,
+                description=new_task.description,
+                position=new_task.position,
+                checks=new_task.checks,
+            )
 
     def get_tasks(self):
-        return self.id and Task.find_all(project_id=self.id) or []
+        return self.id and Task.find_all(project_id=self.id, order="position") or []
 
 
 @dataclass(kw_only=True)
@@ -216,16 +263,23 @@ class Task(Document):
         return d
 
     @classmethod
+    def from_json(cls, json_dict):
+        checks = [
+            Check(**check_kwargs) for check_kwargs in json_dict.pop("checks")]
+        return cls(**json_dict, checks=checks)
+
+    def _to_db(self):
+        d = super()._to_db()
+        d.pop("checks")
+        d["checks"] = json.dumps([c.get_json() for c in self.checks])
+        return d
+
+    @classmethod
     def _from_db(cls, checks, **kwargs):
         return super()._from_db(
             **kwargs,
             checks=[Check(**kw) for kw in json.loads(checks)],
         )
-
-    def _to_db(self):
-        d = super()._to_db()
-        d["checks"] = json.dumps([c.get_json() for c in d["checks"]])
-        return d
 
     def get_teaser(self):
         return {
