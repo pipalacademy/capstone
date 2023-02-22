@@ -228,12 +228,11 @@ def project(name):
         )
 
     activity = has_started_project and user.get_activity(project.name) or None
-    main.add(*[
-        TaskDetails(
+    for task in project.get_tasks():
+        task_activity = activity and activity.get_task_activity(task.id)
+        main << TaskDetails(
             task,
-            status=activity and activity.get_task_activity(task.id).status,
+            status=task_activity and task_activity.status or None,
         )
-        for task in project.get_tasks()
-    ])
 
     return layout.render_page(page)
