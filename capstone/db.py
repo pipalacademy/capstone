@@ -242,16 +242,8 @@ class User(Document):
         activity = Activity(user_id=self.id, project_id=project.id)
         activity.save()
         for i, task in enumerate(project.get_tasks()):
-            TaskActivity(
-                activity_id=activity.id, task_id=task.id,
-                status="In Progress" if i == 0 else "Pending",
-                checks=[
-                    CheckStatus(
-                        name=check.name, status=CheckStatus.PENDING, message=None
-                    )
-                    for check in task.checks
-                ],
-            ).save()
+            task.get_default_task_activity(activity_id=self.id).save()
+
         return activity
 
 
@@ -266,6 +258,38 @@ class Task(Document):
     checks: list[Check]
 
     project_id: int
+
+    def delete(self):
+        # overloading the delete method to also delete
+        # references in task activity
+        related_activities = TaskActivity.find_all(task_id=self.id)
+        for task_activity in related_activities:
+            task_activity.delete()
+
+        return super().delete()
+
+    def save(self):
+        is_new_task = not self.id
+        super().save()
+
+        if is_new_task:
+            # create default task activity for all projects
+            project = self.get_project()
+            activities = Activity.find_all(project_id=project.id)
+            for activity in activities:
+                self.get_default_task_activity(activity_id=activity.id).save()
+
+    def get_default_task_activity(self, activity_id):
+        return TaskActivity(
+            task_id=self.id,
+            activity_id=activity_id,
+            checks=[
+                CheckStatus(
+                    name=check.name, status=CheckStatus.PENDING, message=None)
+                for check in self.checks
+            ],
+            status="In Progress" if self.position == 1 else "Pending",
+        )
 
     def _to_json(self):
         d = super()._to_json()
@@ -292,6 +316,9 @@ class Task(Document):
             **kwargs,
             checks=[Check(**kw) for kw in json.loads(checks)],
         )
+
+    def get_project(self):
+        return Project.find(id=self.project_id)
 
     def get_teaser(self):
         return {
@@ -366,11 +393,17 @@ class Activity(Document):
         for input in task_activity_inputs:
             task = Task.find(name=input.name)
             task_activity = self.get_task_activity(task.id)
+            if task_activity is None:
+                task_activity = TaskActivity(
+                    activity_id=self.id, task_id=task.id,
+                    status="Pending", checks=[]
+                )
             task_activity.update_from_input(input).save()
 
         in_progress_task = self._compute_in_progress_task()
-        in_progress_task.status = "In Progress"
-        in_progress_task.save()
+        if in_progress_task:
+            in_progress_task.status = "In Progress"
+            in_progress_task.save()
 
     def get_json(self):
         user = self.get_user()
