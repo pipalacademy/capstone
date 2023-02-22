@@ -247,7 +247,7 @@ class User(Document):
                 status="In Progress" if i == 0 else "Pending",
                 checks=[
                     CheckStatus(
-                        name=check.name, status=CheckStatus.PENDING, message=""
+                        name=check.name, status=CheckStatus.PENDING, message=None
                     )
                     for check in task.checks
                 ],
@@ -354,9 +354,23 @@ class Activity(Document):
         # TODO: task_id -> task?
         return TaskActivity.find(activity_id=self.id, task_id=task_id)
 
-    def update_tasks(self, tasks):
-        # TODO: implement this
-        ...
+    def _compute_in_progress_task(self):
+        task_activities = self.get_tasks()
+
+        for (this, next_) in zip(task_activities, task_activities[1:]+[None]):
+            if this.status != "Completed" and (
+                    next_ is None or next_.status == "Pending"):
+                return this
+
+    def update_tasks(self, task_activity_inputs):
+        for input in task_activity_inputs:
+            task = Task.find(name=input.name)
+            task_activity = self.get_task_activity(task.id)
+            task_activity.update_from_input(input).save()
+
+        in_progress_task = self._compute_in_progress_task()
+        in_progress_task.status = "In Progress"
+        in_progress_task.save()
 
     def get_json(self):
         user = self.get_user()
@@ -387,10 +401,15 @@ class TaskActivity(Document):
     checks: list[CheckStatus]
 
     position: int | None = None
+    name: str | None = None
+    title: str | None = None
 
     def __post_init__(self):
-        if not self.position:
-            self.position = self.get_task().position
+        if not self.position or not self.name or not self.title:
+            task = self.get_task()
+            self.position = task.position
+            self.name = task.name
+            self.title = task.title
 
     @classmethod
     def find_all(cls, **kwargs):
@@ -398,15 +417,25 @@ class TaskActivity(Document):
         return [cls._from_db(**row) for row in rows]
 
     @classmethod
-    def _from_db(self, checks, **kwargs):
+    def _from_db(cls, checks, **kwargs):
         return super()._from_db(
             **kwargs,
             checks=[CheckStatus(**kw) for kw in json.loads(checks)],
         )
 
+    def update_from_input(self, input):
+        new_status = get_task_status_from_check_statuses([
+            c.status for c in input.checks
+        ])
+        self.checks = input.checks
+        self.status = new_status
+        return self
+
     def _to_db(self):
         d = super()._to_db()
         d.pop("position")
+        d.pop("name")
+        d.pop("title")
         d["checks"] = json.dumps(d["checks"])
         return d
 
@@ -418,6 +447,16 @@ class TaskActivity(Document):
 
 
 @dataclass
+class TaskActivityInput:
+    name: str
+    checks: list[CheckStatus]
+
+    @classmethod
+    def from_json(cls, name, checks):
+        return cls(name=name, checks=[CheckStatus(**kwds) for kwds in checks])
+
+
+@dataclass
 class CheckStatus:
     PASS = "pass"
     FAIL = "fail"
@@ -426,7 +465,7 @@ class CheckStatus:
 
     name: str
     status: str
-    message: str
+    message: str | None = None
 
     def get_json(self):
         return asdict(self)
@@ -452,3 +491,11 @@ def get_project_html_url(name):
 
 def get_current_timestamp():
     return datetime.now(tz=timezone.utc)
+
+def get_task_status_from_check_statuses(check_statuses):
+    if all(status == CheckStatus.PASS for status in check_statuses):
+        return "Completed"
+    elif any(status == CheckStatus.FAIL for status in check_statuses):
+        return "Failing"
+    else:
+        return "Pending"

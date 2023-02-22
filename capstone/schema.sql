@@ -69,6 +69,8 @@ create table task_activity (
 create view task_activity_view as
 select
     tasks.position,
+    tasks.name,
+    tasks.title,
     task_activity.id,
     task_activity.activity_id,
     task_activity.task_id,

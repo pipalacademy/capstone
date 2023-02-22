@@ -1,6 +1,6 @@
 from flask import Blueprint, make_response, request
 
-from .db import Activity, Project, User
+from .db import Activity, Project, User, TaskActivityInput
 
 
 api = Blueprint("api", __name__)
@@ -168,11 +168,12 @@ def get_or_update_activity_tasks(username, project_name):
         if not is_authorized(request):
             return Unauthorized()
 
-        tasks = request.body
-        # TODO: validate tasks
+        raw_tasks = request.json
+        tasks = [TaskActivityInput.from_json(**each) for each in raw_tasks]
 
         activity = Activity.find(username=username, project_name=project_name)
         activity.update_tasks(tasks)
+
         return [t.get_json() for t in activity.get_tasks()]
     else:
         activity = Activity.find(username=username, project_name=project_name)
