@@ -174,7 +174,7 @@ def get_or_update_activity_tasks(username, project_name):
         activity = Activity.find(username=username, project_name=project_name)
         activity.update_tasks(tasks)
 
-        return [t.get_json() for t in activity.get_tasks()]
+        return [t.get_json() for t in activity.get_task_activities()]
     else:
         activity = Activity.find(username=username, project_name=project_name)
-        return [t.get_json() for t in activity.get_tasks()]
+        return [t.get_json() for t in activity.get_task_activities()]

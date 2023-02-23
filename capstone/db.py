@@ -374,15 +374,24 @@ class Activity(Document):
     def get_project(self):
         return Project.find(id=self.project_id)
 
-    def get_tasks(self):
-        return TaskActivity.find_all(activity_id=self.id, order="position")
+    def get_task_activities(self):
+        task_activities = []
+        for task in self.get_project().get_tasks():
+            task_activities.append(self.get_task_activity(task.id))
+
+        return task_activities
 
     def get_task_activity(self, task_id):
         # TODO: task_id -> task?
-        return TaskActivity.find(activity_id=self.id, task_id=task_id)
+        task_activity = TaskActivity.find(activity_id=self.id, task_id=task_id)
+        if task_activity is None:
+            task = Task.find(id=task_id)
+            return task.get_default_task_activity(activity_id=self.id)
+        else:
+            return task_activity
 
     def _compute_in_progress_task(self):
-        task_activities = self.get_tasks()
+        task_activities = self.get_task_activities()
 
         for (this, next_) in zip(task_activities, task_activities[1:]+[None]):
             if this.status != "Completed" and (
@@ -393,11 +402,6 @@ class Activity(Document):
         for input in task_activity_inputs:
             task = Task.find(name=input.name)
             task_activity = self.get_task_activity(task.id)
-            if task_activity is None:
-                task_activity = TaskActivity(
-                    activity_id=self.id, task_id=task.id,
-                    status="Pending", checks=[]
-                )
             task_activity.update_from_input(input).save()
 
         in_progress_task = self._compute_in_progress_task()
