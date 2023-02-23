@@ -63,6 +63,8 @@ def get_or_upsert_project(name):
     """
     if request.method == "GET":
         project = Project.find(name=name)
+        if project is None:
+            return NotFound("Project not found")
         return project.get_json()
     else:
         if not is_authorized(request):
@@ -152,6 +154,8 @@ def get_or_create_activity(username, project_name):
         activity = Activity.find(
             username=username, project_name=project_name,
         )
+        if activity is None:
+            return NotFound("Activity not found")
         return activity.get_json()
 
 
@@ -164,17 +168,18 @@ def get_or_update_activity_tasks(username, project_name):
 
     Returns: array[task_activity]
     """
+    activity = Activity.find(username=username, project_name=project_name)
+    if activity is None:
+        return NotFound("Activity not found")
+
     if request.method == "PUT":
         if not is_authorized(request):
             return Unauthorized()
 
         raw_tasks = request.json
         tasks = [TaskActivityInput.from_json(**each) for each in raw_tasks]
-
-        activity = Activity.find(username=username, project_name=project_name)
         activity.update_tasks(tasks)
 
         return [t.get_json() for t in activity.get_task_activities()]
     else:
-        activity = Activity.find(username=username, project_name=project_name)
         return [t.get_json() for t in activity.get_task_activities()]
