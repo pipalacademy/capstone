@@ -7,8 +7,9 @@ from kutty.bootstrap import Layout, Hero
 from .api import api
 from .db import Project, User, check_password
 from .components import (
-    AbsoluteCenter, CollapsibleLink, Form, LinkWithoutDecoration, LoginCard,
-    Page, ProjectCard, ProjectGrid, TaskCard, LinkButton, SubmitButton
+    AbsoluteCenter, AuthNavEntry, CollapsibleLink, Form, LinkWithoutDecoration,
+    LoginButton, LoginCard, Page, ProjectCard, ProjectGrid, TaskCard,
+    LinkButton, SubmitButton
 )
 
 app = Flask(__name__)
@@ -16,6 +17,13 @@ app.secret_key = "hello, world!"  # TODO: change this
 app.register_blueprint(api, url_prefix="/api")
 
 layout = Layout("Capstone")
+layout.navbar.right_entries.add(
+    AuthNavEntry(
+        login_link="/login", login_content=LoginButton("Login"),
+        logout_link="/logout", logout_content="Logout",
+        is_logged_in=lambda: is_authenticated(),
+    )
+)
 
 
 def ProjectTeaser(project, is_started):
@@ -43,20 +51,6 @@ def TaskDetails(task, status):
     )
 
 
-@app.before_request
-def add_auth_button():
-    login_button = html.button("Login", class_="btn btn-dark")
-
-    def set_auth_link(content, url):
-        layout.navbar.right_entries.children = []
-        layout.navbar.add_link(content, url, right=True)
-
-    if get_authenticated_user() is not None:
-        set_auth_link("Logout", "/logout")
-    else:
-        set_auth_link(login_button, "/login")
-
-
 def authenticated(handler):
     @wraps(handler)
     def wrapper(*args, **kwargs):
@@ -72,6 +66,10 @@ def get_authenticated_user():
         return User.find(username=session["username"])
     else:
         return None
+
+
+def is_authenticated():
+    return get_authenticated_user() is not None
 
 
 def login_user(username):

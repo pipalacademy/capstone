@@ -6,6 +6,7 @@ from kutty import html, Optional
 from kutty.bootstrap import Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardBody, CardText, CardTitle
+from kutty.components.navbar import NavEntry
 
 
 class Page(_Page):
@@ -24,6 +25,32 @@ def get_style_by_category(category):
         case "error": return "danger"
         case "message": return "info"
         case _: return category
+
+
+class LoginButton(BootstrapElement):
+    TAG = "button"
+    CLASS = "btn btn-dark"
+
+
+class AuthNavEntry(BootstrapElement):
+    TAG = "div"
+
+    def __init__(
+            self,
+            *args,
+            login_link, login_content,
+            logout_link, logout_content,
+            is_logged_in,
+            **kwargs):
+        super().__init__()
+        self << Optional(
+            NavEntry(login_content, login_link),
+            render_condition=lambda _: not is_logged_in(),
+        )
+        self << Optional(
+            NavEntry(logout_content, logout_link),
+            render_condition=lambda _: is_logged_in(),
+        )
 
 
 class Alert(BootstrapElement):
