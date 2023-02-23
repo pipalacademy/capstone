@@ -319,6 +319,11 @@ class TaskCard(BootstrapElement):
         self << self.heading
         self << self.body
 
+    def add_check_list(self):
+        check_list = TaskCheckList()
+        self << check_list
+        return check_list
+
 
 class TaskCardHeading(CardBody):
     EXTRA_CLASSES = "d-flex justify-content-between"
@@ -335,6 +340,11 @@ class TaskCardBody(CardBody):
         super().__init__(*args, id=id, **kwargs)
         self.add_class(self.EXTRA_CLASSES)
 
+    def add_check_list(self):
+        check_list = TaskCheckList()
+        self << check_list
+        return check_list
+
 
 class TaskCardTitle(CardTitle):
     EXTRA_CLASSES = "mb-0"
@@ -342,6 +352,35 @@ class TaskCardTitle(CardTitle):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.add_class(self.EXTRA_CLASSES)
+
+
+class TaskCheckList(BootstrapElement):
+    TAG = "ul"
+
+    def add_item(self, title, status=None, message=None):
+        item = TaskCheckListItem(title=title, status=status, message=message)
+        self << item
+        return item
+
+
+class TaskCheckListItem(BootstrapElement):
+    TAG = "li"
+
+    def __init__(
+            self,
+            *args,
+            title, status=None, message=None,
+            **kwargs):
+        super().__init__(*args, **kwargs)
+        self << title
+        if status:
+            self << " - " + status
+        if message:
+            self << TaskCheckListMessage(message)
+
+
+class TaskCheckListMessage(BootstrapElement):
+    TAG = "pre"
 
 
 def get_status_mark(status):

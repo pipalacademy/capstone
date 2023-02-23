@@ -38,15 +38,25 @@ def ProjectTeaser(project, is_started):
     )
 
 
-def TaskDetails(task, status):
+def TaskDetails(task, status, check_statuses=()):
+    card = TaskCard(
+        position=task.position,
+        title=task.title,
+        text=Markdown(task.description),
+        status=status,
+        collapsible_id=task.name,
+    )
+    if check_statuses:
+        card.body.add_subtitle("Checks:")
+        checks_list = card.body.add_check_list()
+        for check_status in check_statuses:
+            checks_list.add_item(
+                title=check_status.name,
+                status=check_status.status,
+                message=check_status.message
+            )
     return CollapsibleLink(
-        TaskCard(
-            position=task.position,
-            title=task.title,
-            text=Markdown(task.description),
-            status=status,
-            collapsible_id=task.name,
-        ),
+        card,
         href="#"+task.name,
     )
 
@@ -231,6 +241,7 @@ def project(name):
         main << TaskDetails(
             task,
             status=task_activity and task_activity.status or None,
+            check_statuses=task_activity and task_activity.checks or None,
         )
 
     return layout.render_page(page)
