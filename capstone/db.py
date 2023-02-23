@@ -390,6 +390,23 @@ class Activity(Document):
         else:
             return task_activity
 
+    def get_progress(self):
+        task_activities = self.get_task_activities()
+        completed_task_activities = [
+            t for t in task_activities if t.status == "Completed"
+        ]
+        total_tasks = len(task_activities)
+        completed_tasks = len(completed_task_activities)
+        percentage = round(completed_tasks * 100 / total_tasks, 2) if total_tasks > 0 else 0
+        status = get_activity_status_from_task_statuses(
+            task.status for task in task_activities)
+        return {
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "percentage": percentage,
+            "status": status,
+        }
+
     def _compute_in_progress_task(self):
         task_activities = self.get_task_activities()
 
@@ -415,7 +432,8 @@ class Activity(Document):
         return {
             "user": user.get_teaser(),
             "project": project.get_teaser(),
-            # TODO: add progress and tasks keys
+            "tasks": [t.get_teaser() for t in self.get_task_activities()],
+            "progress": self.get_progress(),
         }
 
     def get_teaser(self):
@@ -424,7 +442,7 @@ class Activity(Document):
         return {
             "user": user.get_teaser(),
             "project": project.get_teaser(),
-            # TODO: add progress key
+            "progress": self.get_progress(),
         }
 
 
@@ -475,6 +493,15 @@ class TaskActivity(Document):
         d.pop("title")
         d["checks"] = json.dumps(d["checks"])
         return d
+
+    def _to_json(self):
+        d = super()._to_json()
+        return {
+            "name": d["name"],
+            "title": d["title"],
+            "status": d["status"],
+            "checks": d["checks"],
+        }
 
     def get_task(self):
         return Task.find(id=self.task_id)
@@ -536,3 +563,9 @@ def get_task_status_from_check_statuses(check_statuses):
         return "Failing"
     else:
         return "Pending"
+
+def get_activity_status_from_task_statuses(task_statuses):
+    if all(status == "Completed" for status in task_statuses):
+        return "Completed"
+    else:
+        return "In Progress"

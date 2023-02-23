@@ -114,7 +114,8 @@ def list_activity():
     Returns: array[activity_teaser]
     """
     # TODO: add pagination
-    return Activity.find_all()
+    activities = Activity.find_all()
+    return [a.get_teaser() for a in activities]
 
 
 @api.route("/users/<username>/projects")
