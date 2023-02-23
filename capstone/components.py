@@ -99,7 +99,7 @@ class Grid(BootstrapElement):
 
 class Badge(BootstrapElement):
     TAG = "span"
-    CLASS = "badge badge-primary"
+    CLASS = "badge badge-secondary"
 
 
 class AbsoluteCenter(BootstrapElement):
@@ -234,10 +234,13 @@ class ProjectCard(Card):
         self.body.add_text(short_description)
         self.body.add(*[ProjectCardTag(tag) for tag in tags])
 
-        self.body.add(
+        self.add(
             Optional(
-                Right(
-                    ProjectCardButton("Continue ›"),
+                CardBody(
+                    Right(
+                        ProjectCardButton("Continue ›"),
+                    ),
+                    class_="d-flex align-items-end",
                 ),
                 render_condition=lambda _: self.is_started,
             )
@@ -254,7 +257,7 @@ class ProjectCardTag(Badge):
 
 class ProjectCardButton(BootstrapElement):
     TAG = "button"
-    CLASS = "btn btn-secondary"
+    CLASS = "btn btn-primary btn-md"
 
 
 class LinkWithoutDecoration(BootstrapElement):
@@ -264,7 +267,7 @@ class LinkWithoutDecoration(BootstrapElement):
 
 class Right(BootstrapElement):
     TAG = "div"
-    CLASS = "d-flex justify-content-end"
+    CLASS = "w-100 d-flex justify-content-end"
 
 
 class TaskCard(BootstrapElement):
