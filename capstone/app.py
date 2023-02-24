@@ -24,7 +24,7 @@ layout.navbar.right_entries.add(
         is_logged_in=lambda: is_authenticated(),
     )
 )
-
+layout.add_stylesheet('/static/style.css')
 
 def ProjectTeaser(project, is_started):
     return LinkWithoutDecoration(
