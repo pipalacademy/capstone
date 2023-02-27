@@ -7,8 +7,8 @@ from kutty.bootstrap import Layout, Hero
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, AuthNavEntry, CollapsibleLink, Form,
-    LinkWithoutDecoration, LoginButton, LoginCard, Page, ProjectCard,
+    AbsoluteCenter, AuthNavEntry, Breadcrumb, CollapsibleLink,
+    Form, LinkWithoutDecoration, LoginButton, LoginCard, Page, ProjectCard,
     ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
 )
 
@@ -255,17 +255,22 @@ def all_activity(user):
     project_section_empty_state = html.div(html.em("No participants have started this project."))
 
     for project in Project.find_all(is_active=True):
-        project_section = html.div(html.h3(project.name), class_="my-3")
+        project_section = html.div(
+            html.h3(project.title), id=project.name, class_="my-3")
         project_activities = html.div(class_="m-3")
 
         for activity in Activity.find_all(project_id=project.id):
             progress = activity.get_progress()
             project_activities << html.div(class_="row").add(
                 html.div(
-                    html.span(
-                        activity.get_user().full_name,
+                    html.a(
+                        user.full_name,
                         " - ",
                         f"{progress['completed_tasks']}/{progress['total_tasks']}",
+                        href=url_for(
+                            "individual_activity",
+                            username=activity.username,
+                            project_name=activity.project_name),
                     ),
                     class_="col-12 col-sm-3 my-auto",
                 ),
@@ -283,5 +288,41 @@ def all_activity(user):
             project_section << project_section_empty_state
 
         page << project_section
+
+    return layout.render_page(page)
+
+
+@app.route("/users/<username>/projects/<project_name>")
+@authenticated
+def individual_activity(user, username, project_name):
+    user = User.find(username=username)
+    project = Project.find(name=project_name)
+    activity = user.get_activity(project.name)
+
+    breadcrumbs = Breadcrumb()
+    breadcrumbs.add_item("All Activity", href=url_for("all_activity"))
+    breadcrumbs.add_item(project.title, href=url_for("all_activity", _anchor=project.name)),
+    breadcrumbs.add_item(user.full_name, active=True)
+    breadcrumbs.add_class("p-0").breadcrumb_list.add_class("p-0")
+
+    page = Page("", container=html.div())
+    hero = Hero(
+        html.div(breadcrumbs, class_="container"),
+        title=project.title,
+        subtitle=project.short_description,
+        text=Markdown(project.description),
+    )
+    main = html.div(class_="container")
+
+    page << hero
+    page << main
+
+    for task in project.get_tasks():
+        task_activity = activity and activity.get_task_activity(task.id)
+        main << TaskDetails(
+            task,
+            status=task_activity and task_activity.status or None,
+            check_statuses=task_activity and task_activity.checks or None,
+        )
 
     return layout.render_page(page)

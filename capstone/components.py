@@ -27,6 +27,42 @@ def get_style_by_category(category):
         case _: return category
 
 
+class Breadcrumb(BootstrapElement):
+    TAG = "nav"
+    CLASS = "breadcrumb"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.breadcrumb_list = BreadcrumbList()
+        self << self.breadcrumb_list
+
+    def add_item(self, text, href=None, active=False):
+        if href:
+            content = html.a(text, href=href)
+        else:
+            content = text
+
+        element = BreadcrumbItem(content, active=active)
+        self.breadcrumb_list << element
+        return element
+
+
+class BreadcrumbList(BootstrapElement):
+    TAG = "ol"
+    CLASS = "breadcrumb"
+
+
+class BreadcrumbItem(BootstrapElement):
+    TAG = "li"
+    CLASS = "breadcrumb-item"
+
+    def __init__(self, *args, active=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if active:
+            self.add_class("active")
+
+
 class ProgressBar(BootstrapElement):
     TAG = "div"
     CLASS = "progress"
