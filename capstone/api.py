@@ -1,6 +1,9 @@
 from flask import Blueprint, make_response, request
 
-from .db import Activity, Project, User, TaskActivityInput
+from .db import Activity, Project, User, CheckStatus, TaskActivityInput
+from .checks import run_check
+
+from . import config
 
 
 api = Blueprint("api", __name__)
@@ -184,3 +187,44 @@ def get_or_update_activity_tasks(username, project_name):
         return [t.get_json() for t in activity.get_task_activities()]
     else:
         return [t.get_json() for t in activity.get_task_activities()]
+
+
+@api.route(
+        "/users/<username>/projects/<project_name>/checks", methods=["POST"])
+def activity_run_checks(username, project_name):
+    """Run all checks for an activity and use them to update status.
+
+    Returns: array[task_activity]
+    """
+    activity = Activity.find(username=username, project_name=project_name)
+    if activity is None:
+        return NotFound("Activity not found")
+
+    project = activity.get_project()
+    for task in project.get_tasks():
+        check_statuses = []
+        for check in task.checks:
+            result = run_check(
+                base_url=project.checks_url,
+                context=checks_build_context(activity),
+                check_name=check.name,
+                arguments=check.args)
+            check_statuses.append(CheckStatus(**result, name=check.name))
+        task_activity_input = TaskActivityInput(name=task.name, checks=check_statuses)
+        task_activity = activity.get_task_activity(task.id)
+        old_status = task_activity.status
+        task_activity.update_from_input(task_activity_input).save()
+        if old_status not in {"Completed", "Failing"} and task_activity.status != "Completed":
+            break
+
+    activity.set_in_progress_task()
+    return [t.get_json() for t in activity.get_task_activities()]
+
+
+def checks_build_context(activity, **rest):
+    return {
+        "capstone_url": config.capstone_url,
+        "username": activity.username,
+        "project_name": activity.project_name,
+        **rest,
+    }

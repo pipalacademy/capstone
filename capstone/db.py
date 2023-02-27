@@ -422,6 +422,9 @@ class Activity(Document):
             task_activity = self.get_task_activity(task.id)
             task_activity.update_from_input(input).save()
 
+        self.set_in_progress_task()
+
+    def set_in_progress_task(self):
         in_progress_task = self._compute_in_progress_task()
         if in_progress_task:
             in_progress_task.status = "In Progress"
