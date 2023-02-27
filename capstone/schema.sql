@@ -6,6 +6,7 @@ create table projects (
     description text,
     is_active integer,
     tags text,
+    checks_url text,
     created text,
     last_modified text
 );

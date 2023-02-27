@@ -20,6 +20,7 @@ if not Project.find(name="build-your-own-shell"):
         description="Learn the basics of Unix by building your own shell.\n\n### You will learn about Python and Unix",
         is_active=True,
         tags=["Unix", "Python"],
+        checks_url="http://shell.capstone.pipal.in/checks",
     ).save()
 
 project = Project.find(name="build-your-own-shell")
@@ -47,6 +48,7 @@ if not Project.find(name="pippet"):
         description="Learn about web and Python by building your own Web Framework.\n\n*web framework*, **bold**, `code`",
         is_active=True,
         tags=["Python", "Framework"],
+        checks_url="http://pippet.capstone.pipal.in/checks",
     ).save()
 
 if not Activity.find(user_id=user.id, project_id=project.id):

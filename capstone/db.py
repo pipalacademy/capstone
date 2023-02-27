@@ -127,6 +127,7 @@ class Project(Document):
     description: str
     is_active: bool = True
     tags: list[str]
+    checks_url: str
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
