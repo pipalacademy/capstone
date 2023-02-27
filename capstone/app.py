@@ -5,11 +5,11 @@ from kutty import html, Markdown, Optional
 from kutty.bootstrap import Layout, Hero
 
 from .api import api
-from .db import Project, User, check_password
+from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, AuthNavEntry, CollapsibleLink, Form, LinkWithoutDecoration,
-    LoginButton, LoginCard, Page, ProjectCard, ProjectGrid, TaskCard,
-    LinkButton, SubmitButton
+    AbsoluteCenter, AuthNavEntry, CollapsibleLink, Form,
+    LinkWithoutDecoration, LoginButton, LoginCard, Page, ProjectCard,
+    ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
 )
 
 app = Flask(__name__)
@@ -243,5 +243,45 @@ def project(name):
             status=task_activity and task_activity.status or None,
             check_statuses=task_activity and task_activity.checks or None,
         )
+
+    return layout.render_page(page)
+
+
+@app.route("/activity")
+@authenticated
+def all_activity(user):
+    page = Page("Activity")
+
+    project_section_empty_state = html.div(html.em("No participants have started this project."))
+
+    for project in Project.find_all(is_active=True):
+        project_section = html.div(html.h3(project.name), class_="my-3")
+        project_activities = html.div(class_="m-3")
+
+        for activity in Activity.find_all(project_id=project.id):
+            progress = activity.get_progress()
+            project_activities << html.div(class_="row").add(
+                html.div(
+                    html.span(
+                        activity.get_user().full_name,
+                        " - ",
+                        f"{progress['completed_tasks']}/{progress['total_tasks']}",
+                    ),
+                    class_="col-12 col-sm-3 my-auto",
+                ),
+                html.div(
+                    ProgressBar(
+                        percentage=progress["percentage"],
+                        height="25px",
+                        label=f"{progress['percentage']}%"),
+                    class_="col-12 col-sm-9 my-auto",
+                ),
+            )
+
+        project_section << project_activities
+        if project_activities.is_empty():
+            project_section << project_section_empty_state
+
+        page << project_section
 
     return layout.render_page(page)

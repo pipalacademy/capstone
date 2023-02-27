@@ -27,6 +27,22 @@ def get_style_by_category(category):
         case _: return category
 
 
+class ProgressBar(BootstrapElement):
+    TAG = "div"
+    CLASS = "progress"
+
+    def __init__(self, *args, percentage, label=None, height=None, **kwargs):
+        if height:
+            styles = f"height: {height};"
+        super().__init__(*args, style=styles, **kwargs)
+
+        self.progress_bar = html.div(style=f"width: {percentage}%;", class_="progress-bar")
+        if label:
+            self.progress_bar << label
+
+        self << self.progress_bar
+
+
 class LoginButton(BootstrapElement):
     TAG = "button"
     CLASS = "btn btn-dark"
