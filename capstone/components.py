@@ -3,7 +3,7 @@ from textwrap import dedent
 from flask import get_flashed_messages
 
 from kutty import html, Optional
-from kutty.bootstrap import Layout, Page as _Page, Card, Hero
+from kutty.bootstrap import Layout as _Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardBody, CardText, CardTitle
 from kutty.components.navbar import NavEntry
@@ -25,6 +25,34 @@ def get_style_by_category(category):
         case "error": return "danger"
         case "message": return "info"
         case _: return category
+
+
+class Layout(_Layout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.footer = Footer()
+
+    def render(self, content=None):
+        doc = html.Document()
+
+        doc.head.add(html.title(self.title))
+
+        for link in self.stylesheets:
+            doc.head.add(html.link(rel="stylesheet", href=link))
+
+        doc.body.add(self.navbar)
+        doc.body.add(content)
+        doc.body.add(self.footer)
+
+        for link in self.javascripts:
+            doc.body.add(html.script(src=link))
+
+        return doc.render()
+
+
+class Footer(BootstrapElement):
+    TAG = "footer"
+    CLASS = "my-3 py-3"
 
 
 class Breadcrumb(BootstrapElement):

@@ -2,14 +2,14 @@ from functools import wraps
 
 from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
-from kutty.bootstrap import Layout, Hero
+from kutty.bootstrap import Hero
 
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
     AbsoluteCenter, AuthNavEntry, Breadcrumb, CollapsibleLink,
-    Form, LinkWithoutDecoration, LoginButton, LoginCard, Page, ProjectCard,
-    ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
+    Form, Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,
+    ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
 )
 
 app = Flask(__name__)
