@@ -10,8 +10,12 @@ from kutty.components.navbar import NavEntry
 
 
 class Page(_Page):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, title=None, **kwargs):
+        super().__init__(title="", **kwargs)
+
+        self.title = title
+        if self.title:
+            self.add(PageTitle(title))
 
         for category, message in get_flashed_messages(with_categories=True):
             alert_style = get_style_by_category(category)
@@ -89,6 +93,10 @@ class BreadcrumbItem(BootstrapElement):
         super().__init__(*args, **kwargs)
         if active:
             self.add_class("active")
+
+class PageTitle(BootstrapElement):
+    TAG = "h1"
+    CLASS = "my-4"
 
 
 class ProgressBar(BootstrapElement):
@@ -318,7 +326,7 @@ class Form(BootstrapElement):
 
 
 class ProjectGrid(Grid):
-    COL_CLASS = "col-6"
+    COL_CLASS = "col-12 col-md-6 mb-3"
 
     def __init__(self, *args, columns=(), **kwargs):
         super().__init__(*args, **kwargs)

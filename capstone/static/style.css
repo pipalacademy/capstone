@@ -1,3 +1,14 @@
+body {
+    background-color: #e9ecef;
+}
+
+.jumbotron {
+    background-color: #ECF2FF;
+}
+
+.jumbotron h1 {
+    color: #226;
+}
 
 pre {
     background: #eee;

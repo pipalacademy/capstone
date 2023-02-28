@@ -151,7 +151,7 @@ def logout(user):
 def projects():
     projects = Project.find_all(is_active=True)
 
-    page = Page("Projects")
+    page = Page(title="Projects")
     page << ProjectGrid(
         class_="mt-3",
         columns=[
@@ -176,7 +176,7 @@ def dashboard(user):
         if not user.has_started_project(project.name)
     ]
 
-    page = Page("Dashboard")
+    page = Page(title="Dashboard")
     page << Optional(
         html.div(class_="my-3").add(
             html.h2("Your Projects"),
@@ -218,7 +218,7 @@ def project(name):
             flash("You have started this project. All the best!", "success")
             return redirect(request.url)
 
-    page = Page("", container=html.div())
+    page = Page(title="", container=html.div())
     hero = Hero(
         title=project.title,
         subtitle=project.short_description,
@@ -250,7 +250,7 @@ def project(name):
 @app.route("/activity")
 @authenticated
 def all_activity(user):
-    page = Page("Activity")
+    page = Page(title="Activity")
 
     project_section_empty_state = html.div(html.em("No participants have started this project."))
 
