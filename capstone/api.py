@@ -2,6 +2,7 @@ import requests
 import subprocess
 import tempfile
 import zipfile
+from . import tq
 
 from flask import Blueprint, make_response, request, url_for
 
@@ -289,38 +290,43 @@ def post_receive_webhook():
     _, username_and_more, project_and_more = repo_path.rsplit("/", maxsplit=2)
     _, username = username_and_more.split("-", maxsplit=1)
     project_name, _ = project_and_more.rsplit(".git", maxsplit=1)
+    tq.add_task(
+        "post_receive_webhook_action",
+        username=username, project_name=project_name,
+        git_commit_hash=request.json.get("git_commit_hash"))
+    response = "\nTriggered the checks for new changes.\nPlease wait for a minute or two for it to complete....\n"
+    return response
 
+@tq.task_function
+def post_receive_webhook_action(username, project_name, git_commit_hash=None):
     user = User.find(username=username)
     project = Project.find(name=project_name)
     if not user or not project:
-        return NotFound("User or project not found")
+        return "user or project not found"
+        # return NotFound("User or project not found")
 
     activity = user.get_activity(project.name)
     if project.commit_hook_url:
         json_body = commit_hook_build_body(activity=activity)
-        if "git_commit_hash" in request.json:
-            json_body.update(git_commit_hash=request.json["git_commit_hash"])
+        if git_commit_hash is not None:
+            json_body.update(git_commit_hash=git_commit_hash)
         r = requests.post(
             project.commit_hook_url,
             json=json_body,
         )
         if not r.ok:
-            return {
-                "ok": False,
-                "message": f"commit_hook failed:\n{r.content.decode()}",
-            }, 500
+            print(f"commit_hook failed:\n{r.content.decode()}")
+            # return {
+            #     "ok": False,
+            #     "message": f"commit_hook failed:\n{r.content.decode()}",
+            # }, 500
+        else:
+            print(f"commit hook ran:\n{r.content.decode()}")
     if project.checks_url:
-        r = requests.post(
-            config.capstone_url + url_for(
-                "activity_run_checks",
-                username=username, project_name=project_name))
-        if not r.ok:
-            return {
-                "ok": False,
-                "message": f"checks_url failed:\n{r.content.decode()}",
-            }, 500
+        response = activity_run_checks(username=username, project_name=project_name)
+        print(f"response from checks:\n{response}")
 
-    return {}
+    return "all done"
 
 
 def checks_build_context(activity, **rest):
