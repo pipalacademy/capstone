@@ -99,8 +99,14 @@ def add_task(name, **kwargs):
 
 def run_pending_tasks():
     for t in Task.get_pending_tasks():
-        print(t, t.kwargs)
+        print("\n\n")
+        print("=" * 40)
+        print("\n")
+        print("Running new task:", t)
+        print(t.name, t.kwargs)
+        print("")
         t.run()
+        print("completed task:", t, t.status)
 
 def run_pending_tasks_in_loop():
     while True:
