@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import string
 import random
 import uuid
@@ -620,5 +621,7 @@ def make_new_project_dir(git_dir, git_user, username, project_name):
     random_hash = uuid.uuid4().hex
     repo_path = f"{random_hash}-{username}/{project_name}.git"
     zipfile_path = get_private_file_path(f"projects/{project_name}/repo-git.zip")
-    subprocess.check_call(["unzip", "-d", f"{git_dir}/{repo_path}", zipfile_path])
+    extraction_dir = f"{git_dir}/{repo_path}"
+    os.makedirs(extraction_dir, exist_ok=True)
+    subprocess.check_call(["unzip", "-d", extraction_dir, os.path.abspath(zipfile_path)])
     return repo_path
