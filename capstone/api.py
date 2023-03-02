@@ -315,7 +315,7 @@ def zip_directory(src, dst):
 
 
 def extract_and_setup_git(zip_file, extract_to):
-    git.init(extract_to, branch="main")
+    git.init(extract_to, b="main")
     with zipfile.ZipFile(zip_file) as zipf:
         zipf.extractall(path=extract_to)
     git.add(".", workdir=extract_to)
