@@ -5,15 +5,15 @@ import json
 import string
 import random
 import uuid
-import zipfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
+import subprocess
 from typing import Any
 
 import web
 
 from . import config
-from .utils.files import get_private_file
+from .utils.files import get_private_file_path
 
 db = web.database(config.db_uri)
 
@@ -618,7 +618,7 @@ git push
 def make_new_project_dir(git_dir, git_user, username, project_name):
     # TODO: use git_user to create users
     random_hash = uuid.uuid4().hex
-    z_fd = get_private_file(f"projects/{project_name}/repo-git.zip")
     repo_path = f"{random_hash}-{username}/{project_name}.git"
-    zipfile.ZipFile(z_fd).extractall(path=f"{git_dir}/{repo_path}")
+    zipfile_path = get_private_file_path(f"projects/{project_name}/repo-git.zip")
+    subprocess.check_call(["unzip", "-d", f"{git_dir}/{repo_path}", zipfile_path])
     return repo_path

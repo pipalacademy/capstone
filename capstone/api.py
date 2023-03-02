@@ -356,8 +356,7 @@ def zip_directory(src, dst):
 
 def extract_and_setup_git(zip_file, extract_to):
     git.init(extract_to, b="main")
-    with zipfile.ZipFile(zip_file) as zipf:
-        zipf.extractall(path=extract_to)
+    subprocess.check_call(["unzip", "-d", extract_to, zip_file])
     git.add(".", workdir=extract_to)
     git.commit(
         m="initial commit", workdir=extract_to,

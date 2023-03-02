@@ -23,5 +23,10 @@ def save_private_file(key, stream):
 
 
 def get_private_file(key):
-    path = f"{PRIVATE_FILES_DIR}/{key}"
+    # TODO: keep only one, maybe the below one with the path
+    path = get_private_file_path(key)
     return open(path, "rb")
+
+
+def get_private_file_path(key):
+    return f"{PRIVATE_FILES_DIR}/{key}"
