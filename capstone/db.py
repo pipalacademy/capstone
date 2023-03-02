@@ -618,6 +618,6 @@ def make_new_project_dir(git_dir, git_user, username, project_name):
     # TODO: use git_user to create users
     random_hash = uuid.uuid4().hex
     z_fd = get_private_file(f"projects/{project_name}/repo-git.zip")
-    repo_path = f"{random_hash}-{username}/{project_name}"
+    repo_path = f"{random_hash}-{username}/{project_name}.git"
     zipfile.ZipFile(z_fd).extractall(path=f"{git_dir}/{repo_path}")
     return repo_path
