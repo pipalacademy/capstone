@@ -4,6 +4,8 @@ import hashlib
 import json
 import string
 import random
+import uuid
+import zipfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -11,6 +13,7 @@ from typing import Any
 import web
 
 from . import config
+from .utils.files import get_private_file
 
 db = web.database(config.db_uri)
 
@@ -176,9 +179,10 @@ class Project(Document):
             self.save()
 
         old_tasks = self.get_tasks()
-        new_tasks = [
-            Task.from_json({**t_kwds, "position": idx, "project_id": self.id})
-            for idx, t_kwds in enumerate(tasks, start=1)]
+        new_tasks = [Task.from_json(get_zeroth_task_dict(project_id=self.id))]
+        for idx, t_kwds in enumerate(tasks, start=1):
+            task = Task.from_json({**t_kwds, "position": idx, "project_id": self.id})
+            new_tasks.append(task)
 
         old_task_names = [t.name for t in old_tasks]
         new_task_names = [t.name for t in new_tasks]
@@ -240,8 +244,12 @@ class User(Document):
 
     def start_project(self, project_name):
         project = Project.find(name=project_name)
-        activity = Activity(user_id=self.id, project_id=project.id)
-        activity.save()
+        repo_path = make_new_project_dir(
+            git_dir=config.git_dir, git_user=config.git_user,
+            username=self.username, project_name=project.name)
+        activity = Activity(
+            user_id=self.id, project_id=project.id,
+            git_url=f"{config.git_base_url}/{repo_path}").save()
         for i, task in enumerate(project.get_tasks()):
             task.get_default_task_activity(activity_id=self.id).save()
 
@@ -289,7 +297,7 @@ class Task(Document):
                     name=check.name, status=CheckStatus.PENDING, message=None)
                 for check in self.checks
             ],
-            status="In Progress" if self.position == 1 else "Pending",
+            status="In Progress" if self.position == 0 else "Pending",
         )
 
     def _to_json(self):
@@ -342,6 +350,7 @@ class Activity(Document):
 
     user_id: int
     project_id: int
+    git_url: str
 
     username: str | None = None
     project_name: str | None = None
@@ -552,6 +561,7 @@ def generate_salt(length=16):
     return "".join(random.choice(allowed) for _ in range(length))
 
 def get_project_url(name):
+    # TODO: take hostname from request
     return f"http://{config.hostname}/api/projects/{name}"
 
 def get_project_html_url(name):
@@ -573,3 +583,34 @@ def get_activity_status_from_task_statuses(task_statuses):
         return "Completed"
     else:
         return "In Progress"
+
+def get_zeroth_task_dict(project_id):
+    description = """\
+Clone this Git repository which contains the starter code.
+
+You'll make progress as you push to this repository with each
+task.
+
+```shell
+git clone {git_url}
+```
+"""
+
+    zeroth_task = {
+       "name": "clone-repository",
+       "title": "Clone the repository",
+       "description": description,
+       "position": 0,
+       "checks": [],
+       "project_id": project_id,
+    }
+
+    return zeroth_task
+
+def make_new_project_dir(git_dir, git_user, username, project_name):
+    # TODO: use git_user to create users
+    random_hash = uuid.uuid4().hex
+    z_fd = get_private_file(f"projects/{project_name}/repo-git.zip")
+    repo_path = f"{random_hash}-{username}/{project_name}"
+    zipfile.ZipFile(z_fd).extractall(path=f"{git_dir}/{repo_path}")
+    return repo_path

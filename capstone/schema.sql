@@ -38,6 +38,7 @@ create table activity (
     id integer primary key,
     user_id text not null,
     project_id text not null,
+    git_url text,
     created text,
     last_modified text,
     unique(user_id, project_id)
@@ -50,6 +51,7 @@ select
     activity.id,
     activity.user_id,
     activity.project_id,
+    activity.git_url,
     activity.created,
     activity.last_modified
 from activity

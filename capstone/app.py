@@ -4,6 +4,7 @@ from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
 from kutty.bootstrap import Hero
 
+from . import config
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
@@ -38,14 +39,21 @@ def ProjectTeaser(project, is_started):
     )
 
 
-def TaskDetails(task, status, check_statuses=()):
+def TaskDetails(task, status, check_statuses=(), desc_formats={}):
+    # TODO: desc_formats is not pretty, find another way
+    if desc_formats:
+        description = task.description.format(**desc_formats)
+    else:
+        description = task.description
+
     card = TaskCard(
         position=task.position,
         title=task.title,
-        text=Markdown(task.description),
+        text=Markdown(description),
         status=status,
         collapsible_id=task.name,
     )
+    # TODO: move this to another element, and make it part of the TaskCard
     if check_statuses:
         card.body.add_subtitle("Checks:")
         checks_list = card.body.add_check_list()
@@ -238,10 +246,23 @@ def project(name):
     activity = has_started_project and user.get_activity(project.name) or None
     for task in project.get_tasks():
         task_activity = activity and activity.get_task_activity(task.id)
+        desc_formats = {
+            "git_url": activity.git_url,
+        } if activity is not None and task.position == 0 else {}
+        if activity is not None and task.position == 0:
+            print("yes here")
+        if task.position == "0":
+            print("task.position is str")
+        elif task.position == 0:
+            print("task.position is int")
+            print("desc_formats", desc_formats)
+        else:
+            print(f"at task position: {task.position}")
         main << TaskDetails(
             task,
             status=task_activity and task_activity.status or None,
             check_statuses=task_activity and task_activity.checks or None,
+            desc_formats=desc_formats,
         )
 
     return layout.render_page(page)

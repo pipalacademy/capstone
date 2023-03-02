@@ -1,4 +1,3 @@
-import os
 import subprocess
 import tempfile
 import zipfile
@@ -8,7 +7,8 @@ from flask import Blueprint, make_response, request
 from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .checks import run_check
 from . import config
-from . import git
+from .utils import git
+from .utils.files import get_private_file, save_private_file
 
 
 api = Blueprint("api", __name__)
@@ -108,6 +108,7 @@ def get_or_upsert_repo_zip(project_name):
         response = make_response(gen)
         response.headers["Content-Type"] = "application/zip"
         return response
+
     elif request.method == "PUT":
         with tempfile.TemporaryDirectory() as tempdir:
             repo_zip = f"{tempdir}/repo.zip"
@@ -121,14 +122,7 @@ def get_or_upsert_repo_zip(project_name):
             if not zipfile.is_zipfile(repo_zip):
                 return {"message": "Not a valid zipfile"}, 400
 
-            git.init(repo_dir)
-            with zipfile.ZipFile(repo_zip) as zipf:
-                zipf.extractall(path=repo_dir)
-            git.add(".", workdir=repo_dir)
-            git.commit(
-                m="initial commit", workdir=repo_dir,
-                author="Capstone <git@pipal.in>")
-
+            extract_and_setup_git(zip_file=repo_zip, extract_to=repo_dir)
             write_post_receive_hook(f"{repo_dir}/.git/hooks/post-receive")
 
             zip_directory(src=f"{repo_dir}/.git", dst=repo_git_zip)
@@ -293,32 +287,6 @@ def checks_build_context(activity, **rest):
     }
 
 
-PRIVATE_FILES_DIR = "private"
-
-
-def ensure_private_files_dir():
-    os.makedirs(PRIVATE_FILES_DIR, exist_ok=True)
-
-
-def save_private_file(key, stream):
-    ensure_private_files_dir()
-    path = f"{PRIVATE_FILES_DIR}/{key}"
-
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    # TODO: maybe safer handling of key?
-    with open(path, "wb") as f:
-        for data in stream:
-            f.write(data)
-
-    return path
-
-
-def get_private_file(key):
-    path = f"{PRIVATE_FILES_DIR}/{key}"
-    return open(path, "rb")
-
-
 def write_post_receive_hook(filepath):
     post_receive_hook_content = """\
 #! /bin/bash
@@ -333,3 +301,13 @@ exec ~/hooks/post-receive
 
 def zip_directory(src, dst):
     subprocess.check_call(f"cd '{src}'; zip -r {dst} .", shell=True)
+
+
+def extract_and_setup_git(zip_file, extract_to):
+    git.init(extract_to)
+    with zipfile.ZipFile(zip_file) as zipf:
+        zipf.extractall(path=extract_to)
+    git.add(".", workdir=extract_to)
+    git.commit(
+        m="initial commit", workdir=extract_to,
+        author="Capstone <git@pipal.in>")
