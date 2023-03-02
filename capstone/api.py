@@ -304,13 +304,21 @@ def post_receive_webhook():
             project.commit_hook_url,
             json=json_body,
         )
-        r.raise_for_status()
+        if not r.ok:
+            return {
+                "ok": False,
+                "message": f"commit_hook failed:\n{r.content.decode()}",
+            }, 500
     if project.checks_url:
         r = requests.post(
             config.capstone_url + url_for(
                 "activity_run_checks",
                 username=username, project_name=project_name))
-        r.raise_for_status()
+        if not r.ok:
+            return {
+                "ok": False,
+                "message": f"checks_url failed:\n{r.content.decode()}",
+            }, 500
 
     return {}
 
