@@ -303,7 +303,6 @@ def post_receive_webhook_action(username, project_name, git_commit_hash=None):
     project = Project.find(name=project_name)
     if not user or not project:
         return "user or project not found"
-        # return NotFound("User or project not found")
 
     activity = user.get_activity(project.name)
     if project.commit_hook_url:
@@ -316,10 +315,6 @@ def post_receive_webhook_action(username, project_name, git_commit_hash=None):
         )
         if not r.ok:
             print(f"commit_hook failed:\n{r.content.decode()}")
-            # return {
-            #     "ok": False,
-            #     "message": f"commit_hook failed:\n{r.content.decode()}",
-            # }, 500
         else:
             print(f"commit hook ran:\n{r.content.decode()}")
     if project.checks_url:
