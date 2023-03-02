@@ -1,6 +1,7 @@
 import argparse
 from capstone import tq
 from capstone.app import app
+from capstone.log import setup_logger
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -9,6 +10,7 @@ def parse_args():
     return p.parse_args()
 
 def main():
+    setup_logger()
     args = parse_args()
     if args.tasks:
         tq.run_pending_tasks_in_loop()

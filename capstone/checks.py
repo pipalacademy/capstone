@@ -1,10 +1,12 @@
 import requests
+import logging
 
+logger = logging.getLogger(__name__)
 
 def run_check(base_url, check_name, context, arguments):
     check_url = f"{base_url}/{check_name}"
-    print("  Running check", check_url)
-    print("  Arguments", arguments)
+    logger.info("  Running check %s", check_url)
+    logger.info("  Arguments %s", arguments)
     r = requests.post(
         check_url,
         json={
@@ -12,7 +14,7 @@ def run_check(base_url, check_name, context, arguments):
             "arguments": arguments,
         }
     )
-    print("Response:", r.text)
+    logger.info("Response: %s", r.text)
 
     # TODO: raise exception
     if not r.ok:
