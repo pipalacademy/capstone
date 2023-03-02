@@ -337,7 +337,7 @@ def write_post_receive_hook(filepath):
     post_receive_hook_content = f"""\
 #! /bin/bash
 
-exec {config.capstone_git_post_receive_script}
+exec {config.git_post_receive_script}
 """
     with open(filepath, "w") as f:
         f.write(post_receive_hook_content)
