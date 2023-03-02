@@ -28,6 +28,14 @@ def add(*args, workdir=None, **kwargs):
     return True
 
 
+def config(*args, workdir=None, **kwargs):
+    cmd = build_cmd("config", options=kwargs, workdir=workdir, args=args)
+
+    # TODO: handle gracefully when proc fails
+    proc = subprocess.run(cmd, stdout=sys.stdout, stderr=sys.stderr, check=True)
+    return True
+
+
 def build_cmd(subcommand, args, options, workdir=None):
     pre_command = f"cd '{workdir}'; " if workdir else ""
 

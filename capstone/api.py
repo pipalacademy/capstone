@@ -124,7 +124,7 @@ def get_or_upsert_repo_zip(project_name):
 
             extract_and_setup_git(zip_file=repo_zip, extract_to=repo_dir)
             write_post_receive_hook(f"{repo_dir}/.git/hooks/post-receive")
-            write_ssh_repo_config(f"{repo_dir}/.git/config")
+            write_git_config(repo_dir=repo_dir)
 
             zip_directory(src=f"{repo_dir}/.git", dst=repo_git_zip)
 
@@ -300,14 +300,9 @@ exec ~/hooks/post-receive
     subprocess.check_call(["chmod", "+x", filepath])
 
 
-def write_ssh_repo_config(filepath):
-    config_content = """\
-\n
-[http]
-    receivepack = true
-"""
-    with open(filepath, "a") as f:
-        f.write(config_content)
+def write_git_config(repo_dir):
+    git.config("--bool", "http.receivepack", "true", workdir=repo_dir)
+    git.config("--bool", "core.bare", "true", workdir=repo_dir)
 
 
 def zip_directory(src, dst):
