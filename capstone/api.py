@@ -1,9 +1,14 @@
+import os
+import subprocess
+import tempfile
+import zipfile
+
 from flask import Blueprint, make_response, request
 
 from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .checks import run_check
-
 from . import config
+from . import git
 
 
 api = Blueprint("api", __name__)
@@ -86,6 +91,63 @@ def get_or_upsert_project(name):
         project.update_tasks(tasks)
         project.save()
         return project.get_json()
+
+
+@api.route("/projects/<project_name>/repo.zip", methods=["GET", "PUT"])
+def get_or_upsert_repo_zip(project_name):
+    """Get or upsert zipfile with starter code.
+
+    This starter code will be part of the repository
+    that the participants will clone.
+    """
+    if not is_authorized(request):
+        return Unauthorized()
+
+    if request.method == "GET":
+        gen = get_private_file(f"projects/{project_name}/repo.zip")
+        response = make_response(gen)
+        response.headers["Content-Type"] = "application/zip"
+        return response
+    elif request.method == "PUT":
+        with tempfile.TemporaryDirectory() as tempdir:
+            repo_zip = f"{tempdir}/repo.zip"
+            repo_git_zip = f"{tempdir}/repo-git.zip"
+            repo_dir = f"{tempdir}/repo"
+
+            with open(repo_zip, "wb") as f:
+                for data in request.stream:
+                    f.write(data)
+
+            if not zipfile.is_zipfile(repo_zip):
+                return {"message": "Not a valid zipfile"}, 400
+
+            git.init(repo_dir)
+            with zipfile.ZipFile(repo_zip) as zipf:
+                zipf.extractall(path=repo_dir)
+            git.add(".", workdir=repo_dir)
+            git.commit(
+                m="initial commit", workdir=repo_dir,
+                author="Capstone <git@pipal.in>")
+
+            write_post_receive_hook(f"{repo_dir}/.git/hooks/post-receive")
+
+            zip_directory(src=f"{repo_dir}/.git", dst=repo_git_zip)
+
+            with open(repo_zip, "rb") as f:
+                save_private_file(f"projects/{project_name}/repo.zip", f)
+
+            with open(repo_git_zip, "rb") as f:
+                save_private_file(f"projects/{project_name}/repo-git.zip", f)
+
+        return {}, 201
+
+
+@api.route("/projects/<project_name>/repo-git.zip")
+def get_repo_git_zip(project_name):
+    if not is_authorized(request):
+        return Unauthorized()
+
+    return get_private_file(f"projects/{project_name}/repo-git.zip")
 
 
 # Resource: User
@@ -209,7 +271,8 @@ def activity_run_checks(username, project_name):
                 context=checks_build_context(activity),
                 check_name=check.name,
                 arguments=check.args)
-            check_statuses.append(CheckStatus(**result, name=check.name))
+            check_statuses.append(
+                CheckStatus(**result, name=check.name))
         task_activity_input = TaskActivityInput(name=task.name, checks=check_statuses)
         task_activity = activity.get_task_activity(task.id)
         old_status = task_activity.status
@@ -228,3 +291,45 @@ def checks_build_context(activity, **rest):
         "project_name": activity.project_name,
         **rest,
     }
+
+
+PRIVATE_FILES_DIR = "private"
+
+
+def ensure_private_files_dir():
+    os.makedirs(PRIVATE_FILES_DIR, exist_ok=True)
+
+
+def save_private_file(key, stream):
+    ensure_private_files_dir()
+    path = f"{PRIVATE_FILES_DIR}/{key}"
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    # TODO: maybe safer handling of key?
+    with open(path, "wb") as f:
+        for data in stream:
+            f.write(data)
+
+    return path
+
+
+def get_private_file(key):
+    path = f"{PRIVATE_FILES_DIR}/{key}"
+    return open(path, "rb")
+
+
+def write_post_receive_hook(filepath):
+    post_receive_hook_content = """\
+#! /bin/bash
+
+exec ~/hooks/post-receive
+"""
+    with open(filepath, "w") as f:
+        f.write(post_receive_hook_content)
+
+    subprocess.check_call(["chmod", "+x", filepath])
+
+
+def zip_directory(src, dst):
+    subprocess.check_call(f"cd '{src}'; zip -r {dst} .", shell=True)
