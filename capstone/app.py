@@ -244,15 +244,6 @@ def project(name):
         desc_formats = {
             "git_url": activity.git_url,
         } if activity is not None and task.position == 0 else {}
-        if activity is not None and task.position == 0:
-            print("yes here")
-        if task.position == "0":
-            print("task.position is str")
-        elif task.position == 0:
-            print("task.position is int")
-            print("desc_formats", desc_formats)
-        else:
-            print(f"at task position: {task.position}")
         main << TaskDetails(
             task,
             status=task_activity and task_activity.status or None,
