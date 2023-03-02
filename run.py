@@ -11,7 +11,7 @@ def parse_args():
 def main():
     args = parse_args()
     if args.tasks:
-        tq.run_pending_tasks()
+        tq.run_pending_tasks_in_loop()
     elif args.add_dummy_tasks:
         add_dummy_tasks()
     else:

@@ -102,3 +102,7 @@ def run_pending_tasks():
         print(t, t.kwargs)
         t.run()
 
+def run_pending_tasks_in_loop():
+    while True:
+        run_pending_tasks()
+        time.sleep(1)
