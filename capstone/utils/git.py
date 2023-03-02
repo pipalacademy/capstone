@@ -1,6 +1,8 @@
 import subprocess
 import sys
 
+from .. import config
+
 
 def init(*args, workdir=None, **kwargs):
     cmd = build_cmd("init", options=kwargs, workdir=workdir, args=args)
@@ -29,8 +31,10 @@ def add(*args, workdir=None, **kwargs):
 def build_cmd(subcommand, args, options, workdir=None):
     pre_command = f"cd '{workdir}'; " if workdir else ""
 
+    git_options = [f"-c user.name=Capstone", f"-c user.email=git@pipal.in"]
+
     command = " ".join([
-        "git", subcommand, *_build_options(**options), *args,
+        "git", *git_options, subcommand, *_build_options(**options), *args,
     ])
     return ["bash", "-c", pre_command+command]
 
