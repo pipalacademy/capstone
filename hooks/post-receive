@@ -1,5 +1,6 @@
 #! /bin/bash
 
 WEBHOOK_URL=https://<capstone-url>/api/webhook/post_receive
+TOKEN=...
 
-curl -d '{"repo_path": "$(pwd)", "git_commit_hash": "$(git rev-parse HEAD)"}' $WEBHOOK_URL
+curl -H "Authorization: Bearer $TOKEN" -d '{"repo_path": "$(pwd)", "git_commit_hash": "$(git rev-parse HEAD)"}' $WEBHOOK_URL
