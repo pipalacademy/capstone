@@ -1,8 +1,9 @@
+import requests
 import subprocess
 import tempfile
 import zipfile
 
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, url_for
 
 from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .checks import run_check
@@ -279,6 +280,41 @@ def activity_run_checks(username, project_name):
     return [t.get_json() for t in activity.get_task_activities()]
 
 
+@api.route("/webhook/post_receive", methods=["POST"])
+def post_receive_webhook():
+    if not is_authorized(request):
+        return Unauthorized()
+
+    repo_path = request.json["repo_path"]
+    _, username_and_more, project_and_more = repo_path.rsplit("/", maxsplit=2)
+    _, username = username_and_more.split("-", maxsplit=1)
+    project_name, _ = project_and_more.rsplit(".git", maxsplit=1)
+
+    user = User.find(username=username)
+    project = Project.find(name=project_name)
+    if not user or not project:
+        return NotFound("User or project not found")
+
+    activity = user.get_activity(project.name)
+    if project.commit_hook_url:
+        json_body = commit_hook_build_body(activity=activity)
+        if "git_commit_hash" in request.json:
+            json_body.update(git_commit_hash=request.json["git_commit_hash"])
+        r = requests.post(
+            project.commit_hook_url,
+            json=json_body,
+        )
+        r.raise_for_status()
+    if project.checks_url:
+        r = requests.post(
+            config.capstone_url + url_for(
+                "activity_run_checks",
+                username=username, project_name=project_name))
+        r.raise_for_status()
+
+    return {}
+
+
 def checks_build_context(activity, **rest):
     return {
         "capstone_url": config.capstone_url,
@@ -288,11 +324,20 @@ def checks_build_context(activity, **rest):
     }
 
 
+def commit_hook_build_body(activity, **rest):
+    return {
+        "username": activity.username,
+        "project": activity.project_name,
+        "git_url": activity.git_url,
+        **rest,
+    }
+
+
 def write_post_receive_hook(filepath):
-    post_receive_hook_content = """\
+    post_receive_hook_content = f"""\
 #! /bin/bash
 
-exec ~/hooks/post-receive
+exec {config.capstone_git_post_receive_script}
 """
     with open(filepath, "w") as f:
         f.write(post_receive_hook_content)

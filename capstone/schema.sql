@@ -7,6 +7,7 @@ create table projects (
     is_active integer,
     tags text,
     checks_url text,
+    commit_hook_url text,
     created text,
     last_modified text
 );

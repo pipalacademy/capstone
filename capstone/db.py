@@ -131,6 +131,7 @@ class Project(Document):
     is_active: bool = True
     tags: list[str]
     checks_url: str
+    commit_hook_url: str
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
