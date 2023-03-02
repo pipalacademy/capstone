@@ -404,7 +404,7 @@ class TaskCard(BootstrapElement):
         )
         self.body = TaskCardBody(id=collapsible_id, text=text)
 
-        self << self.heading
+        self << CollapsibleLink(self.heading, href=f"#{collapsible_id}")
         self << self.body
 
     def add_check_list(self):

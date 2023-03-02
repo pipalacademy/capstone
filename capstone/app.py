@@ -4,11 +4,10 @@ from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
 from kutty.bootstrap import Hero
 
-from . import config
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, AuthNavEntry, Breadcrumb, CollapsibleLink,
+    AbsoluteCenter, AuthNavEntry, Breadcrumb,
     Form, Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,
     ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
 )
@@ -63,11 +62,7 @@ def TaskDetails(task, status, check_statuses=(), desc_formats={}):
                 status=check_status.status,
                 message=check_status.message
             )
-    return CollapsibleLink(
-        card,
-        href="#"+task.name,
-    )
-
+    return card
 
 def authenticated(handler):
     @wraps(handler)
