@@ -3,6 +3,8 @@ import requests
 
 def run_check(base_url, check_name, context, arguments):
     check_url = f"{base_url}/{check_name}"
+    print("  Running check", check_url)
+    print("  Arguments", arguments)
     r = requests.post(
         check_url,
         json={
@@ -10,7 +12,9 @@ def run_check(base_url, check_name, context, arguments):
             "arguments": arguments,
         }
     )
+    print("Response:", r.text)
 
+    # TODO: raise exception
     if not r.ok:
         return {
             "status": "error",
