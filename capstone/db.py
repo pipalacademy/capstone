@@ -133,7 +133,7 @@ class Project(Document):
     tags: list[str]
     checks_url: str
     commit_hook_url: str
-    context_vars: dict[str, str] | None = None
+    vars: dict[str, str] | None = None
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
@@ -143,12 +143,13 @@ class Project(Document):
         d = super()._to_json()
         # TODO: maybe keep html_url in the response
         d.pop("html_url")
-        d.pop("context_vars")
+        d.pop("vars")
         return d
 
     def _to_db(self):
         d = super()._to_db()
         d["tags"] = json.dumps(d["tags"])
+        d["context_vars"] = d.pop("vars")
         d["context_vars"] = (
             json.dumps(d["context_vars"])
             if d["context_vars"] is not None else None
@@ -164,7 +165,7 @@ class Project(Document):
             **kwargs,
             name=name,
             tags=json.loads(tags),
-            context_vars=json.loads(context_vars) if context_vars is not None else None,
+            vars=json.loads(context_vars) if context_vars is not None else None,
             is_active=True if is_active else False,
         )
 

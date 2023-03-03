@@ -352,7 +352,7 @@ def commit_hook_build_body(activity, **rest):
 
 
 def build_activity_vars(activity):
-    vars = activity.get_project().context_vars
+    vars = activity.get_project().vars
     return {
         k: v.format(
             username=activity.username,
