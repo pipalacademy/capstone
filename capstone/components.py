@@ -332,10 +332,11 @@ class ProjectHero(Hero):
             self.body.add(
                 html.div(
                     html.strong(
-                        "Your website has been deployed. See it here: ",
+                        "Your app has been deployed to ",
                         html.a(app_url, href=app_url),
                     ),
-                    class_="mt-3"
+                    class_="mt-3",
+                    target="_blank"
                 ),
             )
 
