@@ -299,6 +299,7 @@ def post_receive_webhook():
     response = "\nTriggered the checks for new changes.\nPlease wait for a minute or two for it to complete....\n"
     return response
 
+
 @tq.task_function
 def post_receive_webhook_action(username, project_name, git_commit_hash=None):
     user = User.find(username=username)
@@ -327,21 +328,37 @@ def post_receive_webhook_action(username, project_name, git_commit_hash=None):
 
 
 def checks_build_context(activity, **rest):
-    return {
+    body = {
         "capstone_url": config.capstone_url,
         "username": activity.username,
         "project_name": activity.project_name,
         **rest,
     }
+    if (built_vars := build_activity_vars(activity)):
+        body.update({"vars": built_vars})
+    return body
 
 
 def commit_hook_build_body(activity, **rest):
-    return {
+    body = {
         "username": activity.username,
         "project": activity.project_name,
         "git_url": activity.git_url,
         **rest,
     }
+    if (built_vars := build_activity_vars(activity)):
+        body.update({"vars": built_vars})
+    return body
+
+
+def build_activity_vars(activity):
+    vars = activity.get_project().vars
+    return {
+        k: v.format(
+            username=activity.username,
+            project_name=activity.project_name,
+        ) for k, v in vars.items()
+    } if vars is not None else None
 
 
 def write_post_receive_hook(filepath):

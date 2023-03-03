@@ -8,6 +8,7 @@ create table projects (
     tags text,
     checks_url text,
     commit_hook_url text,
+    vars text,
     created text,
     last_modified text
 );

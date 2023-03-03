@@ -133,6 +133,7 @@ class Project(Document):
     tags: list[str]
     checks_url: str
     commit_hook_url: str
+    vars: dict[str, str] | None = None
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
@@ -142,22 +143,25 @@ class Project(Document):
         d = super()._to_json()
         # TODO: maybe keep html_url in the response
         d.pop("html_url")
+        d.pop("vars")
         return d
 
     def _to_db(self):
         d = super()._to_db()
         d["tags"] = json.dumps(d["tags"])
+        d["vars"] = json.dumps(d["vars"]) if d["vars"] is not None else None
         d["is_active"] = 1 if d["is_active"] else 0
         d.pop("url")
         d.pop("html_url")
         return d
 
     @classmethod
-    def _from_db(cls, name, tags, is_active, **kwargs):
+    def _from_db(cls, name, tags, vars, is_active, **kwargs):
         return super()._from_db(
             **kwargs,
             name=name,
             tags=json.loads(tags),
+            vars=json.loads(vars) if vars is not None else None,
             is_active=True if is_active else False,
         )
 
