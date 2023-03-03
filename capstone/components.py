@@ -325,6 +325,21 @@ class Form(BootstrapElement):
     TAG = "form"
 
 
+class ProjectHero(Hero):
+    def __init__(self, *args, app_url=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if app_url:
+            self.body.add(
+                html.div(
+                    html.strong(
+                        "Your website has been deployed. See it here: ",
+                        html.a(app_url, href=app_url),
+                    ),
+                    class_="mt-3"
+                ),
+            )
+
+
 class ProjectGrid(Grid):
     COL_CLASS = "col-12 col-md-6 mb-3"
 

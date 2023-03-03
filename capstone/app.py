@@ -2,14 +2,14 @@ from functools import wraps
 
 from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
-from kutty.bootstrap import Hero
 
 from .api import api
 from .db import Activity, Project, User, check_password
 from .components import (
-    AbsoluteCenter, AuthNavEntry, Breadcrumb,
-    Form, Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,
-    ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton, SubmitButton
+    AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, Layout,
+    LinkWithoutDecoration, LoginButton, LoginCard, Page,
+    ProjectHero, ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton,
+    SubmitButton
 )
 
 app = Flask(__name__)
@@ -211,6 +211,7 @@ def project(name):
     project = Project.find(name=name)
     is_authenticated = bool(user)
     has_started_project = is_authenticated and user.has_started_project(project.name)
+    activity = user.get_activity(project.name) if has_started_project else None
 
     if request.method == "POST":
         if not is_authenticated:
@@ -223,10 +224,11 @@ def project(name):
             return redirect(request.url)
 
     page = Page(title="", container=html.div())
-    hero = Hero(
+    hero = ProjectHero(
         title=project.title,
         subtitle=project.short_description,
         text=Markdown(project.description),
+        app_url=activity and activity.vars.get("app_url"),
     )
     main = html.div(class_="container")
     page << hero
@@ -315,11 +317,12 @@ def individual_activity(user, username, project_name):
     breadcrumbs.add_class("p-0").breadcrumb_list.add_class("p-0")
 
     page = Page("", container=html.div())
-    hero = Hero(
+    hero = ProjectHero(
         html.div(breadcrumbs, class_="container"),
         title=project.title,
         subtitle=project.short_description,
         text=Markdown(project.description),
+        app_url=activity.vars.get("app_url"),
     )
     main = html.div(class_="container")
 

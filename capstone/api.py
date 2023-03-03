@@ -334,8 +334,8 @@ def checks_build_context(activity, **rest):
         "project_name": activity.project_name,
         **rest,
     }
-    if (built_vars := build_activity_vars(activity)):
-        body.update({"vars": built_vars})
+    if activity.vars:
+        body.update({"vars": activity.vars})
     return body
 
 
@@ -346,19 +346,9 @@ def commit_hook_build_body(activity, **rest):
         "git_url": activity.git_url,
         **rest,
     }
-    if (built_vars := build_activity_vars(activity)):
-        body.update({"vars": built_vars})
+    if activity.vars:
+        body.update({"vars": activity.vars})
     return body
-
-
-def build_activity_vars(activity):
-    vars = activity.get_project().vars
-    return {
-        k: v.format(
-            username=activity.username,
-            project_name=activity.project_name,
-        ) for k, v in vars.items()
-    } if vars is not None else None
 
 
 def write_post_receive_hook(filepath):

@@ -133,7 +133,7 @@ class Project(Document):
     tags: list[str]
     checks_url: str
     commit_hook_url: str
-    vars: dict[str, str] | None = None
+    vars: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
         self.url = get_project_url(self.name)
@@ -365,6 +365,7 @@ class Activity(Document):
 
     username: str | None = None
     project_name: str | None = None
+    vars: dict[str, str] = field(init=False)
 
     def __post_init__(self):
         if not self.username:
@@ -372,10 +373,13 @@ class Activity(Document):
         if not self.project_name:
             self.project_name = self.get_project().name
 
+        self.vars = build_activity_vars(self)
+
     def _to_db(self):
         d = super()._to_db()
         d.pop("username")
         d.pop("project_name")
+        d.pop("vars")
         return d
 
     def _to_json(self):
@@ -634,3 +638,13 @@ def make_new_project_dir(git_dir, git_user, username, project_name):
     os.makedirs(extraction_dir, exist_ok=True)
     subprocess.check_call(["unzip", "-d", extraction_dir, os.path.abspath(zipfile_path)])
     return repo_path
+
+
+def build_activity_vars(activity):
+    vars = activity.get_project().vars
+    return {
+        k: v.format(
+            username=activity.username,
+            project_name=activity.project_name,
+        ) for k, v in vars.items()
+    }
