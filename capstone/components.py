@@ -335,7 +335,7 @@ class ProjectHero(Hero):
                         "Your website has been deployed. See it here: ",
                         html.a(app_url, href=app_url),
                     ),
-                    class_="mt-3"
+                    class_="mt-3 prominent"
                 ),
             )
 
