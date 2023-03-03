@@ -56,12 +56,13 @@ def TaskDetails(task, status, check_statuses=(), desc_formats={}):
     if check_statuses:
         card.body.add_subtitle("Checks:")
         checks_list = card.body.add_check_list()
-        for check_status in check_statuses:
-            checks_list.add_item(
-                title=check_status.name,
-                status=check_status.status,
-                message=check_status.message
-            )
+        for check, check_status in zip(task.checks, check_statuses):
+            if check.name == check_status.name:
+                checks_list.add_item(
+                    title=check.title or check_status.name,
+                    status=check_status.status,
+                    message=check_status.message
+                )
     return card
 
 def authenticated(handler):

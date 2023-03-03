@@ -341,6 +341,7 @@ class Task(Document):
 class Check:
     name: str
     args: dict[str, Any]  # json
+    title: str | None = None
 
     def get_json(self):
         return asdict(self)
