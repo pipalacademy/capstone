@@ -1,7 +1,7 @@
 from textwrap import dedent
 
 from flask import get_flashed_messages
-
+from html import escape as html_escape
 from kutty import html, Optional
 from kutty.bootstrap import Layout as _Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
@@ -464,7 +464,7 @@ class TaskCheckListItem(BootstrapElement):
         if status:
             self << " - " + status
         if message:
-            self << TaskCheckListMessage(message)
+            self << TaskCheckListMessage(html_escape(message))
 
 
 class TaskCheckListMessage(BootstrapElement):
