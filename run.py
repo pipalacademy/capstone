@@ -1,4 +1,8 @@
 import argparse
+
+from capstone.log import setup_logger
+setup_logger()
+
 from capstone import tq
 from capstone.app import app
 

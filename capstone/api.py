@@ -2,6 +2,7 @@ import requests
 import subprocess
 import tempfile
 import zipfile
+import logging
 from . import tq
 
 from flask import Blueprint, make_response, request, url_for
@@ -13,6 +14,7 @@ from .utils import git
 from .utils.files import get_private_file, save_private_file
 
 
+logger = logging.getLogger(__name__)
 api = Blueprint("api", __name__)
 
 
@@ -314,12 +316,12 @@ def post_receive_webhook_action(username, project_name, git_commit_hash=None):
             json=json_body,
         )
         if not r.ok:
-            print(f"commit_hook failed:\n{r.content.decode()}")
+            logger.error(f"commit_hook failed:\n{r.content.decode()}")
         else:
-            print(f"commit hook ran:\n{r.content.decode()}")
+            logger.info(f"commit hook ran:\n{r.content.decode()}")
     if project.checks_url:
         response = activity_run_checks(username=username, project_name=project_name)
-        print(f"response from checks:\n{response}")
+        logger.info(f"response from checks:\n{response}")
 
     return "all done"
 
