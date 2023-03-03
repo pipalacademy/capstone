@@ -51,6 +51,7 @@ def TaskDetails(task, status, check_statuses=(), desc_formats={}):
         text=Markdown(description),
         status=status,
         collapsible_id=task.name,
+        collapsed=False if status == "In Progress" else True,
     )
     # TODO: move this to another element, and make it part of the TaskCard
     if check_statuses:

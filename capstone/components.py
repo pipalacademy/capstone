@@ -409,6 +409,7 @@ class TaskCard(BootstrapElement):
             self,
             *args,
             position, title, text, status, collapsible_id,
+            collapsed=True,
             **kwargs):
         super().__init__(*args, **kwargs)
         self.add_class(self.EXTRA_CLASSES)
@@ -417,7 +418,8 @@ class TaskCard(BootstrapElement):
             f"{position}. {title}",
             get_status_mark(status),
         )
-        self.body = TaskCardBody(id=collapsible_id, text=text)
+        self.body = TaskCardBody(
+            id=collapsible_id, text=text, collapsed=collapsed)
 
         self << CollapsibleLink(self.heading, href=f"#{collapsible_id}")
         self << self.body
@@ -439,9 +441,11 @@ class TaskCardHeading(CardBody):
 class TaskCardBody(CardBody):
     EXTRA_CLASSES = "collapse py-0"
 
-    def __init__(self, *args, id, **kwargs):
+    def __init__(self, *args, id, collapsed, **kwargs):
         super().__init__(*args, id=id, **kwargs)
         self.add_class(self.EXTRA_CLASSES)
+        if not collapsed:
+            self.add_class("show")
 
     def add_check_list(self):
         check_list = TaskCheckList()
