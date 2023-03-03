@@ -267,6 +267,7 @@ def all_activity(user):
         project_activities = html.div(class_="m-3")
 
         for activity in Activity.find_all(project_id=project.id):
+            user = activity.get_user()
             progress = activity.get_progress()
             project_activities << html.div(class_="row").add(
                 html.div(
