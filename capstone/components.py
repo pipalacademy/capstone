@@ -333,10 +333,9 @@ class ProjectHero(Hero):
                 html.div(
                     html.strong(
                         "Your app has been deployed to ",
-                        html.a(app_url, href=app_url),
+                        html.a(app_url, href=app_url, target="_blank"),
                     ),
                     class_="mt-3",
-                    target="_blank"
                 ),
             )
 
