@@ -399,7 +399,7 @@ class Activity(Document):
         task_activity = TaskActivity.find(activity_id=self.id, task_id=task_id)
         if task_activity is None:
             task = Task.find(id=task_id)
-            return task.get_default_task_activity(activity_id=self.id)
+            return task.get_default_task_activity(activity_id=self.id).save()
         else:
             return task_activity
 
