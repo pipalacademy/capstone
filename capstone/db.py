@@ -647,4 +647,4 @@ def build_activity_vars(activity):
             username=activity.username,
             project_name=activity.project_name,
         ) for k, v in vars.items()
-    }
+    } if vars else {}
