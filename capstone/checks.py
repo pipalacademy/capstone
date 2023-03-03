@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def run_check(base_url, check_name, context, arguments):
-    check_url = f"{base_url}/checks/{check_name}"
+    check_url = f"{base_url}/{check_name}"
     logger.info("  Running check %s", check_url)
     logger.info("  Arguments %s", arguments)
     r = requests.post(
