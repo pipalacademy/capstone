@@ -1,5 +1,7 @@
 #! /bin/bash
 
+set -e
+
 if [ -z "$TEST_DATABASE_URL" ]
 then
 	dropdb capstone_test --if-exists
