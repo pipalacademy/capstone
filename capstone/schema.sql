@@ -1,87 +1,103 @@
-create table projects (
-    id integer primary key,
-    name text unique,
-    title text,
-    short_description text,
-    description text,
-    is_active integer,
-    tags text,
-    checks_url text,
-    commit_hook_url text,
-    context_vars text,
-    created text,
-    last_modified text
+create table site (
+    id serial primary key,
+    name text unique not null,
+    title text not null,
+    domain text not null,
+
+    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
 );
 
-create table tasks (
+-- create table site_settings (
+--     id serial primary key,
+--     site_id integer not null references site,
+--     name text,
+--     value text,
+
+--     unique (site_id, name)
+-- );
+
+create table user (
     id integer primary key,
-    project_id int references projects(id),
-    name text,
-    title text,
-    description text,
-    position int,
-    checks text,
-    created text,
-    last_modified text,
+    site_id integer not null references site,
+    username text not null,
+    email_address text not null,
+    full_name text,
+    enc_password text,
+    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+);
+
+create unique index user_username_idx on user(lower(username));
+create unique index user_email_idx on user(lower(email));
+
+create table project (
+    id serial primary key,
+    site_id integer not null references site,
+    name text not null,
+    short_description text not null,
+    description text not null,
+    tags text[],
+
+    -- or status draft/published/archived
+    is_published boolean default 'f',
+
+    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique (site_id, name),
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
+);
+
+create table task (
+    id serial primary key,
+    project_id integer not null references project,
+    position integer not null,
+    name text not null,
+    title text not null,
+    description text not null,
+
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$'),
     unique(project_id, name)
 );
 
-create table users (
-    id integer primary key,
-    username text unique,
-    email_address text unique,
-    full_name text,
-    password text, -- TODO: rename this to show that it's encoded
-    created text,
-    last_modified text
+create table check (
+    id serial primary key,
+    task_id integer not null references task,
+    position integer not null,
+    name text not null,
+    title text not null,
+    args JSON not null
 );
 
-create table activity (
-    id integer primary key,
-    user_id text not null,
-    project_id text not null,
-    git_url text,
-    created text,
-    last_modified text,
-    unique(user_id, project_id)
-);
+-- create table changelog (
+--     id serial primary key,
+--     site_id integer not null references site,
+--     project_id integer references project,
+--     action text,
+--     -- author
+--     details JSON
+-- );
 
-create view activity_view as
-select
-    users.username,
-    projects.name as project_name,
-    activity.id,
-    activity.user_id,
-    activity.project_id,
-    activity.git_url,
-    activity.created,
-    activity.last_modified
-from activity
-join users on users.id == activity.user_id
-join projects on projects.id == activity.project_id;
+-- user_project:
+--     - project_id
+--     - user_id
+--     - git_url
+--     - created
+--     - last_modified
 
-create table task_activity (
-    id integer primary key,
-    activity_id integer,
-    task_id integer,
-    checks text,
-    status text,
-    created text,
-    last_modified text,
-    unique(activity_id, task_id)
-);
+-- user_task_status
+--     - task_id
+--     - user_id
+--     - status
+--     - created
+--     - last_modified
 
-create view task_activity_view as
-select
-    tasks.position,
-    tasks.name,
-    tasks.title,
-    task_activity.id,
-    task_activity.activity_id,
-    task_activity.task_id,
-    task_activity.checks,
-    task_activity.status,
-    task_activity.created,
-    task_activity.last_modified
-from task_activity
-join tasks on tasks.id == task_activity.task_id;
+-- user_check_status
+--     - status -- pending|pass|fail|error
+--     - message text
+
+-- How to handle deletes
+--
