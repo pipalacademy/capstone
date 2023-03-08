@@ -1,6 +1,8 @@
 import os
 
-db_uri = "sqlite:///capstone.db"
+# TODO: rename to database_url or DATABASE_URL
+db_uri = os.getenv("DATABASE_URL", "postgres:///capstone")
+
 hostname = "127.0.0.1:5000"  # TODO: remove this
 capstone_url = f"http://{hostname}"
 git_post_receive_script = os.getenv("CAPSTONE_GIT_POST_RECEIVE_SCRIPT")

@@ -10,6 +10,8 @@ create table site (
     CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
 );
 
+create index site_domain_idx on site(domain);
+
 -- create table site_settings (
 --     id serial primary key,
 --     site_id integer not null references site,
@@ -19,19 +21,19 @@ create table site (
 --     unique (site_id, name)
 -- );
 
-create table user (
+create table user_account (
     id integer primary key,
     site_id integer not null references site,
     username text not null,
-    email_address text not null,
+    email text not null,
     full_name text,
     enc_password text,
     created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
-    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc')
 );
 
-create unique index user_username_idx on user(lower(username));
-create unique index user_email_idx on user(lower(email));
+create unique index user_account_username_idx on user_account(lower(username));
+create unique index user_account_email_idx on user_account(lower(email));
 
 create table project (
     id serial primary key,
@@ -63,7 +65,7 @@ create table task (
     unique(project_id, name)
 );
 
-create table check (
+create table task_check (
     id serial primary key,
     task_id integer not null references task,
     position integer not null,

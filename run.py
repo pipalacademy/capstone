@@ -5,16 +5,20 @@ setup_logger()
 
 from capstone import tq
 from capstone.app import app
+from capstone.schema import migrate
 
 def parse_args():
     p = argparse.ArgumentParser()
+    p.add_argument("--migrate", action="store_true", default=False, help="migrate database")
     p.add_argument("--tasks", action="store_true", default=False, help="run tasks")
     p.add_argument("--add-dummy-tasks", action="store_true", default=False, help="add dummy tasks")
     return p.parse_args()
 
 def main():
     args = parse_args()
-    if args.tasks:
+    if args.migrate:
+        migrate()
+    elif args.tasks:
         tq.run_pending_tasks_in_loop()
     elif args.add_dummy_tasks:
         add_dummy_tasks()
