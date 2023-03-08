@@ -15,4 +15,4 @@ jobs:
     - name: Install dependencies
       run: pip install -r dev-requirements.txt -r requirements.txt
     - name: build and deploy docs
-      run: mkdocs gh-deploy
+      run: mkdocs gh-deploy --force
