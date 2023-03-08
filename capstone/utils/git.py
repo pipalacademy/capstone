@@ -1,9 +1,6 @@
 import subprocess
 import sys
 
-from .. import config
-
-
 def init(*args, workdir=None, **kwargs):
     cmd = build_cmd("init", options=kwargs, workdir=workdir, args=args)
 

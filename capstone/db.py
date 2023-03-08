@@ -21,7 +21,7 @@ db = web.database(config.db_uri)
 
 @dataclass(kw_only=True)
 class Document:
-    _tablename = ...
+    _tablename = ""
 
     id: int | None = None
     created: datetime | None = None
