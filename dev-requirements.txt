@@ -1,3 +1,11 @@
 pytest
 pytest-mypy
 mkdocs-material
+
+#
+# types required for mypy
+# Generate the following using: pip freeze | grep types-
+types-colorama==0.4.15.8
+types-PyYAML==6.0.12.8
+types-requests==2.28.11.15
+types-urllib3==1.26.25.8
