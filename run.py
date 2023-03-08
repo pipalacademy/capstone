@@ -1,11 +1,16 @@
 import argparse
 
-from capstone.log import setup_logger
+from toolkit import setup_logger
+import logging
 setup_logger()
+
+logger = logging.getLogger(__name__)
 
 from capstone import tq
 from capstone.app import app
 from capstone.schema import migrate
+
+logger.info("Starting Capstone...")
 
 def parse_args():
     p = argparse.ArgumentParser()
