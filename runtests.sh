@@ -14,4 +14,5 @@ export DATABASE_URL=$TEST_DATABASE_URL
 python run.py --migrate
 
 export PYTHONPATH=.
+mypy --install-types --non-interactive
 pytest --mypy "$@"
