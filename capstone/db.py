@@ -613,7 +613,7 @@ git clone {git_url}
 To complete this task, make a dummy commit and push to the repo.
 
 ```
-git commit --allow-empty -m "test"
+git commit --allow-empty -m "first commit"
 git push
 ```
 """
