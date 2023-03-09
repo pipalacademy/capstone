@@ -39,6 +39,7 @@ create table project (
     id serial primary key,
     site_id integer not null references site,
     name text not null,
+    title text not null,
     short_description text not null,
     description text not null,
     tags text[],
