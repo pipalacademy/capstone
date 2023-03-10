@@ -4,8 +4,8 @@ create table site (
     title text not null,
     domain text not null,
 
-    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
-    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 
     CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
 );
@@ -28,8 +28,8 @@ create table user_account (
     email text not null,
     full_name text,
     enc_password text,
-    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
-    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc')
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc')
 );
 
 create unique index user_account_username_idx on user_account(lower(username));
@@ -42,13 +42,13 @@ create table project (
     title text not null,
     short_description text not null,
     description text not null,
-    tags text[],
+    tags text[] not null,
 
     -- or status draft/published/archived
     is_published boolean default 'f',
 
-    created timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
-    last_modified timestamp default (CURRENT_TIMESTAMP at time zone 'utc'),
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 
     unique (site_id, name),
     CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
