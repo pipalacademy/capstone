@@ -7,7 +7,8 @@ from . import tq
 
 from flask import Blueprint, make_response, request, url_for
 
-from .db import Activity, Project, User, CheckStatus, TaskActivityInput
+#from .db import Activity, Project, User, CheckStatus, TaskActivityInput
+from .db import Project
 from .checks import run_check
 from . import config
 from .utils import git
@@ -77,14 +78,13 @@ def get_or_upsert_project(name):
         project = Project.find(name=name)
         if project is None:
             return NotFound("Project not found")
-        return project.get_json()
+        return project.get_detail()
     else:
         if not is_authorized(request):
             return Unauthorized()
 
         # TODO: validate body
         args = request.json
-        tasks = args.pop("tasks")
 
         project = Project.find(name=name)
         if project is None:
@@ -92,9 +92,9 @@ def get_or_upsert_project(name):
         else:
             project.update(**args)
 
-        project.update_tasks(tasks)
+        #project.update_tasks(tasks)
         project.save()
-        return project.get_json()
+        return project.get_detail()
 
 
 @api.route("/projects/<project_name>/repo.zip", methods=["GET", "PUT"])
