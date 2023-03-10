@@ -18,14 +18,14 @@ DocumentT = TypeVar("DocumentT", bound="Document")
 CURRENT_TIMESTAMP = SQLLiteral("CURRENT_TIMESTAMP at time zone 'utc'")
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Document:
     _tablename: ClassVar[str] = ""
     _teaser_fields: ClassVar[list[str]] = []
     _detail_fields: ClassVar[list[str]] = []
     _db_fields: ClassVar[list[str]] = []
 
-    id: int
+    id: int | None = None
 
     @classmethod
     def find_all(cls: Type[DocumentT], **filters: Any) -> list[DocumentT]:
