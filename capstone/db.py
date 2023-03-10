@@ -104,8 +104,8 @@ class Project(Document):
         "tags", "is_published", "created", "last_modified",
     ]
     _db_fields = [
-        "name", "title", "short_description", "description", "tags",
-        "is_published", "created", "last_modified",
+        "id", "site_id", "name", "title", "short_description", "description",
+        "tags", "is_published", "created", "last_modified",
     ]
 
     site_id: int
@@ -121,11 +121,13 @@ class Project(Document):
     last_modified: datetime | None = None
 
     url: str | None = field(init=False, default=None)
+    html_url: str | None = field(init=False, default=None)
 
     def __post_init__(self):
         site = self.get_site()
         if site is not None:
             self.url = f"http://{site.domain}/api/projects/{self.name}"
+            self.html_url = f"http://{site.domain}/projects/{self.name}"
 
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
