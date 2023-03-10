@@ -4,7 +4,8 @@ from flask import Flask, abort, flash, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
 
 from .api import api
-from .db import Activity, Project, User, check_password
+#from .db import Activity, Project, User, check_password
+from .db import Project
 from .components import (
     AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, Layout,
     LinkWithoutDecoration, LoginButton, LoginCard, Page,
@@ -154,7 +155,7 @@ def logout(user):
 
 @app.route("/projects")
 def projects():
-    projects = Project.find_all(is_active=True)
+    projects = Project.find_all(is_published=True)
 
     page = Page(title="Projects")
     page << ProjectGrid(
@@ -169,7 +170,7 @@ def projects():
 @app.route("/dashboard")
 @authenticated
 def dashboard(user):
-    projects = Project.find_all(is_active=True)
+    projects = Project.find_all(is_published=True)
     started_projects = [
         project
         for project in projects
@@ -265,7 +266,7 @@ def all_activity(user):
 
     project_section_empty_state = html.div(html.em("No participants have started this project."))
 
-    for project in Project.find_all(is_active=True):
+    for project in Project.find_all(is_published=True):
         project_section = html.div(
             html.h3(project.title), id=project.name, class_="my-3")
         project_activities = html.div(class_="m-3")
