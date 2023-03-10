@@ -41,12 +41,20 @@ class Document:
         self.__dict__.update(**fields)
         return self
 
-    def save(self: DocumentT) -> int:
+    def save(self: DocumentT) -> DocumentT:
         field_names = get_fields(self)
         fields = self.to_db()
         if "last_modified" in field_names:
             fields.update({"last_modified": CURRENT_TIMESTAMP})
-        return int(save(self._tablename, **fields))
+        id = int(save(self._tablename, **fields))
+        self.refresh(id=id)
+        return self
+
+    def refresh(self: DocumentT, id: int | None = None) -> DocumentT:
+        id = id if id is not None else self.id
+        fresh = self.__class__.find(id=id)
+        assert fresh is not None
+        return self.update(**fresh.get_dict())
 
     def delete(self: DocumentT) -> int:
         return delete(self._tablename, id=self.id)
@@ -81,7 +89,7 @@ class Document:
         return self._serialize(fields=self._detail_fields)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Site(Document):
     _tablename: ClassVar[str] = "site"
 
