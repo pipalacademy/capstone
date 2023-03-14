@@ -137,6 +137,17 @@ class Project(Document):
             self.url = f"http://{site.domain}/api/projects/{self.name}"
             self.html_url = f"http://{site.domain}/projects/{self.name}"
 
+    @classmethod
+    def find_all(
+            cls: Type[Project], **filters: Any) -> list[Project]:
+        assert "site_id" in filters, "site_id must be specified"
+        return super().find_all(**filters)
+
+    @classmethod
+    def find(cls: Type[Project], **filters: Any) -> Project | None:
+        assert "site_id" in filters, "site_id must be specified"
+        return super().find(**filters)
+
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
 
