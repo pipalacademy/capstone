@@ -7,3 +7,4 @@ pyyaml==6.0
 beautifulsoup4==4.11.1
 git+https://github.com/pipalacademy/toolkit.git#egg=toolkit
 git+https://github.com/pipalacademy/kutty.git#egg=kutty
+pydantic==1.10.6
