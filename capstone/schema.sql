@@ -1,8 +1,8 @@
 create table site (
     id serial primary key,
     name text unique not null,
+    domain text unique not null,
     title text not null,
-    domain text not null,
 
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
