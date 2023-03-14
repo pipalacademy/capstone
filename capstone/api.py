@@ -5,7 +5,7 @@ import zipfile
 import logging
 from . import tq
 
-from flask import Blueprint, make_response, request, url_for
+from flask import Blueprint, g, make_response, request, url_for
 
 #from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .db import Project
@@ -56,7 +56,7 @@ def list_projects():
 
     Returns: array[project_teaser]
     """
-    projects = Project.find_all()
+    projects = Project.find_all(site_id=g.site_id)
     return [
         project.get_teaser() for project in projects
     ]
@@ -75,7 +75,7 @@ def get_or_upsert_project(name):
     Returns: project
     """
     if request.method == "GET":
-        project = Project.find(name=name)
+        project = Project.find(site_id=g.site_id, name=name)
         if project is None:
             return NotFound("Project not found")
         return project.get_detail()
@@ -85,14 +85,15 @@ def get_or_upsert_project(name):
 
         # TODO: validate body
         args = request.json
+        args["site_id"] = g.site_id
 
-        project = Project.find(name=name)
+        project = Project.find(site_id=g.site_id, name=name)
         if project is None:
             project = Project(**args)
         else:
             project.update(**args)
 
-        #project.update_tasks(tasks)
+        # project.update_tasks(tasks)
         project.save()
         return project.get_detail()
 
