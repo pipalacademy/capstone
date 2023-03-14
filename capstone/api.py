@@ -3,9 +3,10 @@ import subprocess
 import tempfile
 import zipfile
 import logging
+from pydantic import BaseModel, ValidationError
 from . import tq
 
-from flask import Blueprint, g, make_response, request, url_for
+from flask import Blueprint, g, make_response, request
 
 #from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .db import Project
@@ -48,6 +49,17 @@ def Conflict(message="Conflict"):
     return make_response(({"message": message}, 409))
 
 
+class ProjectUpsertModel(BaseModel):
+    title: str
+    short_description: str
+    description: str
+    tags: list[str]
+    is_published: bool | None = None
+
+    class Config:
+        extra = "allow"
+
+
 # Resource: project
 
 @api.route("/projects", methods=["GET"])
@@ -83,15 +95,19 @@ def get_or_upsert_project(name):
         if not is_authorized(request):
             return Unauthorized()
 
-        # TODO: validate body
-        args = request.json
-        args["site_id"] = g.site_id
+        try:
+            body = ProjectUpsertModel.parse_obj(request.json).dict()
+        except ValidationError as e:
+            return e.json(), 400, {"content-type": "application/json"}
+
+        body["name"] = name
+        body["site_id"] = g.site_id
 
         project = Project.find(site_id=g.site_id, name=name)
         if project is None:
-            project = Project(**args)
+            project = Project(**body)
         else:
-            project.update(**args)
+            project.update(**body)
 
         # project.update_tasks(tasks)
         project.save()

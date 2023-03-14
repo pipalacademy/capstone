@@ -148,6 +148,12 @@ class Project(Document):
         assert "site_id" in filters, "site_id must be specified"
         return super().find(**filters)
 
+    def refresh(self, id: int | None = None) -> Project:
+        id = id if id is not None else self.id
+        fresh = self.__class__.find(id=id, site_id=self.site_id)
+        assert fresh is not None
+        return self.update(**fresh.get_dict())
+
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
 
