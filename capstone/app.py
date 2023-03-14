@@ -1,11 +1,11 @@
 from functools import wraps
 
-from flask import Flask, abort, flash, redirect, request, session, url_for
+from flask import Flask, abort, flash, g, redirect, request, session, url_for
 from kutty import html, Markdown, Optional
 
 from .api import api
 #from .db import Activity, Project, User, check_password
-from .db import Project
+from .db import Project, Site
 from .components import (
     AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, Layout,
     LinkWithoutDecoration, LoginButton, LoginCard, Page,
@@ -96,6 +96,16 @@ def logout_user():
     session.pop("username")
 
 
+@app.before_request
+def set_site_id():
+    domain = request.host
+    site = Site.find(domain=domain)
+    if not site:
+        abort(404)
+    else:
+        g.site_id = site.id
+
+
 @app.route("/")
 def index():
     user = get_authenticated_user()
@@ -155,7 +165,7 @@ def logout(user):
 
 @app.route("/projects")
 def projects():
-    projects = Project.find_all(is_published=True)
+    projects = Project.find_all(site_id=g.site_id, is_published=True)
 
     page = Page(title="Projects")
     page << ProjectGrid(
