@@ -5,5 +5,6 @@ markdown
 requests
 pyyaml==6.0
 beautifulsoup4==4.11.1
+Click
 git+https://github.com/pipalacademy/toolkit.git#egg=toolkit
 git+https://github.com/pipalacademy/kutty.git#egg=kutty
