@@ -94,5 +94,24 @@ def projects_show(site, project):
         maxcolwidths=60))
 
 
+@projects.command("delete")
+@site_option()
+@click.argument("project")
+def projects_delete(site, project):
+    """Delete a project in a site."""
+    print("Delete project", site, project)
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_project = db.Project.find(name=project)
+    if db_project is None:
+        print("Project not found")
+        sys.exit(1)
+    project_name = db_project.name
+    db_project.delete()
+    print(f"Deleted project {project_name}")
+
+
 if __name__ == "__main__":
     cli()
