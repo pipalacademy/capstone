@@ -92,6 +92,7 @@ class Document:
 @dataclass(kw_only=True)
 class Site(Document):
     _tablename: ClassVar[str] = "site"
+    _db_fields = ["name", "title", "domain"]
 
     name: str
     title: str
