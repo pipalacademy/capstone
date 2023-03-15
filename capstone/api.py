@@ -98,14 +98,18 @@ def get_or_upsert_project(name):
         try:
             body = ProjectUpsertModel.parse_obj(request.json).dict()
         except ValidationError as e:
+            # TODO: return as ValidationFailed(...) instead
+            # maybe ValidationFailed(str(e))
             return e.json(), 400, {"content-type": "application/json"}
 
         body["name"] = name
         body["site_id"] = g.site_id
 
-        project = Project.find(site_id=g.site_id, name=name)
+        project = Project.find(name=name)
         if project is None:
             project = Project(**body)
+        elif project is not None and project.site_id != body["site_id"]:
+            return ValidationFailed("Project cannot be updated from this site")
         else:
             project.update(**body)
 
