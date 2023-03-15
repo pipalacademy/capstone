@@ -98,9 +98,7 @@ def get_or_upsert_project(name):
         try:
             body = ProjectUpsertModel.parse_obj(request.json).dict()
         except ValidationError as e:
-            # TODO: return as ValidationFailed(...) instead
-            # maybe ValidationFailed(str(e))
-            return e.json(), 400, {"content-type": "application/json"}
+            return ValidationFailed(str(e))
 
         body["name"] = name
         body["site_id"] = g.site_id
