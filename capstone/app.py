@@ -217,54 +217,20 @@ def dashboard(user):
     return layout.render_page(page)
 
 
-@app.route("/projects/<name>", methods=["GET", "POST"])
+@app.route("/projects/<name>", methods=["GET"])
 def project(name):
-    user = get_authenticated_user()
-    project = Project.find(name=name)
-    is_authenticated = bool(user)
-    has_started_project = is_authenticated and user.has_started_project(project.name)
-    activity = user.get_activity(project.name) if has_started_project else None
-
-    if request.method == "POST":
-        if not is_authenticated:
-            flash("You must login before starting a project", "error")
-        elif has_started_project:
-            flash("You have already started this project!", "error")
-        else:
-            user.start_project(project.name)
-            flash("You have started this project. All the best!", "success")
-            return redirect(request.url)
+    project = Project.find(site_id=g.site_id, name=name)
 
     page = Page(title="", container=html.div())
     hero = ProjectHero(
         title=project.title,
         subtitle=project.short_description,
         text=Markdown(project.description),
-        app_url=activity and activity.vars.get("app_url"),
+        app_url=None,
     )
     main = html.div(class_="container")
     page << hero
     page << main
-
-    if not is_authenticated:
-        hero.body.add(LinkButton("Start Project", href="/login", class_="btn-lg"))
-    elif not has_started_project:
-        hero.body.add(
-            Form(SubmitButton("Start Project", class_="btn-lg"), method="POST")
-        )
-
-    activity = has_started_project and user.get_activity(project.name) or None
-    for task in project.get_tasks():
-        task_activity = activity and activity.get_task_activity(task.id)
-        desc_formats = {
-            "git_url": activity.git_url,
-        } if activity is not None and task.position == 0 else {}
-        main << TaskDetails(
-            task,
-            status=task_activity and task_activity.status or None,
-            check_statuses=task_activity and task_activity.checks or None,
-            desc_formats=desc_formats,
-        )
 
     return layout.render_page(page)
 
