@@ -1,4 +1,8 @@
 import click
+from tabulate import tabulate
+
+from capstone import db
+
 
 @click.group()
 def cli():
@@ -40,6 +44,12 @@ def projects():
 def projects_list(site):
     """Lists projects of a site."""
     print("List projects", site)
+    db_site = db.Site.find(name=site)
+    projects = db.Project.find_all(site_id=db_site.id)
+    print(tabulate(
+        [project.get_teaser() for project in projects],
+        headers="keys",
+        maxcolwidths=[40] * 10))
 
 
 @projects.command("show")
