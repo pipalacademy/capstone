@@ -22,7 +22,7 @@ create index site_domain_idx on site(domain);
 -- );
 
 create table user_account (
-    id integer primary key,
+    id serial primary key,
     site_id integer not null references site,
     username text not null,
     email text not null,

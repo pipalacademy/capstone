@@ -11,3 +11,6 @@ git_dir = os.getenv("CAPSTONE_GIT_DIR")
 git_base_url = os.getenv("CAPSTONE_GIT_BASE_URL")
 
 tasks_dir = os.getenv("CAPSTONE_TASKS_DIR") or "tasks"
+
+google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")

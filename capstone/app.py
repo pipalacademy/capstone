@@ -1,9 +1,10 @@
 from functools import wraps
 
-from flask import Flask, abort, flash, g, redirect, request, session, url_for
+from flask import Flask, abort, flash, g, redirect, request, url_for
 from kutty import html, Markdown, Optional
 
 from .api import api
+from .auth import auth_bp, get_authenticated_user
 #from .db import Activity, Project, User, check_password
 from .db import Project, Site
 from .components import (
@@ -16,12 +17,13 @@ from .components import (
 app = Flask(__name__)
 app.secret_key = "hello, world!"  # TODO: change this
 app.register_blueprint(api, url_prefix="/api")
+app.register_blueprint(auth_bp, url_prefix="/auth")
 
 layout = Layout("Capstone")
 layout.navbar.right_entries.add(
     AuthNavEntry(
-        login_link="/login", login_content=LoginButton("Login"),
-        logout_link="/logout", logout_content="Logout",
+        login_link="/auth/login", login_content=LoginButton("Login"),
+        logout_link="/auth/logout", logout_content="Logout",
         is_logged_in=lambda: is_authenticated(),
     )
 )
@@ -72,23 +74,8 @@ def authenticated(handler):
     return wrapper
 
 
-def get_authenticated_user():
-    if "username" in session:
-        return User.find(username=session["username"])
-    else:
-        return None
-
-
 def is_authenticated():
     return get_authenticated_user() is not None
-
-
-def login_user(username):
-    session["username"] = username
-
-
-def logout_user():
-    session.pop("username")
 
 
 @app.before_request
@@ -108,54 +95,6 @@ def index():
         return redirect("/dashboard")
     else:
         return redirect("/projects")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    next_page = request.args.get("next", "/")
-
-    page = Page(
-        "",
-        container=html.div(class_="w-100 h-100"),
-    )
-    page << html.tag("style", "body { background-color: #D3D3D3; }")
-
-    center = AbsoluteCenter()
-    page << center
-
-    login_card = LoginCard(
-        username_field="username", password_field="password",
-        method="POST", action=url_for("login", next=next_page),
-    )
-    center << login_card
-
-    if request.method == "GET":
-        return layout.render_page(page)
-
-    elif request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        if not username or not password:
-            login_card.add_error("Missing username or password")
-            return layout.render_page(page)
-
-        user = User.find(username=username)
-        if (not user or not check_password(password, user.password)):
-            login_card.add_error("Invalid username or password")
-            return layout.render_page(page)
-
-        login_user(user.username)
-        flash("Logged in successfully", "success")
-        return redirect(next_page)
-    else:
-        abort(405)
-
-
-@app.route("/logout")
-@authenticated
-def logout(user):
-    logout_user()
-    return redirect("/")
 
 
 @app.route("/projects")

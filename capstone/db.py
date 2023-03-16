@@ -279,6 +279,29 @@ class TaskCheck(Document):
         return Task.find(id=self.task_id)
 
 
+@dataclass(kw_only=True)
+class User(Document):
+    _tablename = "user_account"
+    _db_fields = [
+        "id", "site_id", "username", "email", "full_name", "enc_password",
+        "created", "last_modified"]
+    _teaser_fields = ["username", "email", "full_name"]
+    _detail_fields = [
+        "username", "email", "full_name", "created", "last_modified"]
+
+    site_id: int
+    username: str
+    email: str
+    full_name: str
+    enc_password: str | None = None
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_site(self) -> Site | None:
+        return Site.find(id=self.site_id)
+
+
 # db queries
 
 def find_all(table_name: str, **filters: Any) -> list[dict]:
