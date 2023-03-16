@@ -39,33 +39,28 @@ def ProjectTeaser(project, is_started):
     )
 
 
-def TaskDetails(task, status, check_statuses=(), desc_formats={}):
-    # TODO: desc_formats is not pretty, find another way
-    if desc_formats:
-        description = task.description.format(**desc_formats)
-    else:
-        description = task.description
-
+def TaskDetails(task, status, check_statuses=(), description_vars={}):
     card = TaskCard(
         position=task.position,
         title=task.title,
-        text=Markdown(description),
+        text=Markdown(task.render_description(description_vars)),
         status=status,
         collapsible_id=task.name,
         collapsed=False if status == "In Progress" else True,
     )
     # TODO: move this to another element, and make it part of the TaskCard
-    if check_statuses:
-        card.body.add_subtitle("Checks:")
-        checks_list = card.body.add_check_list()
-        for check, check_status in zip(task.checks, check_statuses):
-            if check.name == check_status.name:
-                checks_list.add_item(
-                    title=check.title or check_status.name,
-                    status=check_status.status,
-                    message=check_status.message
-                )
+    # if check_statuses:
+    #     card.body.add_subtitle("Checks:")
+    #     checks_list = card.body.add_check_list()
+    #     for check, check_status in zip(task.checks, check_statuses):
+    #         if check.name == check_status.name:
+    #             checks_list.add_item(
+    #                 title=check.title or check_status.name,
+    #                 status=check_status.status,
+    #                 message=check_status.message
+    #             )
     return card
+
 
 def authenticated(handler):
     @wraps(handler)
@@ -231,6 +226,8 @@ def project(name):
     main = html.div(class_="container")
     page << hero
     page << main
+    for task in project.get_tasks():
+        main << TaskDetails(task, status=None)
 
     return layout.render_page(page)
 
