@@ -95,8 +95,15 @@ def projects_show(site, project):
         {"key": project_dict.keys(), "value": project_dict.values()},
         maxcolwidths=60))
     if tasks:
+        # TODO: maybe figure out a better way to print checks?
         print("Tasks")
-        print(make_table([t.get_dict() for t in tasks]))
+        print(make_table([
+            {
+                **t.get_dict(),
+                "checks": [c.title for c in t.get_checks()],
+            }
+            for t in tasks
+        ]))
 
 
 @projects.command("delete")
