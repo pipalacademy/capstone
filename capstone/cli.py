@@ -85,13 +85,18 @@ def projects_show(site, project):
         print("Site not found")
         sys.exit(1)
     db_project = db.Project.find(name=project)
+    tasks = db_project.get_tasks()
     if db_project is None:
         print("Project not found")
         sys.exit(1)
     project_dict = db_project.get_dict()
+    project_dict["num_tasks"] = len(tasks)
     print(make_table(
         {"key": project_dict.keys(), "value": project_dict.values()},
         maxcolwidths=60))
+    if tasks:
+        print("Tasks")
+        print(make_table([t.get_dict() for t in tasks]))
 
 
 @projects.command("delete")
