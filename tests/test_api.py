@@ -23,14 +23,27 @@ fake_projects = [
         "title": "Test Project",
         "short_description": "test short description",
         "description": "test description",
-        "tags": ["test-tag-1", "test-tag-2"]
+        "tags": ["test-tag-1", "test-tag-2"],
     },
     {
         "name": "test-project-2",
         "title": "Test Project Beta",
         "short_description": "test short description beta",
         "description": "test description beta",
-        "tags": ["test-tag-1-beta", "test-tag-2-beta"]
+        "tags": ["test-tag-1-beta", "test-tag-2-beta"],
+    }
+]
+
+fake_tasks = [
+    {
+        "name": "foo",
+        "title": "foo short desc",
+        "description": "foo desc"
+    },
+    {
+        "name": "bar",
+        "title": "bar short desc",
+        "description": "bar desc"
     }
 ]
 
@@ -62,6 +75,7 @@ def fake_site_2():
 @pytest.fixture(scope="function")
 def fake_project(fake_site):
     project = db.Project(**fake_projects[0], site_id=fake_site.id).save()
+    project.update_tasks(fake_tasks)
     yield project
     project.delete()
 
@@ -153,13 +167,15 @@ def test_get_project_when_project_is_on_different_site(
 
 def test_create_project_when_user_not_authorized(client, fake_site):
     endpoint = f"/api/projects/{fake_projects[0]['name']}"
-    response = client.put(endpoint, json=fake_projects[0])
+    response = client.put(
+        endpoint, json={**fake_projects[0], "tasks": fake_tasks})
     assert response.status_code == 401
 
 
 def test_update_project_when_user_not_authorized(client, fake_project):
     endpoint = f"/api/projects/{fake_projects[0]['name']}"
-    response = client.put(endpoint, json=fake_projects[0])
+    response = client.put(
+        endpoint, json={**fake_projects[0], "tasks": fake_tasks})
     assert response.status_code == 401
 
 
@@ -170,7 +186,8 @@ def test_create_project(client, fake_site):
 
     endpoint = f"/api/projects/{fake_projects[0]['name']}"
     response = client.put(
-            endpoint, headers=get_test_headers(), json=fake_projects[0])
+            endpoint, headers=get_test_headers(),
+            json={**fake_projects[0], "tasks": fake_tasks})
     assert response.status_code == 200
     assert isinstance(response.json, dict)
     assert response.json["name"] == fake_projects[0]["name"]
@@ -184,11 +201,11 @@ def test_create_project(client, fake_site):
     project.delete()
 
 
-def test_create_project_when_insufficient_data_is_given(
+def test_create_project_when_incomplete_data_is_given(
         client, fake_site):
     endpoint = f"/api/projects/{fake_projects[0]['name']}"
     response = client.put(
-            endpoint, headers=get_test_headers(), json={'title': 'test test'})
+            endpoint, headers=get_test_headers(), json={"title": "test test"})
     assert response.status_code == 422
 
 
@@ -203,16 +220,18 @@ def test_create_project_on_second_site(
         endpoint,
         headers=get_test_headers(),
         base_url=get_base_url(fake_site_2.domain, endpoint),
-        json=fake_projects[1])
+        json={**fake_projects[1], "tasks": []})
     assert response.status_code == 200
     assert isinstance(response.json, dict)
     assert response.json["name"] == fake_projects[1]["name"]
+    assert len(response.json["tasks"]) == 0
 
     project_2 = db.Project.find(
         site_id=fake_site_2.id, name=fake_projects[1]["name"])
     assert isinstance(project_2, db.Project)
     assert project_2.name == fake_projects[1]["name"]
     assert project_2.site_id == fake_site_2.id
+    assert project_2.get_tasks() == []
 
     project_2.delete()
 
@@ -222,10 +241,12 @@ def test_update_project(client, fake_project):
     response = client.put(
         endpoint,
         headers=get_test_headers(),
-        json={**fake_projects[0], "title": "new test title"})
+        json={**fake_projects[0], "title": "new test title",
+              "tasks": fake_tasks})
     assert response.status_code == 200
     assert isinstance(response.json, dict)
     assert response.json["title"] == "new test title"
+    assert len(response.json["tasks"]) == 2
 
     fake_project.refresh()
     assert fake_project.title == "new test title"
@@ -238,7 +259,8 @@ def test_update_project_when_project_is_on_different_site(
         endpoint,
         base_url=get_base_url(fake_site_2.domain, endpoint),
         headers=get_test_headers(),
-        json={**fake_projects[0], "title": "new test title"})
+        json={**fake_projects[0], "title": "new test title",
+              "tasks": fake_tasks})
     assert response.status_code == 422
 
     fake_project.refresh()

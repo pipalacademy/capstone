@@ -111,6 +111,7 @@ class Project(Document):
     _detail_fields = [
         "name", "title", "url", "short_description", "description",
         "tags", "is_published", "created", "last_modified",
+        # "tasks"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
@@ -138,8 +139,77 @@ class Project(Document):
             self.url = f"http://{site.domain}/api/projects/{self.name}"
             self.html_url = f"http://{site.domain}/projects/{self.name}"
 
+    def get_detail(self) -> dict[str, Any]:
+        d = super().get_detail()
+        d["tasks"] = [t.get_detail() for t in self.get_tasks()]
+        return d
+
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
+
+    def get_tasks(self) -> list[Task]:
+        return Task.find_all(project_id=self.id, order="position")
+
+    def update_tasks(self, task_inputs: list[dict[str, Any]]) -> list[Task]:
+        assert self.id is not None
+
+        # each element of tasks list has three keys: name, title, description
+        required_fields = ["name", "title", "description"]
+
+        with db.transaction():
+            # remove previous tasks, then add new tasks
+            for old_task in self.get_tasks():
+                old_task.delete()
+
+            tasks = []
+            for (i, task_dict) in enumerate(task_inputs, start=0):
+                for field_name in required_fields:
+                    assert field_name in task_dict
+                task = Task(
+                    name=task_dict["name"],
+                    title=task_dict["title"],
+                    description=task_dict["description"],
+                    project_id=self.id,
+                    position=i).save()
+                tasks.append(task)
+
+        return tasks
+
+    def delete_tasks(self) -> int:
+        count = 0
+        for task in self.get_tasks():
+            count += task.delete()
+
+        return count
+
+    def delete(self) -> int:
+        with db.transaction():
+            self.delete_tasks()
+            return super().delete()
+
+
+@dataclass(kw_only=True)
+class Task(Document):
+    _tablename = "task"
+    _db_fields = [
+            "id", "project_id", "position", "name", "title", "description"]
+    _teaser_fields = ["name", "title", "description"]
+    _detail_fields = ["name", "title", "description"]
+
+    project_id: int
+    position: int
+    name: str
+    title: str
+    description: str
+
+    def get_project(self) -> Project | None:
+        return Project.find(id=self.project_id)
+
+    def get_site(self) -> Site | None:
+        return (project := self.get_project()) and project.get_site() or None
+
+    def render_description(self, vars: dict[str, Any]) -> str:
+        return self.description.format(**vars)
 
 
 # db queries

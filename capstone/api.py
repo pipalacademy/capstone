@@ -49,15 +49,19 @@ def Conflict(message="Conflict"):
     return make_response(({"message": message}, 409))
 
 
+class TaskInputModel(BaseModel):
+    name: str
+    title: str
+    description: str
+
+
 class ProjectUpsertModel(BaseModel):
     title: str
     short_description: str
     description: str
     tags: list[str]
+    tasks: list[TaskInputModel]
     is_published: bool | None = None
-
-    class Config:
-        extra = "allow"
 
 
 # Resource: project
@@ -102,6 +106,7 @@ def get_or_upsert_project(name):
 
         body["name"] = name
         body["site_id"] = g.site_id
+        tasks = body.pop("tasks")
 
         project = Project.find(name=name)
         if project is None:
@@ -111,8 +116,9 @@ def get_or_upsert_project(name):
         else:
             project.update(**body)
 
-        # project.update_tasks(tasks)
         project.save()
+        project.update_tasks(tasks)
+
         return project.get_detail()
 
 
