@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import zipfile
 import logging
+from typing import Any
 from pydantic import BaseModel, ValidationError
 from . import tq
 
@@ -49,10 +50,17 @@ def Conflict(message="Conflict"):
     return make_response(({"message": message}, 409))
 
 
+class CheckInputModel(BaseModel):
+    name: str
+    title: str
+    args: dict[str, Any]
+
+
 class TaskInputModel(BaseModel):
     name: str
     title: str
     description: str
+    checks: list[CheckInputModel]
 
 
 class ProjectUpsertModel(BaseModel):

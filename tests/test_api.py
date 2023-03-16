@@ -34,16 +34,41 @@ fake_projects = [
     }
 ]
 
+fake_checks = [
+    {
+        "name": "spam",
+        "title": "spam check",
+        "args": {
+            "a": 1,
+            "b": "s",
+            "c": [1, 2, 3],
+            "d": {"a": 1, "b": 2}
+        }
+    },
+    {
+        "name": "ham",
+        "title": "ham check",
+        "args": {
+            "a": 1,
+            "b": "s",
+            "c": [1, 2, 3],
+            "d": {"a": 1, "b": 2}
+        }
+    },
+]
+
 fake_tasks = [
     {
         "name": "foo",
         "title": "foo short desc",
-        "description": "foo desc"
+        "description": "foo desc",
+        "checks": fake_checks,
     },
     {
         "name": "bar",
         "title": "bar short desc",
-        "description": "bar desc"
+        "description": "bar desc",
+        "checks": []
     }
 ]
 
@@ -247,6 +272,8 @@ def test_update_project(client, fake_project):
     assert isinstance(response.json, dict)
     assert response.json["title"] == "new test title"
     assert len(response.json["tasks"]) == 2
+    assert len(response.json["tasks"][0]["checks"]) == 2
+    assert len(response.json["tasks"][1]["checks"]) == 0
 
     fake_project.refresh()
     assert fake_project.title == "new test title"

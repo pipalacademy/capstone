@@ -6,11 +6,14 @@ from typing import Any, ClassVar, Type, TypeVar
 
 from web import database
 from web.db import SQLLiteral
+from psycopg2.extensions import register_adapter
+from psycopg2.extras import Json
 
 from . import config
 
 
 db = database(config.db_uri)
+register_adapter(dict, Json)
 
 
 DocumentT = TypeVar("DocumentT", bound="Document")
@@ -154,7 +157,7 @@ class Project(Document):
         assert self.id is not None
 
         # each element of tasks list has three keys: name, title, description
-        required_fields = ["name", "title", "description"]
+        required_fields = ["name", "title", "description", "checks"]
 
         with db.transaction():
             # remove previous tasks, then add new tasks
@@ -164,13 +167,14 @@ class Project(Document):
             tasks = []
             for (i, task_dict) in enumerate(task_inputs, start=0):
                 for field_name in required_fields:
-                    assert field_name in task_dict
+                    assert field_name in task_dict, f"task: '{field_name}' is required"
                 task = Task(
                     name=task_dict["name"],
                     title=task_dict["title"],
                     description=task_dict["description"],
                     project_id=self.id,
                     position=i).save()
+                task.update_checks(task_dict["checks"])
                 tasks.append(task)
 
         return tasks
@@ -208,8 +212,71 @@ class Task(Document):
     def get_site(self) -> Site | None:
         return (project := self.get_project()) and project.get_site() or None
 
+    def get_detail(self) -> dict[str, Any]:
+        d = super().get_detail()
+        d["checks"] = [c.get_detail() for c in self.get_checks()]
+        return d
+
+    def delete(self) -> int:
+        with db.transaction():
+            self.delete_checks()
+            return super().delete()
+
+    def delete_checks(self) -> int:
+        count = 0
+        for check in self.get_checks():
+            count += check.delete()
+
+        return count
+
+    def get_checks(self) -> list[TaskCheck]:
+        return TaskCheck.find_all(task_id=self.id)
+
+    def update_checks(
+            self, check_inputs: list[dict[str, Any]]) -> list[TaskCheck]:
+        assert self.id is not None, "task must be saved before adding checks"
+
+        # each element of checks list has three keys: name, title, args
+        required_fields = ["name", "title", "args"]
+
+        with db.transaction():
+            # remove previous checks, then add new checks
+            for old_check in self.get_checks():
+                old_check.delete()
+
+            checks = []
+            for (i, check_dict) in enumerate(check_inputs, start=0):
+                for field_name in required_fields:
+                    assert field_name in check_dict
+                check = TaskCheck(
+                    name=check_dict["name"],
+                    title=check_dict["title"],
+                    args=check_dict["args"],
+                    task_id=self.id,
+                    position=i).save()
+                checks.append(check)
+
+        return checks
+
     def render_description(self, vars: dict[str, Any]) -> str:
         return self.description.format(**vars)
+
+
+@dataclass(kw_only=True)
+class TaskCheck(Document):
+    _tablename = "task_check"
+    _db_fields = ["id", "task_id", "position", "name", "title", "args"]
+    _teaser_fields = ["name", "title", "args"]
+    _detail_fields = ["name", "title", "args"]
+
+    task_id: int
+    position: int
+    name: str
+    title: str
+    args: dict[str, Any]
+
+    def get_task(self) -> Task | None:
+        return Task.find(id=self.task_id)
 
 
 # db queries

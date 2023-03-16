@@ -1,7 +1,9 @@
 import pytest
+import json
 from datetime import datetime
 
 from capstone import db
+
 
 def test_query():
     assert db.db.query("SELECT 1 as x").list() == [{"x": 1}]
@@ -34,13 +36,38 @@ mock_tasks = [
     {
         "name": "foo",
         "title": "Foo",
-        "description": "foo desc"
+        "description": "foo desc",
+        "checks": []
     },
     {
         "name": "bar",
         "title": "Bar",
-        "description": "bar desc"
+        "description": "bar desc",
+        "checks": []
     }
+]
+
+mock_checks = [
+    {
+        "name": "spam",
+        "title": "spam check",
+        "args": {
+            "a": 1,
+            "b": "s",
+            "c": [1, 2, 3],
+            "d": {"a": 1, "b": 2}
+        }
+    },
+    {
+        "name": "ham",
+        "title": "ham check",
+        "args": {
+            "a": 1,
+            "b": "s",
+            "c": [1, 2, 3],
+            "d": {"a": 1, "b": 2}
+        }
+    },
 ]
 
 
@@ -106,6 +133,26 @@ def project_id_2(site_id):
 
     db.db.query(f"DELETE FROM task WHERE project_id={id};")
     db.db.query(f"DELETE FROM project WHERE id={id};")
+
+
+@pytest.fixture(scope="function")
+def task_id(project_id):
+    q = """\
+        INSERT INTO
+        task (project_id, position, name, title, description)
+        VALUES (%(project_id)d, %(position)d, '%(name)s', '%(title)s', '%(description)s')
+        RETURNING id;
+    """ % {
+        **mock_tasks[0], "project_id": project_id, "position": 0,
+    }
+
+    result = db.db.query(q)
+    id = result[0]["id"]
+
+    yield id
+
+    db.db.query(f"DELETE FROM task_check WHERE task_id={id};")
+    db.db.query(f"DELETE FROM task WHERE id={id};")
 
 
 def test_db_array_type_is_fetched_correctly(project_id):
@@ -238,3 +285,65 @@ def test_update_tasks_when_task_inputs_is_empty(
     project.update_tasks([])
 
     assert len(project.get_tasks()) == 0
+
+
+def test_get_checks_when_task_has_checks(task_id):
+    task = db.Task.find(id=task_id)
+    db.db.query(f"""\
+        INSERT INTO
+            task_check (name, title, args, position, task_id)
+        VALUES
+            ('{mock_checks[0]['name']}', '{mock_checks[0]['title']}',
+             '{json.dumps(mock_checks[0]['args'])}', 0, {task_id}),
+            ('{mock_checks[1]['name']}', '{mock_checks[1]['title']}',
+             '{json.dumps(mock_checks[1]['args'])}', 1, {task_id});
+    """)
+
+    checks = task.get_checks()
+    assert len(checks) == 2
+    assert checks[0].name == mock_checks[0]["name"]
+    assert checks[0].position == 0
+    assert checks[0].args == mock_checks[0]["args"]
+    assert checks[1].name == mock_checks[1]["name"]
+    assert checks[1].position == 1
+    assert checks[1].args == mock_checks[1]["args"]
+
+
+def test_delete_task_when_task_has_checks(task_id):
+    task = db.Task.find(id=task_id)
+    db.db.query(f"""\
+        INSERT INTO
+            task_check (name, title, args, position, task_id)
+        VALUES
+            ('{mock_checks[0]['name']}', '{mock_checks[0]['title']}',
+             '{json.dumps(mock_checks[0]['args'])}', 0, {task_id}),
+            ('{mock_checks[1]['name']}', '{mock_checks[1]['title']}',
+             '{json.dumps(mock_checks[1]['args'])}', 1, {task_id});
+    """)
+
+    task.delete()
+    assert db.Task.find(id=task_id) is None
+    assert db.TaskCheck.find_all(task_id=task_id) == []
+
+
+def test_update_checks_ok(task_id):
+    task = db.Task.find(id=task_id)
+    task.update_checks(mock_checks)
+
+    checks = task.get_checks()
+    assert len(checks) == 2
+    assert checks[0].name == mock_checks[0]["name"]
+    assert checks[0].position == 0
+    assert checks[0].args == mock_checks[0]["args"]
+    assert checks[1].name == mock_checks[1]["name"]
+    assert checks[1].position == 1
+    assert checks[1].args == mock_checks[1]["args"]
+
+
+def test_update_checks_when_check_inputs_is_empty(
+        task_id):
+    task = db.Task.find(id=task_id)
+    task.update_checks(mock_checks)
+    task.update_checks([])
+
+    assert len(task.get_checks()) == 0
