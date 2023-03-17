@@ -29,39 +29,9 @@ layout.navbar.right_entries.add(
 )
 layout.add_stylesheet('/static/style.css')
 
-def ProjectTeaser(project, is_started):
-    return LinkWithoutDecoration(
-        ProjectCard(
-            title=project.title,
-            short_description=project.short_description,
-            tags=project.tags,
-            is_started=is_started,
-        ),
-        href=project.html_url,
-    )
 
-
-def TaskDetails(task, status, check_statuses=(), description_vars={}):
-    card = TaskCard(
-        position=task.position,
-        title=task.title,
-        text=Markdown(task.render_description(description_vars)),
-        status=status,
-        collapsible_id=task.name,
-        collapsed=False if status == "In Progress" else True,
-    )
-    # TODO: move this to another element, and make it part of the TaskCard
-    # if check_statuses:
-    #     card.body.add_subtitle("Checks:")
-    #     checks_list = card.body.add_check_list()
-    #     for check, check_status in zip(task.checks, check_statuses):
-    #         if check.name == check_status.name:
-    #             checks_list.add_item(
-    #                 title=check.title or check_status.name,
-    #                 status=check_status.status,
-    #                 message=check_status.message
-    #             )
-    return card
+def is_authenticated():
+    return get_authenticated_user() is not None
 
 
 def authenticated(handler):
@@ -72,10 +42,6 @@ def authenticated(handler):
             abort(401)
         return handler(*args, user=user, **kwargs)
     return wrapper
-
-
-def is_authenticated():
-    return get_authenticated_user() is not None
 
 
 @app.before_request
@@ -116,14 +82,11 @@ def projects():
 def dashboard(user):
     projects = Project.find_all(is_published=True)
     started_projects = [
-        project
-        for project in projects
-        if user.has_started_project(project.name)
+        project for project in projects
+        if project.get_user_project(user.id) is not None
     ]
     unstarted_projects = [
-        project
-        for project in projects
-        if not user.has_started_project(project.name)
+        project for project in projects if project not in started_projects
     ]
 
     page = Page(title="Dashboard")
@@ -252,3 +215,40 @@ def individual_activity(user, username, project_name):
         )
 
     return layout.render_page(page)
+
+
+# Component makers
+
+def ProjectTeaser(project, is_started):
+    return LinkWithoutDecoration(
+        ProjectCard(
+            title=project.title,
+            short_description=project.short_description,
+            tags=project.tags,
+            is_started=is_started,
+        ),
+        href=project.html_url,
+    )
+
+
+def TaskDetails(task, status, check_statuses=(), description_vars={}):
+    card = TaskCard(
+        position=task.position,
+        title=task.title,
+        text=Markdown(task.render_description(description_vars)),
+        status=status,
+        collapsible_id=task.name,
+        collapsed=False if status == "In Progress" else True,
+    )
+    # TODO: move this to another element, and make it part of the TaskCard
+    # if check_statuses:
+    #     card.body.add_subtitle("Checks:")
+    #     checks_list = card.body.add_check_list()
+    #     for check, check_status in zip(task.checks, check_statuses):
+    #         if check.name == check_status.name:
+    #             checks_list.add_item(
+    #                 title=check.title or check_status.name,
+    #                 status=check_status.status,
+    #                 message=check_status.message
+    #             )
+    return card

@@ -75,6 +75,15 @@ create table task_check (
     args JSON not null
 );
 
+create table user_project (
+    id serial primary key,
+    project_id integer not null references project,
+    user_id integer not null references user_account,
+    git_url text not null,
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc')
+);
+
 -- create table changelog (
 --     id serial primary key,
 --     site_id integer not null references site,

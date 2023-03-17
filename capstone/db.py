@@ -142,6 +142,11 @@ class Project(Document):
             self.url = f"http://{site.domain}/api/projects/{self.name}"
             self.html_url = f"http://{site.domain}/projects/{self.name}"
 
+    def delete(self) -> int:
+        with db.transaction():
+            self.delete_tasks()
+            return super().delete()
+
     def get_detail(self) -> dict[str, Any]:
         d = super().get_detail()
         d["tasks"] = [t.get_detail() for t in self.get_tasks()]
@@ -186,10 +191,8 @@ class Project(Document):
 
         return count
 
-    def delete(self) -> int:
-        with db.transaction():
-            self.delete_tasks()
-            return super().delete()
+    def get_user_project(self, user_id: int) -> UserProject | None:
+        return UserProject.find(user_id=user_id, project_id=self.id)
 
 
 @dataclass(kw_only=True)
@@ -300,6 +303,24 @@ class User(Document):
 
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
+
+
+@dataclass(kw_only=True)
+class UserProject(Document):
+    _tablename = "user_project"
+
+    project_id: int
+    user_id: int
+    git_url: str
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_project(self) -> Project | None:
+        return Project.find(id=self.project_id)
+
+    def get_user(self) -> User | None:
+        return User.find(id=self.user_id)
 
 
 # db queries
