@@ -3,6 +3,55 @@ import pytest
 from capstone.app import app as _app
 from capstone import db
 
+@pytest.fixture(autouse=True)
+def setup_db():
+    """Fixture to start every test with a clean database.
+    """
+    db.db.query("TRUNCATE site CASCADE")
+
+@pytest.fixture()
+def api_client():
+    return APIClient()
+
+class APIClient:
+    """Interface to acess the API."""
+    def create_site(self, name, domain):
+        site = db.Site(name=name, domain=domain, title=name).save()
+        return APISite(domain)
+
+class APISite:
+    """"Site interface via the API.
+    """
+    def __init__(self, domain):
+        self.domain = domain
+        self.base_url = f"http://{domain}/"
+        self.client = _app.test_client()
+        self.headers = {"Authorization": "Bearer test123"}
+
+    def request(self, path, method, check_status=True, **kwargs):
+        kwargs.setdefault("headers", self.headers)
+        response = self.client.open(path,
+                            method=method,
+                            base_url=self.base_url,
+                            **kwargs)
+        if check_status and response.status_code != 200:
+            print(f"request failed with status code: {response.status_code}")
+            print(response.text)
+            assert response.status_code == 200, response.text
+
+        return response
+
+    def get(self, path, **kwargs):
+        return self.request(path, method="GET", **kwargs)
+
+    def post(self, path, **kwargs):
+        return self.request(path, method="POST", **kwargs)
+
+    def put(self, path, **kwargs):
+        return self.request(path, method="PUT", **kwargs)
+
+    def delete(self, path, **kwargs):
+        return self.request(path, method="DELETE", **kwargs)
 
 fake_sites = [
     {
@@ -71,7 +120,6 @@ fake_tasks = [
         "checks": []
     }
 ]
-
 
 @pytest.fixture()
 def app():
@@ -277,6 +325,45 @@ def test_update_project(client, fake_project):
 
     fake_project.refresh()
     assert fake_project.title == "new test title"
+
+SAMPLE_PROJECT = {
+    "title": "...",
+    "short_description": "...",
+    "description": "...",
+    "tags": [],
+    "tasks": []
+}
+
+def assert_dict(value, expected):
+    """Checks only the keys present in expected, ignore additional keys in the value.
+    """
+    value = {k:v for k, v in value.items() if k in expected}
+    assert value == expected
+
+class TestProject:
+    def test_create(self, api_client):
+        site = api_client.create_site(name="alpha", domain="alpha")
+
+        data = dict(SAMPLE_PROJECT, title="Fizz Buzz")
+        p = site.put("/api/projects/fizzbuzz", json=data).json
+
+        assert p['name'] == 'fizzbuzz'
+        assert p['title'] == 'Fizz Buzz'
+
+        p2 = site.get("/api/projects/fizzbuzz").json
+
+        data.pop("tasks") # ignore tasks for now
+        assert_dict(p2, data)
+
+    def test_update_title(self, api_client):
+        site = api_client.create_site(name="alpha", domain="alpha")
+
+        data = dict(SAMPLE_PROJECT, title="Fizz Buzz")
+        site.put("/api/projects/fizzbuzz", json=data)
+
+        data['title'] = "Fizz Buzz 2.0"
+        response_data = site.put("/api/projects/fizzbuzz", json=data).json
+        assert response_data['title'] == 'Fizz Buzz 2.0'
 
 
 def test_update_project_when_project_is_on_different_site(
