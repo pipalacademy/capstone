@@ -325,6 +325,14 @@ class Form(BootstrapElement):
     TAG = "form"
 
 
+class HiddenInput(BootstrapElement):
+    TAG = "input"
+    TYPE = "hidden"
+
+    def __init__(self, *args, name, value, **kwargs):
+        super().__init__(*args, type=self.TYPE, name=name, value=value, **kwargs)
+
+
 class ProjectHero(Hero):
     def __init__(self, *args, app_url=None, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,5 +1,6 @@
 # TODO: ad-hoc module name, think of something better
 import os
+import shutil
 import subprocess
 import uuid
 
@@ -31,7 +32,7 @@ def delete_user_project(user_project: db.UserProject) -> None:
     repo_path = get_repo_path(repo_name=repo_name)
 
     # delete git repo
-    subprocess.check_call(["rm", "-rf", repo_path])
+    shutil.rmtree(repo_path)
 
     # delete from db
     user_project.delete()

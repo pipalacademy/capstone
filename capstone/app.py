@@ -8,12 +8,12 @@ from .auth import auth_bp, get_authenticated_user
 #from .db import Activity, Project, User, check_password
 from .db import Project, Site
 from .components import (
-    AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, Layout,
+    AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, HiddenInput, Layout,
     LinkWithoutDecoration, LoginButton, LoginCard, Page,
     ProjectHero, ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton,
     SubmitButton
 )
-from .utils.user_project import start_project
+from .utils.user_project import delete_user_project, start_user_project
 
 app = Flask(__name__)
 app.secret_key = "hello, world!"  # TODO: change this
@@ -124,38 +124,51 @@ def project(name):
     if request.method == "POST":
         if not user:
             abort(401)
-        if user_project:
-            flash("You have already started this project.")
-        else:
-            start_project(user=user, project=project)
-            flash("You have started this project.")
+        action = request.form.get("action", "start")
+        if action == "start":
+            if user_project:
+                flash("You have already started this project.")
+            else:
+                start_user_project(user=user, project=project)
+                flash("You have started this project.")
+        elif action == "reset":
+            if not user_project:
+                flash("You have not started this project yet.")
+            else:
+                delete_user_project(user_project)
+                flash("Your progress has been reset.")
         return redirect(url_for("project", name=name))
-
-    page = Page(title="", container=html.div())
-    hero = ProjectHero(
-        title=project.title,
-        subtitle=project.short_description,
-        text=Markdown(project.description),
-        app_url=None,
-    )
-    if not user:
-        hero.body.add(LinkButton("Start Project",
-                                 class_="btn-lg", href=url_for("auth.login")))
-    elif not user_project:
-        hero.body.add(Form(SubmitButton("Start Project", class_="btn-lg"),
-                           method="POST"))
-
-    main = html.div(class_="container")
-    page << hero
-    page << main
-    for task in project.get_tasks():
-        main << TaskDetails(
-            task,
-            status=None,
-            description_vars=user_project and user_project.get_context_vars() or {},
+    else:
+        page = Page(title="", container=html.div())
+        hero = ProjectHero(
+            title=project.title,
+            subtitle=project.short_description,
+            text=Markdown(project.description),
+            app_url=None,
         )
+        if not user:
+            hero.body.add(LinkButton("Start Project",
+                                     class_="btn-lg", href=url_for("auth.login")))
+        elif not user_project:
+            hero.body.add(Form(HiddenInput(name="action", value="start"),
+                               SubmitButton("Start Project", class_="btn-lg"),
+                               method="POST"))
+        else:
+            hero.body.add(Form(HiddenInput(name="action", value="reset"),
+                               SubmitButton("Reset Project", class_="btn-lg btn-danger"),
+                               method="POST", onclick="return confirm('Are you sure?');"))
 
-    return layout.render_page(page)
+        main = html.div(class_="container")
+        page << hero
+        page << main
+        for task in project.get_tasks():
+            main << TaskDetails(
+                task,
+                status=None,
+                description_vars=user_project and user_project.get_context_vars() or {},
+            )
+
+        return layout.render_page(page)
 
 
 @app.route("/activity")
