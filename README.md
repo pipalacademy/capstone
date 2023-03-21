@@ -18,10 +18,24 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt dev-requirements.txt
 ```
 
-**Step 3: Run the dev server**
+**Step 3: Create database**
+
+```
+$ createdb capstone
+```
+
+**Step 4: Run db migrations**
+
+```
+$ python run.py --migrate
+```
+
+**Step 5: Run the dev server**
 
 ```
 $ python run.py
 ...
- * Running on http://127.0.0.1:5000
+ * Running on http://localhost:5000/
 ```
+
+Please note that capstone support multi-tenancy and it determines the tenant based on the hostname. For the devserver, use only localhost as the domain. Using 127.0.0.1 does not work.

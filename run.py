@@ -28,7 +28,7 @@ def main():
     elif args.add_dummy_tasks:
         add_dummy_tasks()
     else:
-        app.run()
+        app.run(debug=True)
 
 @tq.task_function
 def square(x):

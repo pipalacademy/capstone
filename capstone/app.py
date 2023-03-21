@@ -47,10 +47,13 @@ def authenticated(handler):
 
 @app.before_request
 def set_site_id():
-    domain = request.host
+    domain = request.host.split(":")[0]
     site = Site.find(domain=domain)
     if not site:
-        abort(404)
+        page = Page(title="Site not found")
+        page << f"The site <em>{domain}</em> is not found."
+        html = layout.render_page(page)
+        return html, 404
     else:
         g.site_id = site.id
 

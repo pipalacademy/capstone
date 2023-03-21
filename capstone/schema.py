@@ -12,8 +12,13 @@ def migrate():
     schema = Schema(db)
 
     initial_schema(schema)
+    create_localhost_site(schema)
 
 def initial_schema(schema):
+    # schema is already initialized
+    if schema.has_table("site"):
+        return
+
     load_schema(schema, "schema.sql")
 
 def load_schema(schema, filename):
@@ -22,3 +27,12 @@ def load_schema(schema, filename):
     path = Path(__file__).parent / filename
     q = path.read_text()
     schema.db.query(web.SQLQuery(q))
+
+def create_localhost_site(schema):
+    db = schema.db
+    row = db.where("site", name="localhost").first()
+    if not row:
+        db.insert("site",
+                  name="localhost",
+                  domain="localhost",
+                  title="localhost")
