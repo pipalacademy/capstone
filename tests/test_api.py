@@ -249,14 +249,14 @@ def test_create_project_on_second_site(
     assert response.status_code == 200
     assert isinstance(response.json, dict)
     assert response.json["name"] == fake_projects[1]["name"]
-    assert len(response.json["tasks"]) == 0
+    assert len(response.json["tasks"]) == 1
 
     project_2 = db.Project.find(
         site_id=fake_site_2.id, name=fake_projects[1]["name"])
     assert isinstance(project_2, db.Project)
     assert project_2.name == fake_projects[1]["name"]
     assert project_2.site_id == fake_site_2.id
-    assert project_2.get_tasks() == []
+    assert project_2.get_tasks() != []
 
     project_2.delete()
 
@@ -271,9 +271,9 @@ def test_update_project(client, fake_project):
     assert response.status_code == 200
     assert isinstance(response.json, dict)
     assert response.json["title"] == "new test title"
-    assert len(response.json["tasks"]) == 2
-    assert len(response.json["tasks"][0]["checks"]) == 2
-    assert len(response.json["tasks"][1]["checks"]) == 0
+    assert len(response.json["tasks"]) == 3
+    assert len(response.json["tasks"][1]["checks"]) == 2
+    assert len(response.json["tasks"][2]["checks"]) == 0
 
     fake_project.refresh()
     assert fake_project.title == "new test title"

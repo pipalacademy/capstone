@@ -1,7 +1,9 @@
 import os
 
+from capstone import config
 
-PRIVATE_FILES_DIR = "private"
+
+PRIVATE_FILES_DIR = config.private_files_dir
 
 
 def ensure_private_files_dir():

@@ -158,31 +158,56 @@ class Project(Document):
     def get_tasks(self) -> list[Task]:
         return Task.find_all(project_id=self.id, order="position")
 
+    def create_task(
+            self,
+            name: str, title: str, description: str, position: int,
+            checks: list[dict[str, Any]] = []) -> Task:
+        assert self.id is not None, "can't create task without saving project"
+        with db.transaction():
+            task = Task(
+                name=name, title=title, description=description,
+                position=position, project_id=self.id,
+            ).save()
+            task.update_checks(checks)
+        return task
+
     def update_tasks(self, task_inputs: list[dict[str, Any]]) -> list[Task]:
         assert self.id is not None
 
-        # each element of tasks list has three keys: name, title, description
+        # each element of tasks list has four keys: name, title, description, and checks
         required_fields = ["name", "title", "description", "checks"]
+        for task in task_inputs:
+            assert all(k in task for k in required_fields), \
+                f"task {task} is missing required fields"
 
         with db.transaction():
-            # remove previous tasks, then add new tasks
-            for old_task in self.get_tasks():
-                old_task.delete()
+            new_tasks = {ZerothTask.name: ZerothTask.get_as_input_dict()}
+            new_tasks.update({t["name"]: t for t in task_inputs})
+            old_tasks = {t.name: t for t in self.get_tasks()}
 
-            tasks = []
-            for (i, task_dict) in enumerate(task_inputs, start=0):
-                for field_name in required_fields:
-                    assert field_name in task_dict, f"task: '{field_name}' is required"
-                task = Task(
-                    name=task_dict["name"],
-                    title=task_dict["title"],
-                    description=task_dict["description"],
-                    project_id=self.id,
-                    position=i).save()
-                task.update_checks(task_dict["checks"])
-                tasks.append(task)
+            to_delete = [t for t in old_tasks if t not in new_tasks]
+            to_create = [t for t in new_tasks if t not in old_tasks]
 
-        return tasks
+            for name in to_delete:
+                old_tasks[name].delete()
+
+            for i, name in enumerate(new_tasks):
+                if name in to_create:
+                    self.create_task(
+                        position=i,
+                        name=name,
+                        title=new_tasks[name]["title"],
+                        description=new_tasks[name]["description"],
+                        checks=new_tasks[name]["checks"],
+                    )
+                else:
+                    old_tasks[name].update(
+                        position=i,
+                        title=new_tasks[name]["title"],
+                        description=new_tasks[name]["description"],
+                    ).save().update_checks(new_tasks[name]["checks"])
+
+        return self.get_tasks()
 
     def delete_tasks(self) -> int:
         count = 0
@@ -193,6 +218,11 @@ class Project(Document):
 
     def get_user_project(self, user_id: int) -> UserProject | None:
         return UserProject.find(user_id=user_id, project_id=self.id)
+
+    def get_private_file_key_for_zipball(self) -> str:
+        """`utils.files` module should be used with this key.
+        """
+        return f"projects/{self.name}/repo-git.zip"
 
 
 @dataclass(kw_only=True)
@@ -262,7 +292,55 @@ class Task(Document):
         return checks
 
     def render_description(self, vars: dict[str, Any]) -> str:
-        return self.description.format(**vars)
+        # NOTE: this can probably be done in a better way
+        if self.position == 0 and self.name == ZerothTask.name \
+                and "git_url" in vars:
+            return ZerothTask.description_with_git_url.format(**vars)
+
+        # NOTE: vars is being ignored
+        return self.description
+
+
+@dataclass(kw_only=True)
+class ZerothTask(Task):
+    """Special subclass of Task for ZerothTask.
+    Has all other fields populated except project_id.
+    Initialize with: ZerothTask(project_id=project_id)
+    """
+
+    description_with_git_url: ClassVar[str] = """\
+Clone this Git repository which contains the starter code.
+You'll make progress as you push to this repository with each
+task.
+
+```shell
+git clone {git_url}
+```
+To complete this task, make a dummy commit and push to the repo.
+```
+git commit --allow-empty -m "first commit"
+git push
+```
+"""
+
+    name: str = "clone-git-repo"
+    position: int = 0
+    title: str = "Clone Git repository"
+    description: str = """\
+You will get a Git repository URL after you start this project.
+
+You can clone and then push to that repository to run checks
+for each task and make progress.
+"""
+
+    @classmethod
+    def get_as_input_dict(cls) -> dict[str, Any]:
+        return {
+            "name": cls.name,
+            "title": cls.title,
+            "description": cls.description,
+            "checks": []
+        }
 
 
 @dataclass(kw_only=True)
@@ -308,6 +386,7 @@ class User(Document):
 @dataclass(kw_only=True)
 class UserProject(Document):
     _tablename = "user_project"
+    _db_fields = ["id", "project_id", "user_id", "git_url", "created", "last_modified"]
 
     project_id: int
     user_id: int
@@ -321,6 +400,11 @@ class UserProject(Document):
 
     def get_user(self) -> User | None:
         return User.find(id=self.user_id)
+
+    def get_context_vars(self) -> dict[str, Any]:
+        return {
+            "git_url": self.git_url,
+        }
 
 
 # db queries

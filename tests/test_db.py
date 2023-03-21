@@ -70,6 +70,13 @@ mock_checks = [
     },
 ]
 
+mock_user = {
+    "username": "test-user",
+    "email": "user@example.test",
+    "full_name": "Test User",
+    "enc_password": "test-password",
+}
+
 
 @pytest.fixture(scope="function")
 def site_id():
@@ -131,6 +138,7 @@ def project_id_2(site_id):
 
     yield id
 
+    db.db.query(f"DELETE FROM user_project WHERE user_id={id};")
     db.db.query(f"DELETE FROM task WHERE project_id={id};")
     db.db.query(f"DELETE FROM project WHERE id={id};")
 
@@ -153,6 +161,27 @@ def task_id(project_id):
 
     db.db.query(f"DELETE FROM task_check WHERE task_id={id};")
     db.db.query(f"DELETE FROM task WHERE id={id};")
+
+
+@pytest.fixture(scope="function")
+def user_id(site_id):
+    q = db.db.query("""\
+        INSERT INTO
+        user_account (site_id, username, email, full_name, enc_password)
+        VALUES (
+            %(site_id)d, '%(username)s', '%(email)s', '%(full_name)s',
+            '%(enc_password)s'
+        )
+        RETURNING id;
+    """ % {
+        "site_id": site_id, **mock_user
+    })
+    id = q[0]["id"]
+
+    yield id
+
+    db.db.query(f"DELETE FROM user_project WHERE user_id={id};")
+    db.db.query(f"DELETE FROM user_account WHERE id={id};")
 
 
 def test_db_array_type_is_fetched_correctly(project_id):
@@ -251,11 +280,40 @@ def test_update_tasks_ok(project_id):
     project.update_tasks(mock_tasks)
 
     tasks = project.get_tasks()
-    assert len(tasks) == 2
-    assert tasks[0].name == mock_tasks[0]["name"]
+    assert len(tasks) == 3
+    assert tasks[0].name == "clone-git-repo"
     assert tasks[0].position == 0
-    assert tasks[1].name == mock_tasks[1]["name"]
+    assert tasks[1].name == mock_tasks[0]["name"]
     assert tasks[1].position == 1
+    assert tasks[2].name == mock_tasks[1]["name"]
+    assert tasks[2].position == 2
+
+
+def test_update_tasks_zeroth_task_is_added(project_id):
+    project = db.Project.find(id=project_id)
+    project.update_tasks([])
+
+    tasks = project.get_tasks()
+    assert len(tasks) == 1
+    assert tasks[0].name == "clone-git-repo"
+    assert tasks[0].position == 0
+
+
+def test_task_render_description_for_zeroth_task(project_id):
+    git_url = "http://example.com/test-dir/test-repo.git"
+    db.ZerothTask(project_id=project_id).save()
+    task = db.Project.find(id=project_id).get_tasks()[0]
+    assert git_url in task.render_description({"git_url": git_url})
+    assert git_url not in task.render_description({})
+
+
+def test_task_render_description_for_non_zeroth_task(project_id):
+    git_url = "http://example.com/test-dir/test-repo.git"
+    project = db.Project.find(id=project_id)
+    project.update_tasks(mock_tasks)
+    task = project.get_tasks()[1]
+    assert task.render_description({"git_url": git_url}) == mock_tasks[0]["description"]
+    assert task.render_description({}) == mock_tasks[0]["description"]
 
 
 def test_update_tasks_when_two_tasks_have_same_name(project_id, project_id_2):
@@ -268,14 +326,14 @@ def test_update_tasks_when_two_tasks_have_same_name(project_id, project_id_2):
     p1_tasks = project_1.get_tasks()
     p2_tasks = project_2.get_tasks()
 
-    assert len(p1_tasks) == 2
-    assert len(p2_tasks) == 2
-    assert p1_tasks[0].id != p2_tasks[0].id
-    assert p1_tasks[0].name == mock_tasks[0]["name"]
-    assert p2_tasks[0].name == mock_tasks[0]["name"]
+    assert len(p1_tasks) == 3
+    assert len(p2_tasks) == 3
     assert p1_tasks[1].id != p2_tasks[1].id
-    assert p1_tasks[1].name == mock_tasks[1]["name"]
-    assert p2_tasks[1].name == mock_tasks[1]["name"]
+    assert p1_tasks[1].name == mock_tasks[0]["name"]
+    assert p2_tasks[1].name == mock_tasks[0]["name"]
+    assert p1_tasks[2].id != p2_tasks[2].id
+    assert p1_tasks[2].name == mock_tasks[1]["name"]
+    assert p2_tasks[2].name == mock_tasks[1]["name"]
 
 
 def test_update_tasks_when_task_inputs_is_empty(
@@ -284,7 +342,7 @@ def test_update_tasks_when_task_inputs_is_empty(
     project.update_tasks(mock_tasks)
     project.update_tasks([])
 
-    assert len(project.get_tasks()) == 0
+    assert len(project.get_tasks()) == 1
 
 
 def test_get_checks_when_task_has_checks(task_id):

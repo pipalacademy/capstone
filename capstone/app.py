@@ -13,6 +13,7 @@ from .components import (
     ProjectHero, ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton,
     SubmitButton
 )
+from .utils.user_project import start_project
 
 app = Flask(__name__)
 app.secret_key = "hello, world!"  # TODO: change this
@@ -114,9 +115,21 @@ def dashboard(user):
     return layout.render_page(page)
 
 
-@app.route("/projects/<name>", methods=["GET"])
+@app.route("/projects/<name>", methods=["GET", "POST"])
 def project(name):
     project = Project.find(site_id=g.site_id, name=name)
+    user = get_authenticated_user()
+    user_project = project.get_user_project(user.id) if user else None
+
+    if request.method == "POST":
+        if not user:
+            abort(401)
+        if user_project:
+            flash("You have already started this project.")
+        else:
+            start_project(user=user, project=project)
+            flash("You have started this project.")
+        return redirect(url_for("project", name=name))
 
     page = Page(title="", container=html.div())
     hero = ProjectHero(
@@ -125,11 +138,22 @@ def project(name):
         text=Markdown(project.description),
         app_url=None,
     )
+    if not user:
+        hero.body.add(LinkButton("Start Project",
+                                 class_="btn-lg", href=url_for("auth.login")))
+    elif not user_project:
+        hero.body.add(Form(SubmitButton("Start Project", class_="btn-lg"),
+                           method="POST"))
+
     main = html.div(class_="container")
     page << hero
     page << main
     for task in project.get_tasks():
-        main << TaskDetails(task, status=None)
+        main << TaskDetails(
+            task,
+            status=None,
+            description_vars=user_project and user_project.get_context_vars() or {},
+        )
 
     return layout.render_page(page)
 
