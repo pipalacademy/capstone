@@ -328,40 +328,34 @@ def test_update_tasks_ok(project_id):
     project.update_tasks(mock_tasks)
 
     tasks = project.get_tasks()
-    assert len(tasks) == 3
-    assert tasks[0].name == "clone-git-repo"
+    assert len(tasks) == 2
+    assert tasks[0].name == mock_tasks[0]["name"]
     assert tasks[0].position == 0
-    assert tasks[1].name == mock_tasks[0]["name"]
+    assert tasks[1].name == mock_tasks[1]["name"]
     assert tasks[1].position == 1
-    assert tasks[2].name == mock_tasks[1]["name"]
-    assert tasks[2].position == 2
 
 
 def test_update_tasks_zeroth_task_is_added(project_id):
     project = db.Project.find(id=project_id)
     project.update_tasks([])
 
-    tasks = project.get_tasks()
-    assert len(tasks) == 1
-    assert tasks[0].name == "clone-git-repo"
-    assert tasks[0].position == 0
+    assert project.get_tasks() == []
 
 
-def test_task_render_description_for_zeroth_task(project_id):
-    git_url = "http://example.com/test-dir/test-repo.git"
-    db.ZerothTask(project_id=project_id).save()
-    task = db.Project.find(id=project_id).get_tasks()[0]
-    assert git_url in task.render_description({"git_url": git_url})
-    assert git_url not in task.render_description({})
-
-
-def test_task_render_description_for_non_zeroth_task(project_id):
+def test_task_render_description_without_formatting(project_id):
     git_url = "http://example.com/test-dir/test-repo.git"
     project = db.Project.find(id=project_id)
     project.update_tasks(mock_tasks)
-    task = project.get_tasks()[1]
+    task = project.get_tasks()[0]
     assert task.render_description({"git_url": git_url}) == mock_tasks[0]["description"]
     assert task.render_description({}) == mock_tasks[0]["description"]
+
+
+def test_task_render_description_with_formatting(project_id):
+    git_url = "http://example.com/test-dir/test-repo.git"
+    project = db.Project.find(id=project_id)
+    project.update_tasks([dict(mock_tasks[0], description="`{git_url}`")])
+    assert project.get_tasks()[0].render_description({"git_url": git_url}) == f"`{git_url}`"
 
 
 def test_update_tasks_when_two_tasks_have_same_name(project_id, project_id_2):
@@ -374,14 +368,14 @@ def test_update_tasks_when_two_tasks_have_same_name(project_id, project_id_2):
     p1_tasks = project_1.get_tasks()
     p2_tasks = project_2.get_tasks()
 
-    assert len(p1_tasks) == 3
-    assert len(p2_tasks) == 3
+    assert len(p1_tasks) == 2
+    assert len(p2_tasks) == 2
+    assert p1_tasks[0].id != p2_tasks[0].id
+    assert p1_tasks[0].name == mock_tasks[0]["name"]
+    assert p2_tasks[0].name == mock_tasks[0]["name"]
     assert p1_tasks[1].id != p2_tasks[1].id
-    assert p1_tasks[1].name == mock_tasks[0]["name"]
-    assert p2_tasks[1].name == mock_tasks[0]["name"]
-    assert p1_tasks[2].id != p2_tasks[2].id
-    assert p1_tasks[2].name == mock_tasks[1]["name"]
-    assert p2_tasks[2].name == mock_tasks[1]["name"]
+    assert p1_tasks[1].name == mock_tasks[1]["name"]
+    assert p2_tasks[1].name == mock_tasks[1]["name"]
 
 
 def test_update_tasks_when_task_inputs_is_empty(
@@ -390,7 +384,7 @@ def test_update_tasks_when_task_inputs_is_empty(
     project.update_tasks(mock_tasks)
     project.update_tasks([])
 
-    assert len(project.get_tasks()) == 1
+    assert len(project.get_tasks()) == 0
 
 
 def test_get_checks_when_task_has_checks(task_id):

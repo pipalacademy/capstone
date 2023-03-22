@@ -181,8 +181,7 @@ class Project(Document):
                 f"task {task} is missing required fields"
 
         with db.transaction():
-            new_tasks = {ZerothTask.name: ZerothTask.get_as_input_dict()}
-            new_tasks.update({t["name"]: t for t in task_inputs})
+            new_tasks = {t["name"]: t for t in task_inputs}
             old_tasks = {t.name: t for t in self.get_tasks()}
 
             to_delete = [t for t in old_tasks if t not in new_tasks]
@@ -292,55 +291,8 @@ class Task(Document):
         return checks
 
     def render_description(self, vars: dict[str, Any]) -> str:
-        # NOTE: this can probably be done in a better way
-        if self.position == 0 and self.name == ZerothTask.name \
-                and "git_url" in vars:
-            return ZerothTask.description_with_git_url.format(**vars)
-
         # NOTE: vars is being ignored
-        return self.description
-
-
-@dataclass(kw_only=True)
-class ZerothTask(Task):
-    """Special subclass of Task for ZerothTask.
-    Has all other fields populated except project_id.
-    Initialize with: ZerothTask(project_id=project_id)
-    """
-
-    description_with_git_url: ClassVar[str] = """\
-Clone this Git repository which contains the starter code.
-You'll make progress as you push to this repository with each
-task.
-
-```shell
-git clone {git_url}
-```
-To complete this task, make a dummy commit and push to the repo.
-```
-git commit --allow-empty -m "first commit"
-git push
-```
-"""
-
-    name: str = "clone-git-repo"
-    position: int = 0
-    title: str = "Clone Git repository"
-    description: str = """\
-You will get a Git repository URL after you start this project.
-
-You can clone and then push to that repository to run checks
-for each task and make progress.
-"""
-
-    @classmethod
-    def get_as_input_dict(cls) -> dict[str, Any]:
-        return {
-            "name": cls.name,
-            "title": cls.title,
-            "description": cls.description,
-            "checks": []
-        }
+        return self.description.format(**vars)
 
 
 @dataclass(kw_only=True)
