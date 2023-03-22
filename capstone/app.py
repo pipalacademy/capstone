@@ -76,7 +76,12 @@ def projects():
         class_="mt-3",
         columns=[
             ProjectTeaser(project, is_started=False) for project in projects
-        ]
+        ],
+    )
+    page << Optional(
+        # empty state
+        html.em("No projects have been added."),
+        render_condition=lambda _: not projects,
     )
     return layout.render_page(page)
 
@@ -113,6 +118,11 @@ def dashboard(user):
             ]),
         ),
         render_condition=lambda _: bool(unstarted_projects),
+    )
+    page << Optional(
+        # empty state
+        html.em("No projects have been added."),
+        render_condition=lambda _: not started_projects and not unstarted_projects,
     )
 
     return layout.render_page(page)
