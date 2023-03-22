@@ -406,6 +406,47 @@ class UserProject(Document):
             "git_url": self.git_url,
         }
 
+@dataclass(kw_only=True)
+class UserTaskStatus(Document):
+    _tablename = "user_task_status"
+    _db_fields = ["id", "user_project_id", "task_id", "status", "created", "last_modified"]
+
+    user_project_id: int
+    task_id: int
+    status: str = "Pending"
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_task(self) -> Task | None:
+        return Task.find(id=self.task_id)
+
+    def get_user_project(self) -> UserProject | None:
+        return UserProject.find(id=self.user_project_id)
+
+    def get_check_statuses(self) -> list[UserCheckStatus]:
+        return UserCheckStatus.find_all(user_task_status_id=self.id)
+
+
+@dataclass(kw_only=True)
+class UserCheckStatus(Document):
+    _tablename = "user_check_status"
+    _db_fields = ["id", "user_task_status_id", "task_check_id", "status", "message", "created", "last_modified"]
+
+    user_task_status_id: int
+    task_check_id: int
+    status: str = "pending"
+    message: str | None = None
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_task_check(self) -> TaskCheck | None:
+        return TaskCheck.find(id=self.task_check_id)
+
+    def get_user_task_status(self) -> UserTaskStatus | None:
+        return UserTaskStatus.find(id=self.user_task_status_id)
+
 
 # db queries
 

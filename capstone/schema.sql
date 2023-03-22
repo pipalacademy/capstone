@@ -86,6 +86,31 @@ create table user_project (
     unique(user_id, project_id)
 );
 
+create table user_task_status (
+    id serial primary key,
+    user_project_id integer not null references user_project,
+    task_id integer not null references task,
+    status text not null,
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique(user_project_id, task_id),
+    CHECK (status ~ '^(Pending|In Progress|Completed|Failing)$')
+);
+
+create table user_check_status (
+    id serial primary key,
+    user_task_status_id integer not null references user_task_status,
+    task_check_id integer not null references task_check,
+    status text not null,
+    message text,
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique(user_task_status_id, task_check_id),
+    CHECK (status ~ '^(pending|pass|fail|error)$')
+);
+
 -- create table changelog (
 --     id serial primary key,
 --     site_id integer not null references site,
