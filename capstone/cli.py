@@ -196,5 +196,100 @@ def users_delete(site, username):
     db_user.delete()
     print(f"Deleted user {user_name}")
 
+@cli.group()
+def user_projects():
+    """manage user projects"""
+    pass
+
+@user_projects.command("list")
+@site_option()
+@click.option("-u", "--user", default=None)
+@click.option("-p", "--project", default=None)
+def user_projects_list(site, user, project):
+    print("List user projects", site, f"user={user or 'any'}", f"project={project or 'any'}")
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_user = db.User.find(username=user) if user else None
+    if user:
+        if db_user is None:
+            print("User not found")
+            sys.exit(1)
+        elif db_user.site_id != db_site.id:
+            print("User not found in site")
+            sys.exit(1)
+    db_project = db.Project.find(name=project) if project else None
+    if project:
+        if db_project is None:
+            print("Project not found")
+            sys.exit(1)
+        elif db_project.site_id != db_site.id:
+            print("Project not found in site")
+            sys.exit(1)
+    filters = {}
+    if db_user:
+        filters["user_id"] = db_user.id
+    if db_project:
+        filters["project_id"] = db_project.id
+    if filters:
+        user_projects = db.UserProject.find_all(**filters)
+    else:
+        user_projects = sum([p.get_user_projects() for p in db.Project.find_all(site_id=db_site.id)], [])
+    table_data = []
+    for user_project in user_projects:
+        table_data.append({
+            "id": user_project.id,
+            "project": db.Project.find(id=user_project.project_id).name,
+            "email": db.User.find(id=user_project.user_id).email,
+            "git_url": user_project.git_url,
+            # "progress": user_project.get_progress(),  # TODO: add progress here
+        })
+    if not table_data:
+        print("No matching rows found")
+        sys.exit(0)
+    print(make_table(table_data))
+
+@user_projects.command("show")
+@site_option()
+@click.argument("user_project_id")
+def user_projects_show(site, user_project_id):
+    """Show a user project in a site."""
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_user_project = db.UserProject.find(id=user_project_id)
+    if db_user_project is None:
+        print("User project not found")
+        sys.exit(1)
+    user_project_dict = db_user_project.get_dict()
+    project_name = db_user_project.get_project().name
+    user_email = db_user_project.get_user().email
+    print(make_table(
+        {"key": list(user_project_dict.keys()) + ["project", "email"],
+         "value": list(user_project_dict.values()) + [project_name, user_email]},
+        maxcolwidths=60))
+
+@user_projects.command("delete")
+@site_option()
+@click.argument("user_project_id")
+def user_projects_delete(site, user_project_id):
+    """Delete a user project in a site."""
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_user_project = db.UserProject.find(id=user_project_id)
+    if db_user_project is None:
+        print("User project not found")
+        sys.exit(1)
+    if db_user_project.get_project().site_id != db_site.id:
+        print("User project does not belong to site")
+        sys.exit(1)
+
+    db_user_project.delete()
+
+
 if __name__ == "__main__":
     cli()

@@ -215,6 +215,9 @@ class Project(Document):
 
         return count
 
+    def get_user_projects(self) -> list[UserProject]:
+        return UserProject.find_all(project_id=self.id)
+
     def get_user_project(self, user_id: int) -> UserProject | None:
         return UserProject.find(user_id=user_id, project_id=self.id)
 
