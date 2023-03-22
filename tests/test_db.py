@@ -89,9 +89,7 @@ def site_id():
 
     yield id
 
-    db.db.query(f"""\
-        DELETE FROM site WHERE id={id};
-    """)
+    db.db.query("TRUNCATE site CASCADE")
 
 
 @pytest.fixture(scope="function")
@@ -114,9 +112,6 @@ def project_id(site_id):
 
     yield id
 
-    db.db.query(f"DELETE FROM task WHERE project_id={id};")
-    db.db.query(f"DELETE FROM project WHERE id={id};")
-
 
 @pytest.fixture(scope="function")
 def project_id_2(site_id):
@@ -138,10 +133,6 @@ def project_id_2(site_id):
 
     yield id
 
-    db.db.query(f"DELETE FROM user_project WHERE user_id={id};")
-    db.db.query(f"DELETE FROM task WHERE project_id={id};")
-    db.db.query(f"DELETE FROM project WHERE id={id};")
-
 
 @pytest.fixture(scope="function")
 def task_id(project_id):
@@ -159,8 +150,6 @@ def task_id(project_id):
 
     yield id
 
-    db.db.query(f"DELETE FROM task_check WHERE task_id={id};")
-    db.db.query(f"DELETE FROM task WHERE id={id};")
 
 
 @pytest.fixture(scope="function")
@@ -180,8 +169,6 @@ def user_id(site_id):
 
     yield id
 
-    db.db.query(f"DELETE FROM user_project WHERE user_id={id};")
-    db.db.query(f"DELETE FROM user_account WHERE id={id};")
 
 
 def test_db_array_type_is_fetched_correctly(project_id):
@@ -213,14 +200,12 @@ def test_find_project_when_project_does_not_exist():
 
 def test_insert_project_ok(site_id):
     project = db.Project(**mock_projects[0], site_id=site_id)
-    try:
-        project.save()
-        assert project.id is not None
-        rows = db.db.query(f"SELECT * FROM project WHERE id={project.id}")
-        assert len(rows) == 1
-    finally:
-        if project.id is not None:
-            db.db.query(f"DELETE FROM project WHERE id={project.id}")
+
+    project.save()
+    assert project.id is not None
+
+    rows = db.db.query(f"SELECT * FROM project WHERE id={project.id}")
+    assert len(rows) == 1
 
 
 def test_update_project_ok(project_id):
