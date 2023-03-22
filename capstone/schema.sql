@@ -81,7 +81,9 @@ create table user_project (
     user_id integer not null references user_account,
     git_url text not null,
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
-    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc')
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique(user_id, project_id)
 );
 
 -- create table changelog (

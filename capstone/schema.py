@@ -13,6 +13,9 @@ def migrate():
 
     initial_schema(schema)
     create_localhost_site(schema)
+    add_constraint(schema, table_name="user_project",
+                   constraint_name="user_project_user_id_project_id_key",
+                   constraint_condition="UNIQUE(user_id, project_id)")
 
 def initial_schema(schema):
     # schema is already initialized
@@ -36,3 +39,9 @@ def create_localhost_site(schema):
                   name="localhost",
                   domain="localhost",
                   title="localhost")
+
+def add_constraint(schema, table_name, constraint_name, constraint_condition):
+    db = schema.db
+
+    db.query("ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s" % (table_name, constraint_name))
+    db.query("ALTER TABLE %s ADD CONSTRAINT %s %s" % (table_name, constraint_name, constraint_condition))
