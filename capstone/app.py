@@ -277,7 +277,7 @@ def ProjectTeaser(project, is_started):
             tags=project.tags,
             is_started=is_started,
         ),
-        href=project.html_url,
+        href=f"/projects/{project.name}",
     )
 
 
