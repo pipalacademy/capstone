@@ -406,6 +406,27 @@ class UserProject(Document):
             "git_url": self.git_url,
         }
 
+    def get_task_status(self, task: Task) -> UserTaskStatus | None:
+        return UserTaskStatus.find(
+            user_project_id=self.id, task_id=task.id)
+
+    def update_task_status(self, task: Task, status: str) -> UserTaskStatus:
+        assert task.project_id == self.project_id
+        assert self.id is not None
+        assert task.id is not None
+        assert status in ["Pending", "In Progress", "Completed", "Failing"]
+
+        user_task_status = UserTaskStatus.find(
+            user_project_id=self.id, task_id=task.id)
+        if user_task_status is None:
+            user_task_status = UserTaskStatus(
+                user_project_id=self.id, task_id=task.id, status=status).save()
+        else:
+            user_task_status.status = status
+            user_task_status.save()
+        return user_task_status
+
+
 @dataclass(kw_only=True)
 class UserTaskStatus(Document):
     _tablename = "user_task_status"
@@ -426,6 +447,27 @@ class UserTaskStatus(Document):
 
     def get_check_statuses(self) -> list[UserCheckStatus]:
         return UserCheckStatus.find_all(user_task_status_id=self.id)
+
+    def get_check_status(self, check: TaskCheck) -> UserCheckStatus | None:
+        return UserCheckStatus.find(
+            user_task_status_id=self.id, task_check_id=check.id)
+
+    def update_check_status(self, check: TaskCheck, status: str, message: str | None = None) -> UserCheckStatus:
+        assert check.task_id == self.task_id
+        assert self.id is not None
+        assert check.id is not None
+        assert status in ["pending", "pass", "fail", "error"]
+
+        user_check_status = UserCheckStatus.find(
+            user_task_status_id=self.id, task_check_id=check.id)
+        if user_check_status is None:
+            user_check_status = UserCheckStatus(
+                user_task_status_id=self.id, task_check_id=check.id, status=status, message=message).save()
+        else:
+            user_check_status.update(status=status, message=message)
+            user_check_status.save()
+
+        return user_check_status
 
 
 @dataclass(kw_only=True)

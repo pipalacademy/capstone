@@ -151,6 +151,21 @@ def task_id(project_id):
     yield id
 
 
+@pytest.fixture(scope="function")
+def task_check_id(task_id):
+    q = db.db.query("""\
+        INSERT INTO
+        task_check (task_id, name, title, args, position)
+        VALUES (%(task_id)d, '%(name)s', '%(title)s', '%(args)s', %(position)d)
+        RETURNING id;
+    """ % {
+        "task_id": task_id, **mock_checks[0], "args": json.dumps(mock_checks[0]["args"]),
+        "position": 0
+    })
+    id = q[0]["id"]
+
+    yield id
+
 
 @pytest.fixture(scope="function")
 def user_id(site_id):
@@ -169,6 +184,54 @@ def user_id(site_id):
 
     yield id
 
+
+
+@pytest.fixture(scope="function")
+def user_project_id(user_id, project_id):
+    q = db.db.query("""\
+        INSERT INTO
+        user_project (user_id, project_id, git_url)
+        VALUES (%(user_id)d, %(project_id)d, '%(git_url)s')
+        RETURNING id;
+    """ % {
+        "user_id": user_id, "project_id": project_id,
+        "git_url": "http://example.com/git"  # TODO: maybe should match config.git_root_directory
+    })
+    id = q[0]["id"]
+
+    yield id
+
+
+@pytest.fixture(scope="function")
+def user_task_status_id(user_project_id, task_id):
+    q = db.db.query("""\
+        INSERT INTO
+        user_task_status (user_project_id, task_id, status)
+        VALUES (%(user_project_id)d, %(task_id)d, '%(status)s')
+        RETURNING id;
+    """ % {
+        "user_project_id": user_project_id, "task_id": task_id,
+        "status": "Pending"
+    })
+    id = q[0]["id"]
+
+    yield id
+
+
+@pytest.fixture(scope="function")
+def user_check_status_id(user_task_status_id, task_check_id):
+    q = db.db.query("""\
+        INSERT INTO
+        user_check_status (user_task_status_id, task_check_id, status)
+        VALUES (%(user_task_status_id)d, %(task_check_id)d, '%(status)s')
+        RETURNING id;
+    """ % {
+        "user_task_status_id": user_task_status_id, "task_check_id": task_check_id,
+        "status": "Pending"
+    })
+    id = q[0]["id"]
+
+    yield id
 
 
 def test_db_array_type_is_fetched_correctly(project_id):
@@ -390,3 +453,31 @@ def test_update_checks_when_check_inputs_is_empty(
     task.update_checks([])
 
     assert len(task.get_checks()) == 0
+
+
+class TestUserProject:
+    def test_update_task_status(self, user_project_id, task_id):
+        user_project = db.UserProject.find(id=user_project_id)
+        task = db.Task.find(id=task_id)
+        user_project.update_task_status(task, "Completed")
+        assert user_project.get_task_status(task).status == "Completed"
+
+    def test_update_task_status_when_task_status_already_exists(self, user_project_id, task_id):
+        user_project = db.UserProject.find(id=user_project_id)
+        task = db.Task.find(id=task_id)
+        user_project.update_task_status(task, "Completed")
+        assert user_project.get_task_status(task).status == "Completed"
+
+        user_project.update_task_status(task, "In Progress")
+        assert user_project.get_task_status(task).status == "In Progress"
+
+
+class TestUserTaskStatus:
+    def test_update_check_status(self, user_task_status_id, task_check_id):
+        user_task_status = db.UserTaskStatus.find(id=user_task_status_id)
+        task_check = db.TaskCheck.find(id=task_check_id)
+        user_task_status.update_check_status(task_check, "pass")
+        assert user_task_status.get_check_status(task_check).status == "pass"
+
+        user_task_status.update_check_status(task_check, "fail")
+        assert user_task_status.get_check_status(task_check).status == "fail"
