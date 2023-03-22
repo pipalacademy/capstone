@@ -116,11 +116,9 @@ def get_or_upsert_project(name):
         body["site_id"] = g.site_id
         tasks = body.pop("tasks")
 
-        project = Project.find(name=name)
+        project = Project.find(site_id=g.site_id, name=name)
         if project is None:
             project = Project(**body)
-        elif project is not None and project.site_id != body["site_id"]:
-            return ValidationFailed("Project cannot be updated from this site")
         else:
             project.update(**body)
 

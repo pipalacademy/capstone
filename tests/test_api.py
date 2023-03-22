@@ -191,8 +191,8 @@ class TestProject:
         site1.put("/api/projects/fizzbuzz", json=data)
         site2.put("/api/projects/fizzbuzz", json=data)
 
-        p1 = site1.get("/api/projects/fizzbuzz")
-        p2 = site2.get("/api/projects/fizzbuzz")
+        p1 = site1.get("/api/projects/fizzbuzz").json
+        p2 = site2.get("/api/projects/fizzbuzz").json
 
         data.pop("tasks")
         assert_dict(p1, data)
@@ -218,15 +218,5 @@ class TestProject:
 
         site1.put("/api/projects/fizzbuzz", json=dict(data, title="Fizz Buzz 2"))
 
-        assert site1.get("/api/projects/fizzbuzz").json.title == "Fizz Buzz 2"
-        assert site2.get("/api/projects/fizzbuzz").json.title == "Fizz Buzz"
-
-    def test_update_project_when_project_is_on_different_site(self, api_client):
-        site1 = api_client.create_site(name="alpha", domain="alpha")
-        site2 = api_client.create_site(name="beta", domain="beta")
-
-        data = dict(SAMPLE_PROJECT, title="Fizz Buzz")
-        site1.put("/api/projects/fizzbuzz", json=data)
-
-        r = site2.put("/api/projects/fizzbuzz", json=dict(data, title="Fizz Buzz 2"), check_status=False)
-        assert r.status_code == 404
+        assert site1.get("/api/projects/fizzbuzz").json["title"] == "Fizz Buzz 2"
+        assert site2.get("/api/projects/fizzbuzz").json["title"] == "Fizz Buzz"
