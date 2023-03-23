@@ -115,6 +115,7 @@ create table changelog (
     id serial primary key,
     site_id integer not null references site,
     project_id integer references project,
+    user_id integer references user,
     action text not null,
     details JSON not null default '{}'::json,
 
