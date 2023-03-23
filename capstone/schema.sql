@@ -115,11 +115,12 @@ create table changelog (
     id serial primary key,
     site_id integer not null references site,
     project_id integer references project,
-    user_id integer references user,
+    user_id integer references user_account,
     action text not null,
     details JSON not null default '{}'::json,
+    timestamp timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 
-    CHECK (jsonb_typeof(details) = 'object')
+    CHECK (json_typeof(details) = 'object')
 );
 
 -- How to handle deletes
