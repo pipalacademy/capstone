@@ -104,6 +104,29 @@ class Site(Document):
     created: datetime | None = None
     last_modified: datetime | None = None
 
+    def get_projects(
+            self,
+            id: int | None = None,
+            name: str | None = None,
+            title: str | None = None,
+            is_published: bool | None = None) -> list[Project]:
+        filters = remove_none_values(locals())
+        return Project.find_all(site_id=self.id, **filters)
+
+    def get_project(self, name: str) -> Project | None:
+        return Project.find(site_id=self.id, name=name)
+
+    def get_users(
+            self,
+            id: int | None = None,
+            name: str | None = None,
+            email: str | None = None) -> list[User]:
+        filters = remove_none_values(locals())
+        return User.find_all(site_id=self.id, **filters)
+
+    def get_user(self, username: str) -> User | None:
+        return User.find(site_id=self.id)
+
 
 @dataclass(kw_only=True)
 class Project(Document):

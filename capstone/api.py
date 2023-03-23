@@ -9,7 +9,6 @@ from . import tq
 
 from flask import Blueprint, g, make_response, request
 
-#from .db import Activity, Project, User, CheckStatus, TaskActivityInput
 from .db import Project
 from .checks import run_check
 from . import config
@@ -80,7 +79,7 @@ def list_projects():
 
     Returns: array[project_teaser]
     """
-    projects = Project.find_all(site_id=g.site_id)
+    projects = g.site.get_projects()
     return [
         project.get_teaser() for project in projects
     ]
@@ -99,7 +98,7 @@ def get_or_upsert_project(name):
     Returns: project
     """
     if request.method == "GET":
-        project = Project.find(site_id=g.site_id, name=name)
+        project = g.site.get_project(name=name)
         if project is None:
             return NotFound("Project not found")
         return project.get_detail()
@@ -113,10 +112,10 @@ def get_or_upsert_project(name):
             return ValidationFailed(str(e))
 
         body["name"] = name
-        body["site_id"] = g.site_id
+        body["site_id"] = g.site.id
         tasks = body.pop("tasks")
 
-        project = Project.find(site_id=g.site_id, name=name)
+        project = g.site.get_project(name=name)
         if project is None:
             project = Project(**body)
         else:
@@ -192,7 +191,7 @@ def get_user(username):
     """
     if not is_authorized(request):
         return Unauthorized()
-    user = User.find(username=username)
+    user = g.site.get_user(username=username)
     if user is None:
         return NotFound("User not found")
     return user.get_json()
@@ -333,8 +332,8 @@ def post_receive_webhook():
 
 @tq.task_function
 def post_receive_webhook_action(username, project_name, git_commit_hash=None):
-    user = User.find(username=username)
-    project = Project.find(name=project_name)
+    user = g.site.get_user(username=username)
+    project = g.site.get_project(name=project_name)
     if not user or not project:
         return "user or project not found"
 

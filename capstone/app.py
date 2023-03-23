@@ -46,7 +46,7 @@ def authenticated(handler):
 
 
 @app.before_request
-def set_site_id():
+def set_site():
     domain = request.host.split(":")[0]
     site = Site.find(domain=domain)
     if not site:
@@ -55,7 +55,7 @@ def set_site_id():
         html = layout.render_page(page)
         return html, 404
     else:
-        g.site_id = site.id
+        g.site = site
 
 
 @app.route("/")
@@ -69,7 +69,7 @@ def index():
 
 @app.route("/projects")
 def projects():
-    projects = Project.find_all(site_id=g.site_id, is_published=True)
+    projects = g.site.get_projects(is_published=True)
 
     page = Page(title="Projects")
     page << ProjectGrid(
@@ -89,7 +89,7 @@ def projects():
 @app.route("/dashboard")
 @authenticated
 def dashboard(user):
-    projects = Project.find_all(is_published=True)
+    projects = g.site.get_projects(is_published=True)
     started_projects = [
         project for project in projects
         if project.get_user_project(user.id) is not None
@@ -130,7 +130,7 @@ def dashboard(user):
 
 @app.route("/projects/<name>", methods=["GET", "POST"])
 def project(name):
-    project = Project.find(site_id=g.site_id, name=name)
+    project = g.site.get_project(name=name)
     user = get_authenticated_user()
     user_project = project.get_user_project(user.id) if user else None
 
@@ -191,7 +191,7 @@ def all_activity(user):
 
     project_section_empty_state = html.div(html.em("No participants have started this project."))
 
-    for project in Project.find_all(is_published=True):
+    for project in g.site.get_projects(is_published=True):
         project_section = html.div(
             html.h3(project.title), id=project.name, class_="my-3")
         project_activities = html.div(class_="m-3")
@@ -233,8 +233,8 @@ def all_activity(user):
 @app.route("/users/<username>/projects/<project_name>")
 @authenticated
 def individual_activity(user, username, project_name):
-    user = User.find(username=username)
-    project = Project.find(name=project_name)
+    user = g.site.get_user(username=username)
+    project = g.site.get_project(name=project_name)
     activity = user.get_activity(project.name)
 
     breadcrumbs = Breadcrumb()
