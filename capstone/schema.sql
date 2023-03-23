@@ -32,8 +32,8 @@ create table user_account (
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc')
 );
 
-create unique index user_account_username_idx on user_account(lower(username));
-create unique index user_account_email_idx on user_account(lower(email));
+create unique index user_account_site_username_idx on user_account(site_id, lower(username));
+create unique index user_account_site_email_idx on user_account(site_id, lower(email));
 
 create table project (
     id serial primary key,
