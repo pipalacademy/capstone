@@ -474,7 +474,7 @@ class Changelog(Document):
     project_id: int | None = None
     user_id: int | None = None
     action: str
-    details: dict[str, Any] = {}
+    details: dict[str, Any] = field(default_factory=dict)
 
     def get_site(self) -> Site | None:
         return Site.find(id=self.site_id)
