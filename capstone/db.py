@@ -468,6 +468,24 @@ class UserCheckStatus(Document):
         return UserTaskStatus.find(id=self.user_task_status_id)
 
 
+@dataclass(kw_only=True)
+class Changelog(Document):
+    site_id: int
+    project_id: int | None = None
+    user_id: int | None = None
+    action: str
+    details: dict[str, Any] = {}
+
+    def get_site(self) -> Site | None:
+        return Site.find(id=self.site_id)
+
+    def get_project(self) -> Project | None:
+        return Project.find(id=self.project_id) if self.project_id is not None else None
+
+    def get_user(self) -> User | None:
+        return User.find(id=self.user_id) if self.user_id is not None else None
+
+
 # db queries
 
 def find_all(table_name: str, **filters: Any) -> list[dict]:
