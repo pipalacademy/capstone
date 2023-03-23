@@ -11,5 +11,7 @@ private_files_dir = os.getenv("CAPSTONE_PRIVATE_FILES_DIR", "private")
 
 tasks_dir = os.getenv("CAPSTONE_TASKS_DIR") or "tasks"
 
+deployment_root = os.getenv("CAPSTONE_DEPLOYMENT_ROOT", "deployment")
+
 google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
