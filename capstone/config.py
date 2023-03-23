@@ -13,6 +13,3 @@ tasks_dir = os.getenv("CAPSTONE_TASKS_DIR") or "tasks"
 
 google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-
-google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "1077935421735-knugf4imj83s5cav7d7q7impq4je7msg.apps.googleusercontent.com")
-google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "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")
