@@ -33,6 +33,22 @@ def config(*args, workdir=None, **kwargs):
     return True
 
 
+def clone(*args, workdir=None, **kwargs):
+    cmd = build_cmd("clone", options=kwargs, workdir=workdir, args=args)
+
+    # TODO: handle gracefully when proc fails
+    proc = subprocess.run(cmd, stdout=sys.stdout, stderr=sys.stderr, check=True)
+    return True
+
+
+def rev_parse(*args, workdir=None, **kwargs):
+    cmd = build_cmd("rev-parse", options=kwargs, workdir=workdir, args=args)
+
+    # TODO: handle gracefully when proc fails
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=sys.stderr, check=True)
+    return proc.stdout.decode("utf-8").strip()
+
+
 def build_cmd(subcommand, args, options, workdir=None):
     pre_command = f"cd '{workdir}'; " if workdir else ""
 
