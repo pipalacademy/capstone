@@ -110,7 +110,7 @@ class Site(Document):
             name: str | None = None,
             title: str | None = None,
             is_published: bool | None = None) -> list[Project]:
-        filters = remove_none_values(locals())
+        filters = remove_none_values(dict(id=id, name=name, title=title, is_published=is_published))
         return Project.find_all(site_id=self.id, **filters)
 
     def get_project(self, name: str) -> Project | None:
