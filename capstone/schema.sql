@@ -111,32 +111,15 @@ create table user_check_status (
     CHECK (status ~ '^(pending|pass|fail|error)$')
 );
 
--- create table changelog (
---     id serial primary key,
---     site_id integer not null references site,
---     project_id integer references project,
---     action text,
---     -- author
---     details JSON
--- );
+create table changelog (
+    id serial primary key,
+    site_id integer not null references site,
+    project_id integer references project,
+    action text not null,
+    details JSON not null default '{}'::json,
 
--- user_project:
---     - project_id
---     - user_id
---     - git_url
---     - created
---     - last_modified
-
--- user_task_status
---     - task_id
---     - user_id
---     - status
---     - created
---     - last_modified
-
--- user_check_status
---     - status -- pending|pass|fail|error
---     - message text
+    CHECK (jsonb_typeof(details) = 'object')
+);
 
 -- How to handle deletes
 --
