@@ -20,6 +20,34 @@ def write_deploy_changelog(site_id, user_id, project_id, type, git_commit_hash, 
     )
 
 
+def get_deployments(site, user_id=None, project_id=None):
+    filters = {"site_id": site.id}
+    if user_id:
+        filters["user_id"] = user_id
+    if project_id:
+        filters["project_id"] = project_id
+    deployments = db.where("changelog", action="deploy", **filters)
+    return [
+        {
+            "timestamp": deployment["timestamp"],
+            "type": deployment["details"]["type"],
+            "project": db.Project.find(site_id=site.id, id=deployment["project_id"]).name,
+            "user": db.User.find(site_id=site.id, id=deployment["user_id"]).email,
+            "git_hash": deployment["details"]["git_commit_hash"],
+            "app_url": deployment["details"]["app_url"],
+        }
+        for deployment in deployments
+    ]
+
+
+def new_deployment(user_project, type="simple"):
+    site = user_project.get_site()
+    if type == "simple":
+        return SimpleDeployment.run(site=site, user_project=user_project)
+    else:
+        raise ValueError(f"Unknown deployment type: {type}")
+
+
 class Deployment:
     @classmethod
     def run(cls, site, user_project):
@@ -34,7 +62,7 @@ class SimpleDeployment(Deployment):
         git_url = user_project.git_url
         app_domain = f"{user_project.user_id}.{site.domain}"
         deployment_dir = Path(config.deployment_root) / app_domain
-        deployment_dir.mkdir(exist_ok=True)
+        deployment_dir.mkdir(parents=True, exist_ok=True)
 
         # copy contents of Git repo to deployment dir
         git.clone(git_url, ".", workdir=str(deployment_dir))

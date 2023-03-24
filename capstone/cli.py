@@ -2,7 +2,7 @@ import click
 import sys
 from tabulate import tabulate
 
-from capstone import db
+from capstone import db, deployment
 
 
 @click.group()
@@ -196,6 +196,8 @@ def users_delete(site, username):
     db_user.delete()
     print(f"Deleted user {user_name}")
 
+## USER PROJECTS
+
 @cli.group()
 def user_projects():
     """manage user projects"""
@@ -290,6 +292,80 @@ def user_projects_delete(site, user_project_id):
 
     db_user_project.delete()
 
+## DEPLOYMENTS
+
+@cli.group()
+def deploys():
+    """manage deployments"""
+    pass
+
+@deploys.command("list")
+@site_option()
+@click.option("-u", "--user", default=None)
+@click.option("-p", "--project", default=None)
+def deploys_list(site, user, project):
+    """List deployments in a site."""
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_user = db_site.get_user(username=user) if user else None
+    if user:
+        if db_user is None:
+            print("User not found")
+            sys.exit(1)
+        elif db_user.site_id != db_site.id:
+            print("User not found in site")
+            sys.exit(1)
+    db_project = db_site.get_project(name=project) if project else None
+    if project:
+        if db_project is None:
+            print("Project not found")
+            sys.exit(1)
+        elif db_project.site_id != db_site.id:
+            print("Project not found in site")
+            sys.exit(1)
+    filters = {}
+    if db_user:
+        filters["user_id"] = db_user.id
+    if db_project:
+        filters["project_id"] = db_project.id
+    deployments = deployment.get_deployments(site=db_site, **filters)
+    if not deployments:
+        print("No matching rows found")
+        sys.exit(0)
+    print(make_table(deployments))
+
+@deploys.command("new")
+@site_option()
+@click.option("-u", "--user")
+@click.option("-p", "--project")
+def deploys_new(site, user, project):
+    """List deployments in a site."""
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+    db_user = db_site.get_user(username=user)
+    if db_user is None:
+        print("User not found")
+        sys.exit(1)
+    if db_user.site_id != db_site.id:
+        print("User not found in site")
+        sys.exit(1)
+    db_project = db_site.get_project(name=project)
+    if db_project is None:
+        print("Project not found")
+        sys.exit(1)
+    if db_project.site_id != db_site.id:
+        print("Project not found in site")
+        sys.exit(1)
+    user_project = db.UserProject.find(user_id=db_user.id, project_id=db_project.id)
+    if user_project is None:
+        print("User hasn't started project")
+        sys.exit(1)
+    deployment.new_deployment(user_project=user_project)
+    print("Deployment created")
 
 if __name__ == "__main__":
     cli()
