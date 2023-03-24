@@ -45,10 +45,10 @@ def google_oauth_callback():
         revoke_token(CLIENT_SECRET, user_info["access_token"])
 
     email = user_info["email"]
-    user = User.find(site_id=g.site_id, email=email)
+    user = User.find(site_id=g.site.id, email=email)
     if user is None:
         user = User(
-            site_id=g.site_id, email=email, username=email,
+            site_id=g.site.id, email=email, username=email,
             full_name=user_info["name"]).save()
     login_user(user_id=user.id)
     return redirect("/")
