@@ -379,6 +379,10 @@ class UserProject(Document):
     def get_user(self) -> User | None:
         return User.find(id=self.user_id)
 
+    def get_site(self) -> Site | None:
+        user = self.get_user()
+        return user and user.get_site() or None
+
     def get_context_vars(self) -> dict[str, Any]:
         return {
             "git_url": self.git_url,
