@@ -1,3 +1,6 @@
+import contextlib
+import importlib
+import sys
 from pathlib import Path
 
 from capstone import config
@@ -77,3 +80,20 @@ class SimpleDeployment(Deployment):
             git_commit_hash=commit_hash,
             app_url=f"http://{app_domain}",
         )
+
+    def can_serve_domain(self, domain):
+        return (Path(config.deployment_root) / domain).is_dir()
+
+    def serve_domain(self, domain, env, start_response):
+        deployment_dir = str(Path(config.deployment_root) / domain)
+        with add_sys_path(deployment_dir):
+            return importlib.import_module("wsgi").app(env, start_response)
+
+
+@contextlib.contextmanager
+def add_sys_path(path):
+    sys.path.insert(0, path)
+    try:
+        yield
+    finally:
+        sys.path.remove(path)
