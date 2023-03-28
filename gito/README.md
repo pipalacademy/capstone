@@ -42,7 +42,7 @@ Location: /api/repos/abcd12345678
 ### Get repo info
 
 ```
-GET /apis/repos/abcd12345678
+GET /api/repos/abcd12345678
 
 {
     "id": "abcd12345678",
@@ -55,7 +55,7 @@ GET /apis/repos/abcd12345678
 ### Delete a repo
 
 ```
-DELETE /apis/repos/abcd12345678
+DELETE /api/repos/abcd12345678
 ---
 200 OK
 {}
@@ -64,7 +64,7 @@ DELETE /apis/repos/abcd12345678
 ### Get webhook
 
 ```
-GET /apis/repos/abcd12345678/hook
+GET /api/repos/abcd12345678/hook
 
 {"url": "https://example.com/foo"}
 ```
@@ -72,7 +72,7 @@ GET /apis/repos/abcd12345678/hook
 ### Set webhook
 
 ```
-POST /apis/repos/abcd12345678/hook
+POST /api/repos/abcd12345678/hook
 
 {"url": "https://example.com/foo"}
 ```
