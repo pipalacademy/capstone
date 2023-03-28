@@ -146,8 +146,6 @@ def get_or_upsert_repo_zip(project_name):
     elif request.method == "PUT":
         with tempfile.TemporaryDirectory() as tempdir:
             repo_zip = f"{tempdir}/repo.zip"
-            repo_git_zip = f"{tempdir}/repo-git.zip"
-            repo_dir = f"{tempdir}/repo"
 
             with open(repo_zip, "wb") as f:
                 for data in request.stream:
@@ -156,27 +154,10 @@ def get_or_upsert_repo_zip(project_name):
             if not zipfile.is_zipfile(repo_zip):
                 return {"message": "Not a valid zipfile"}, 400
 
-            extract_and_setup_git(zip_file=repo_zip, extract_to=repo_dir)
-            write_post_receive_hook(f"{repo_dir}/.git/hooks/post-receive")
-            write_git_config(repo_dir=repo_dir)
-
-            zip_directory(src=f"{repo_dir}/.git", dst=repo_git_zip)
-
             with open(repo_zip, "rb") as f:
                 save_private_file(f"projects/{project_name}/repo.zip", f)
 
-            with open(repo_git_zip, "rb") as f:
-                save_private_file(f"projects/{project_name}/repo-git.zip", f)
-
         return {}, 201
-
-
-@api.route("/projects/<project_name>/repo-git.zip")
-def get_repo_git_zip(project_name):
-    if not is_authorized(request):
-        return Unauthorized()
-
-    return get_private_file(f"projects/{project_name}/repo-git.zip")
 
 
 # Resource: User
@@ -381,31 +362,5 @@ def commit_hook_build_body(activity, **rest):
     return body
 
 
-def write_post_receive_hook(filepath):
-    post_receive_hook_content = f"""\
-#! /bin/bash
-
-exec {config.git_post_receive_script}
-"""
-    with open(filepath, "w") as f:
-        f.write(post_receive_hook_content)
-
-    subprocess.check_call(["chmod", "+x", filepath])
-
-
-def write_git_config(repo_dir):
-    git.config("--bool", "http.receivepack", "true", workdir=repo_dir)
-    git.config("--bool", "core.bare", "true", workdir=repo_dir)
-
-
 def zip_directory(src, dst):
     subprocess.check_call(f"cd '{src}'; zip -r {dst} .", shell=True)
-
-
-def extract_and_setup_git(zip_file, extract_to):
-    git.init(extract_to, b="main")
-    subprocess.check_call(["unzip", "-d", extract_to, zip_file])
-    git.add(".", workdir=extract_to)
-    git.commit(
-        m="initial commit", workdir=extract_to,
-        author="Capstone <git@pipal.in>")

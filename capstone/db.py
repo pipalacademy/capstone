@@ -247,7 +247,7 @@ class Project(Document):
     def get_private_file_key_for_zipball(self) -> str:
         """`utils.files` module should be used with this key.
         """
-        return f"projects/{self.name}/repo-git.zip"
+        return f"projects/{self.name}/repo.zip"
 
 
 @dataclass(kw_only=True)
