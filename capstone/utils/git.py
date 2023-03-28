@@ -17,6 +17,14 @@ def commit(*args, workdir=None, **kwargs):
     return True
 
 
+def push(*args, workdir=None, **kwargs):
+    cmd = build_cmd("push", options=kwargs, workdir=workdir, args=args)
+
+    # TODO: handle gracefully when proc fails
+    proc = subprocess.run(cmd, stdout=sys.stdout, stderr=sys.stderr, check=True)
+    return True
+
+
 def add(*args, workdir=None, **kwargs):
     cmd = build_cmd("add", options=kwargs, workdir=workdir, args=args)
 

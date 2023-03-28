@@ -190,12 +190,13 @@ def user_id(site_id):
 def user_project_id(user_id, project_id):
     q = db.db.query("""\
         INSERT INTO
-        user_project (user_id, project_id, git_url)
-        VALUES (%(user_id)d, %(project_id)d, '%(git_url)s')
+        user_project (user_id, project_id, git_url, gito_repo_id)
+        VALUES (%(user_id)d, %(project_id)d, '%(git_url)s', '%(gito_repo_id)s')
         RETURNING id;
     """ % {
         "user_id": user_id, "project_id": project_id,
-        "git_url": "http://example.com/git"  # TODO: maybe should match config.git_root_directory
+        "gito_repo_id": "abcd123456",
+        "git_url": "http://example.com/abcd123456/git"
     })
     id = q[0]["id"]
 

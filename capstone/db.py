@@ -364,11 +364,12 @@ class User(Document):
 @dataclass(kw_only=True)
 class UserProject(Document):
     _tablename = "user_project"
-    _db_fields = ["id", "project_id", "user_id", "git_url", "created", "last_modified"]
+    _db_fields = ["id", "project_id", "user_id", "git_url", "gito_repo_id", "created", "last_modified"]
 
     project_id: int
     user_id: int
     git_url: str
+    gito_repo_id: str
 
     created: datetime | None = None
     last_modified: datetime | None = None
