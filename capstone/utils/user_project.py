@@ -42,7 +42,7 @@ def setup_remote_git_repo(git_url: str, template_zipfile: str) -> None:
         git.clone(git_url, ".", workdir=repo_path)
         extract_zipfile(src=template_zipfile, dst=repo_path)
         git.add(".", workdir=repo_path)
-        git.commit("Initial commit", workdir=repo_path)
+        git.commit(message="Initial commit", workdir=repo_path)
         git.push(git_url, "main", workdir=repo_path)
 
 

@@ -18,11 +18,7 @@ def create_repo(name: str) -> str:
     except Exception as e:
         raise GitoException("Non-OK status code") from e
 
-    location = r.headers.get("location")
-    if location is None:
-        raise GitoException("No location header after OK response")
-
-    return location.split("/")[-1]
+    return r.json()["id"]
 
 
 def get_repo(id: str) -> dict[str, Any]:
