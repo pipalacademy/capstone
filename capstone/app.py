@@ -178,7 +178,7 @@ def project(name):
             main << TaskDetails(
                 task,
                 status=None,
-                description_vars=user_project and user_project.get_context_vars() or {},
+                description_vars=user_project and user_project.get_context_vars() or None,
             )
 
         return layout.render_page(page)
@@ -281,7 +281,7 @@ def ProjectTeaser(project, is_started):
     )
 
 
-def TaskDetails(task, status, check_statuses=(), description_vars={}):
+def TaskDetails(task, status, check_statuses=(), description_vars=None):
     card = TaskCard(
         position=task.position,
         title=task.title,

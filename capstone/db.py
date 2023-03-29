@@ -316,9 +316,9 @@ class Task(Document):
 
         return checks
 
-    def render_description(self, vars: dict[str, Any]) -> str:
-        # NOTE: vars is being ignored
-        return self.description.format(**vars)
+    def render_description(self, vars: dict[str, Any] | None = None) -> str:
+        # TODO: maybe use %(...)s instead of formatting? so it doesn't break when keys are not present
+        return self.description.format(**vars) if vars is not None else self.description
 
 
 @dataclass(kw_only=True)
