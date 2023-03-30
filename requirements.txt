@@ -9,4 +9,4 @@ Click
 git+https://github.com/pipalacademy/toolkit.git#egg=toolkit
 git+https://github.com/pipalacademy/kutty.git#egg=kutty
 pydantic==1.10.6
-tabulate==0.9.0
+docker==6.0.1
