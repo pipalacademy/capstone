@@ -3,6 +3,8 @@ import os
 # TODO: rename to database_url or DATABASE_URL
 db_uri = os.getenv("DATABASE_URL", "postgres:///capstone")
 
+capstone_api_token = os.getenv("CAPSTONE_API_TOKEN", "test123")
+
 git_base_url = os.getenv("CAPSTONE_GIT_BASE_URL")
 git_post_receive_token = os.getenv("CAPSTONE_GIT_POST_RECEIVE_TOKEN")
 gito_base_url = os.getenv("CAPSTONE_GITO_BASE_URL", "http://localhost:8080")
