@@ -30,7 +30,7 @@ def is_authorized(request):
 
 
 def is_token_valid(token):
-    return token == "test123"
+    return token == config.capstone_api_token
 
 
 def Unauthorized(message="Unauthorized"):
