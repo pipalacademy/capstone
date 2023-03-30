@@ -5,7 +5,8 @@ db_uri = os.getenv("DATABASE_URL", "postgres:///capstone")
 
 git_base_url = os.getenv("CAPSTONE_GIT_BASE_URL")
 git_post_receive_token = os.getenv("CAPSTONE_GIT_POST_RECEIVE_TOKEN")
-gito_base_url = os.getenv("CAPSTONE_GITO_BASE_URL", "http://localhost:5001")
+gito_base_url = os.getenv("CAPSTONE_GITO_BASE_URL", "http://localhost:8080")
+gito_api_token = os.getenv("CAPSTONE_GITO_API_TOKEN", "")
 
 private_files_dir = os.getenv("CAPSTONE_PRIVATE_FILES_DIR", "private")
 

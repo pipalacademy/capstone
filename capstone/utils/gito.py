@@ -9,10 +9,14 @@ class GitoException(Exception):
     pass
 
 
+def get_auth_headers():
+    return {"Authorization": f"Bearer {config.gito_api_token}"}
+
+
 def create_repo(name: str) -> str:
     """Creates a repo in Gito, returns the ID"""
     url = config.gito_base_url + "/api/repos"
-    r = requests.post(url, json={"name": name})
+    r = requests.post(url, json={"name": name}, headers=get_auth_headers())
     try:
         r.raise_for_status()
     except Exception as e:
@@ -33,7 +37,7 @@ def get_repo(id: str) -> dict[str, Any]:
     }
     """
     url = config.gito_base_url + f"/api/repos/{id}"
-    r = requests.get(url)
+    r = requests.get(url, headers=get_auth_headers())
     try:
         r.raise_for_status()
     except Exception as e:
@@ -45,7 +49,7 @@ def get_repo(id: str) -> dict[str, Any]:
 def delete_repo(id: str) -> None:
     """Deletes a repository from Gito"""
     url = config.gito_base_url + f"/api/repos/{id}"
-    r = requests.delete(url)
+    r = requests.delete(url, headers=get_auth_headers())
     try:
         r.raise_for_status()
     except Exception as e:
@@ -58,7 +62,7 @@ def get_webhook(id: str) -> str | None:
     None if no webhook URL is set
     """
     url = config.gito_base_url + f"/api/repos/{id}/hook"
-    r = requests.get(url)
+    r = requests.get(url, headers=get_auth_headers())
     try:
         r.raise_for_status()
     except Exception as e:
@@ -71,7 +75,7 @@ def set_webhook(id: str, webhook_url: str) -> str | None:
     """Sets the webhook URL for a repo. Returns new webhook URL.
     """
     url = config.gito_base_url + f"/api/repos/{id}/hook"
-    r = requests.post(url, json={"url": webhook_url})
+    r = requests.post(url, json={"url": webhook_url}, headers=get_auth_headers())
     try:
         r.raise_for_status()
     except Exception as e:
