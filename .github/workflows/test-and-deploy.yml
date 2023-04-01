@@ -44,4 +44,4 @@ jobs:
         shell: bash
         run: |
           echo $PIPAL_BOT_SSH_KEY > pipalbot.key
-          ssh -i ./pipalbot.key $CAPSTONE_USER@$CAPSTONE_HOST bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone'
+          ssh  -o StrictHostKeyChecking=no -i ./pipalbot.key $CAPSTONE_USER@$CAPSTONE_HOST bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone'
