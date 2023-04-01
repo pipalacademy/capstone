@@ -36,10 +36,12 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     needs: run-tests
-    uses: appleboy/ssh-action@v0.1.8
-    with:
-      host: capstone-staging.pipal.in
-      username: capstone
-      key: ${{ secrets.PIPAL_BOT_SSH_KEY }}
-      script: |
-          bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone'
+    steps:
+      - name: Deploy to staging
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: capstone-staging.pipal.in
+          username: capstone
+          key: ${{ secrets.PIPAL_BOT_SSH_KEY }}
+          script: |
+            bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone'
