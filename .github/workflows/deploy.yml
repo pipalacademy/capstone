@@ -6,8 +6,8 @@ on:
       - main
 
 env:
-  CAPSTONE_USER = capstone
-  CAPSTONE_HOST = capstone-staging.pipal.in
+  CAPSTONE_USER: capstone
+  CAPSTONE_HOST: capstone-staging.pipal.in
 
 jobs:
   build:
