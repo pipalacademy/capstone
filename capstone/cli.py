@@ -3,6 +3,7 @@ import sys
 import yaml
 
 from capstone import db, deployment
+from capstone.utils.project_maker import create_project
 
 
 @click.group()
@@ -129,6 +130,31 @@ def projects_delete(site, project):
     project_name = db_project.name
     db_project.delete()
     print(f"Deleted project {project_name}")
+
+@projects.command("new")
+@site_option()
+@click.option("-t", "--title", help="Project title")
+@click.option("-n", "--name", help="Project name")
+def projects_new(site, title=None, name=None):
+    """Create a new project in a site."""
+    if title is None:
+        title = click.prompt("Project title", default="Build your own Shell")
+    if name is None:
+        name = click.prompt(
+            "Project name",
+            default=title.lower().replace(" ", "-").replace("_", "-").replace(".", "-")
+        )
+
+    print("New project", site, title, name)
+    db_site = db.Site.find(name=site)
+    if db_site is None:
+        print("Site not found")
+        sys.exit(1)
+
+    db_project = create_project(site=db_site, name=name, title=title)
+
+    preview = dict(db_project.get_teaser(), git_url=db_project.git_url)
+    print(prettify(preview))
 
 ## USERS
 
