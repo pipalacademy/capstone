@@ -253,6 +253,11 @@ def test_db_default_is_set_correctly(project_id):
     assert project.is_published is False
 
 
+def test_db_none_value_is_set_correctly(project_id):
+    project = db.Project.find(id=project_id)
+    assert project.git_url is None
+
+
 def test_find_project_ok(project_id):
     project = db.Project.find(id=project_id)
     assert isinstance(project, db.Project)

@@ -47,6 +47,10 @@ create table project (
     -- or status draft/published/archived
     is_published boolean default 'f',
 
+    -- TODO: making git_url unique would also need it to be non-nullable
+    -- maybe make it non nullable and unique later?
+    git_url text,
+
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 

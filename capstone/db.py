@@ -136,12 +136,14 @@ class Project(Document):
     ]
     _detail_fields = [
         "name", "title", "url", "short_description", "description",
-        "tags", "is_published", "created", "last_modified",
+        "tags", "is_published", "created", "last_modified"
         # "tasks"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
         "tags", "is_published", "created", "last_modified",
+        # private:
+        "git_url"
     ]
 
     site_id: int
@@ -152,6 +154,8 @@ class Project(Document):
     tags: list[str]
 
     is_published: bool | None = None
+
+    git_url: str | None = None
 
     created: datetime | None = None
     last_modified: datetime | None = None

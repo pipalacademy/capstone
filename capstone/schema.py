@@ -19,6 +19,7 @@ def migrate():
                     constraint_condition="UNIQUE(user_id, project_id)")
         fix_user_email_unique_constraint(schema)
         add_gito_repo_id_column_to_user_project(schema)
+        add_git_url_column_to_project(schema)
 
 def initial_schema(schema):
     # schema is already initialized
@@ -72,3 +73,7 @@ def fix_user_email_unique_constraint(schema):
 def add_gito_repo_id_column_to_user_project(schema):
     db = schema.db
     db.query("ALTER TABLE user_project ADD COLUMN IF NOT EXISTS gito_repo_id text not null unique")
+
+def add_git_url_column_to_project(schema):
+    db = schema.db
+    db.query("ALTER TABLE project ADD COLUMN IF NOT EXISTS git_url text")
