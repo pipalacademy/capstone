@@ -50,6 +50,7 @@ create table project (
     -- TODO: making git_url unique would also need it to be non-nullable
     -- maybe make it non nullable and unique later?
     git_url text,
+    gito_repo_id text,
 
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),

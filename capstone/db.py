@@ -146,7 +146,7 @@ class Project(Document):
         "id", "site_id", "name", "title", "short_description", "description",
         "tags", "is_published", "created", "last_modified",
         # private:
-        "git_url"
+        "gito_repo_id", "git_url"
     ]
 
     site_id: int
@@ -158,6 +158,7 @@ class Project(Document):
 
     is_published: bool | None = None
 
+    gito_repo_id: str | None = None
     git_url: str | None = None
 
     created: datetime | None = None
