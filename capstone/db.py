@@ -127,6 +127,9 @@ class Site(Document):
     def get_user(self, username: str) -> User | None:
         return User.find(site_id=self.id)
 
+    def get_url(self) -> str:
+        return f"http://{self.domain}"
+
 
 @dataclass(kw_only=True)
 class Project(Document):
