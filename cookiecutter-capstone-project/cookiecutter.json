@@ -1,0 +1,4 @@
+{
+    "project_title": "Make your own Shell",
+    "project_name": "{{ cookiecutter.project_title.lower()|replace(' ', '-')|replace('_', '-')|replace('.', '-') }}"
+}

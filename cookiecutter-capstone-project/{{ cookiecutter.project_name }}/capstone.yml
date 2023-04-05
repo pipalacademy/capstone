@@ -1,0 +1,21 @@
+name: {{ cookiecutter.project_name }}
+title: {{ cookiecutter.project_title }}
+short_description: {{ cookiecutter.project_title }}
+description: |
+  {{ cookiecutter.project_title }}
+tags: []
+tasks:
+  - name: clone-repository
+    title: Clone Git repository with starter code
+    description: |
+      Get started by cloning the Git repository. This will have the starter code you will build upon.
+      Your progress will get updated when you push to this repository.
+
+      ```
+      git clone {git_url}
+      ```
+
+      **Note:** You will have to start the project first to see your unique Git URL. Otherwise,
+      you will only see `git_url` within curly braces.
+    checks: []
+is_published: false  # change this when you want to publish
