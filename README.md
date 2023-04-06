@@ -18,25 +18,19 @@ $ source venv/bin/activate
 $ pip install -r requirements.txt dev-requirements.txt
 ```
 
-**Step 3: Create config file**
-
-```
-$ cp .env.example .env
-```
-
-**Step 4: Create database**
+**Step 3: Create database**
 
 ```
 $ createdb capstone
 ```
 
-**Step 5: Run db migrations**
+**Step 4: Run db migrations**
 
 ```
 $ python run.py --migrate
 ```
 
-**Step 6: Run the dev server**
+**Step 5: Run the dev server**
 
 ```
 $ python run.py
