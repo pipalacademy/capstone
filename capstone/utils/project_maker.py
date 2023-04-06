@@ -44,7 +44,14 @@ def create_project(site: db.Site, name: str, title: str) -> db.Project:
             webhook_url=site.get_url() + webhook_endpoint
         )
 
+    # init_project outside of transaction because the webhook call
+    # after first push needs the project to be committed to db.
+    try:
         init_project(project)
+    except Exception:
+        # note that project.delete() should also delete the gito repo
+        project.delete()
+        raise
 
     return project
 
