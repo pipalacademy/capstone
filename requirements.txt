@@ -12,3 +12,4 @@ pydantic>=1.10.6
 gunicorn>=20.1
 git+https://github.com/pipalacademy/capstone-checker@main
 cookiecutter>=2.1.1
+python-dotenv==1.0.0
