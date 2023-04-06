@@ -6,7 +6,7 @@ setup_logger()
 
 logger = logging.getLogger(__name__)
 
-from capstone import tq
+from capstone import tasks, tq
 from capstone.app import app
 from capstone.schema import migrate
 

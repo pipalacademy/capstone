@@ -484,12 +484,16 @@ class UserCheckStatus(Document):
 @dataclass(kw_only=True)
 class Changelog(Document):
     _tablename = "changelog"
+    _db_fields = [
+        "id", "site_id", "project_id", "user_id", "action", "timestamp",
+        "details"
+    ]
 
     site_id: int
     project_id: int | None = None
     user_id: int | None = None
     action: str
-    timestamp: datetime
+    timestamp: datetime | None = None  # defaults to utcnow in db
     details: dict[str, Any] = field(default_factory=dict)
 
     def get_site(self) -> Site | None:

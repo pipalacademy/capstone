@@ -1,5 +1,3 @@
-import requests
-import subprocess
 import tempfile
 import zipfile
 import logging
@@ -9,10 +7,9 @@ from . import tq
 
 from flask import Blueprint, g, make_response, request
 
-from .db import Project
+from .db import Changelog, Project
 from .checks import run_check
 from . import config
-from .utils import git
 from .utils.files import get_private_file, save_private_file
 
 
@@ -294,73 +291,31 @@ def activity_run_checks(username, project_name):
     return [t.get_json() for t in activity.get_task_activities()]
 
 
-@api.route("/webhook/post_receive", methods=["POST"])
-def post_receive_webhook():
-    if not is_authorized(request):
-        return Unauthorized()
+@api.route("/projects/<name>/hook/<gito_repo_id>", methods=["POST"])
+def update_project_webhook(name, gito_repo_id):
+    # NOTE: there is no other authentication, only gito_repo_id
 
-    repo_path = request.json["repo_path"]
-    _, username_and_more, project_and_more = repo_path.rsplit("/", maxsplit=2)
-    _, username = username_and_more.split("-", maxsplit=1)
-    project_name, _ = project_and_more.rsplit(".git", maxsplit=1)
+    project = g.site.get_project(name=name)
+    if project is None:
+        return NotFound("Project not found")
+
+    if project.gito_repo_id != gito_repo_id:
+        return Unauthorized("Repo ID mismatch")
+
+    changelog = Changelog(
+        site_id=g.site.id,
+        project_id=project.id,
+        action="update_project",
+        details={"status": "pending"}
+    )
+    changelog.save()
+
     tq.add_task(
-        "post_receive_webhook_action",
-        username=username, project_name=project_name,
-        git_commit_hash=request.json.get("git_commit_hash"))
-    response = "\nTriggered the checks for new changes.\nPlease wait for a minute or two for it to complete....\n"
-    return response
+        "update_project",
+        project_id=project.id, changelog_id=changelog.id,
+    )
 
-
-@tq.task_function
-def post_receive_webhook_action(username, project_name, git_commit_hash=None):
-    user = g.site.get_user(username=username)
-    project = g.site.get_project(name=project_name)
-    if not user or not project:
-        return "user or project not found"
-
-    activity = user.get_activity(project.name)
-    if project.commit_hook_url:
-        json_body = commit_hook_build_body(activity=activity)
-        if git_commit_hash is not None:
-            json_body.update(git_commit_hash=git_commit_hash)
-        r = requests.post(
-            project.commit_hook_url,
-            json=json_body,
-        )
-        if not r.ok:
-            logger.error(f"commit_hook failed:\n{r.content.decode()}")
-        else:
-            logger.info(f"commit hook ran:\n{r.content.decode()}")
-    if project.checks_url:
-        response = activity_run_checks(username=username, project_name=project_name)
-        logger.info(f"response from checks:\n{response}")
-
-    return "all done"
-
-
-def checks_build_context(activity, **rest):
-    body = {
-        "capstone_url": config.capstone_url,
-        "username": activity.username,
-        "project_name": activity.project_name,
-        **rest,
+    return {
+        "message": f"Task has been enqueued to update project {project.name}",
+        "changelog_id": changelog.id,  # debug info
     }
-    if activity.vars:
-        body.update({"vars": activity.vars})
-    return body
-
-
-def commit_hook_build_body(activity, **rest):
-    body = {
-        "username": activity.username,
-        "project": activity.project_name,
-        "git_url": activity.git_url,
-        **rest,
-    }
-    if activity.vars:
-        body.update({"vars": activity.vars})
-    return body
-
-
-def zip_directory(src, dst):
-    subprocess.check_call(f"cd '{src}'; zip -r {dst} .", shell=True)
