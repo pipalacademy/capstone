@@ -257,6 +257,21 @@ class Project(Document):
         """
         return f"projects/{self.name}/repo.zip"
 
+    def get_history(self) -> list[dict[str, Any]]:
+        """Return a list of updates for this project.
+        """
+        updates = Changelog.find_all(
+            project_id=self.id, action="update_project", order="timestamp desc"
+        )
+        return [
+            {
+                "timestamp": update.timestamp,
+                "status": update.details["status"],
+                "log": update.details.get("log", ""),
+            }
+            for update in updates
+        ]
+
 
 @dataclass(kw_only=True)
 class Task(Document):
