@@ -5,8 +5,10 @@ from html import escape as html_escape
 from kutty import html, Optional
 from kutty.bootstrap import Layout as _Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
-from kutty.bootstrap.card import CardBody, CardText, CardTitle
+from kutty.bootstrap.card import CardHeader, CardBody, CardText, CardTitle
 from kutty.components.navbar import NavEntry
+
+from capstone.utils import get_random_string
 
 
 class Page(_Page):
@@ -57,6 +59,24 @@ class Layout(_Layout):
 class Footer(BootstrapElement):
     TAG = "footer"
     CLASS = "my-3 py-3"
+
+
+class Accordion(BootstrapElement):
+    TAG = "div"
+    CLASS = "accordion"
+
+    def add_card(self, header, body):
+        id = get_random_string(length=6)
+        card = Card(
+            CardHeader(id=f"heading-{id}", class_="w-100").add(
+                html.a(header, href=f"#collapse-{id}", data_toggle="collapse", class_="text-decoration-none")
+            ),
+            html.div(class_="collapse", id=f"collapse-{id}").add(
+                CardBody(body)
+            )
+        )
+        self << card
+        return card
 
 
 class Breadcrumb(BootstrapElement):

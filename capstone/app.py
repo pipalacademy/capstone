@@ -8,8 +8,8 @@ from .auth import auth_bp, get_authenticated_user
 #from .db import Activity, Project, User, check_password
 from .db import Project, Site
 from .components import (
-    AbsoluteCenter, AuthNavEntry, Breadcrumb, Form, HiddenInput, Layout,
-    LinkWithoutDecoration, LoginButton, LoginCard, Page,
+    AbsoluteCenter, Accordion, AuthNavEntry, Breadcrumb, Form, HiddenInput,
+    Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,
     ProjectHero, ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton,
     SubmitButton
 )
@@ -182,6 +182,35 @@ def project(name):
             )
 
         return layout.render_page(page)
+
+
+@app.route("/projects/<name>/history")
+@authenticated
+def project_history(name, user):
+    project = g.site.get_project(name=name)
+    if not project:
+        abort(404)
+
+    page = Page(title="Project History")
+
+    updates = project.get_history()
+    if not updates:
+        page << html.em("No updates have been made to this project.")
+    else:
+        accordion = Accordion()
+        page << accordion
+
+        for update in updates:
+            accordion.add_card(
+                header=html.div(class_="d-flex justify-content-between").add(
+                    html.div(update["timestamp"].strftime("%a, %B %d %Y, %I:%M %p UTC")),
+                    html.div(update["status"]),
+                ),
+                body=html.pre(update["log"]) if update["log"] else html.em("No logs"),
+            )
+
+    return layout.render_page(page)
+
 
 
 @app.route("/activity")
