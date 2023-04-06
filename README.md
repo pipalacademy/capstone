@@ -16,6 +16,7 @@ $ source venv/bin/activate
 
 ```
 $ pip install -r requirements.txt dev-requirements.txt
+$ sudo apt install zip unzip
 ```
 
 **Step 3: Create database**

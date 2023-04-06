@@ -30,6 +30,8 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: pip install -r dev-requirements.txt -r requirements.txt
+    - name: Install apt dependencies
+      run: apt-get install -y zip unzip
     - name: Run tests
       run: ./runtests.sh
 
@@ -44,4 +46,4 @@ jobs:
           username: capstone
           key: ${{ secrets.PIPAL_BOT_SSH_KEY }}
           script: |
-            bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone capstone-tasks'
+            bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && sudo apt-get install -y zip unzip && venv/bin/python run.py --migrate && sudo supervisorctl restart capstone capstone-tasks'
