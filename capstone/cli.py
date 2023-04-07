@@ -182,7 +182,7 @@ def projects_publish(site, project_name):
 @projects.command("unpublish")
 @site_option()
 @click.argument("project_name")
-def projects_publish(site, project_name):
+def projects_unpublish(site, project_name):
     """Unpublish a project in a site.
     """
     project = get_project(site, project_name)
