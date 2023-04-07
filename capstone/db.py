@@ -139,8 +139,9 @@ class Project(Document):
     ]
     _detail_fields = [
         "name", "title", "url", "short_description", "description",
-        "tags", "is_published", "created", "last_modified"
+        "tags", "is_published", "created", "last_modified",
         # "tasks"
+        "gito_repo_id", "git_url"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
@@ -388,6 +389,14 @@ class User(Document):
 class UserProject(Document):
     _tablename = "user_project"
     _db_fields = ["id", "project_id", "user_id", "git_url", "gito_repo_id", "created", "last_modified"]
+    _detail_fields = [
+        "git_url", "gito_repo_id", "created", "last_modified",
+        # added by hand: "project_name", "username", "app_url"
+    ]
+    _teaser_fields = [
+        "git_url",
+        # added by hand: "project_name", "username", "app_url"
+    ]
 
     project_id: int
     user_id: int
@@ -397,11 +406,29 @@ class UserProject(Document):
     created: datetime | None = None
     last_modified: datetime | None = None
 
-    def get_project(self) -> Project | None:
-        return Project.find(id=self.project_id)
+    def get_detail(self) -> dict[str, Any]:
+        d = super().get_detail()
+        d["project_name"] = self.get_project().name
+        d["username"] = self.get_user().username
+        d["app_url"] = self.get_app_url()
+        return d
 
-    def get_user(self) -> User | None:
-        return User.find(id=self.user_id)
+    def get_teaser(self) -> dict[str, Any]:
+        d = super().get_teaser()
+        d["project_name"] = self.get_project().name
+        d["username"] = self.get_user().username
+        d["app_url"] = self.get_app_url()
+        return d
+
+    def get_project(self) -> Project:
+        project = Project.find(id=self.project_id)
+        assert project is not None
+        return project
+
+    def get_user(self) -> User:
+        user = User.find(id=self.user_id)
+        assert user is not None
+        return user
 
     def get_site(self) -> Site | None:
         user = self.get_user()

@@ -7,9 +7,9 @@ from . import tq
 
 from flask import Blueprint, g, make_response, request
 
-from .db import Changelog, Project
-from .checks import run_check
 from . import config
+from .db import Changelog, Project, UserProject
+from .utils.user_project import start_user_project
 from .utils.files import get_private_file, save_private_file
 
 
@@ -90,19 +90,19 @@ def get_or_upsert_project(name):
     - GET: Get a project by name
     - PUT: Update a project, or create one if it doesn't exist
 
-    PUT method is authenticated.
+    Both methods are authenticated.
 
     Returns: project
     """
+    if not is_authorized(request):
+        return Unauthorized()
+
     if request.method == "GET":
         project = g.site.get_project(name=name)
         if project is None:
             return NotFound("Project not found")
         return project.get_detail()
     else:
-        if not is_authorized(request):
-            return Unauthorized()
-
         try:
             body = ProjectUpsertModel.parse_obj(request.json).dict()
         except ValidationError as e:
@@ -175,120 +175,72 @@ def get_user(username):
     return user.get_json()
 
 
-# Resource: Activity
+# Resource: UserProject
 
 @api.route("/activity")
-def list_activity():
-    """List all activity
+def list_user_projects():
+    """List all user projects
 
     Authenticated endpoint
 
-    Returns: array[activity_teaser]
+    Returns: array[user_project_teaser]
     """
     # TODO: add pagination
-    activities = Activity.find_all()
-    return [a.get_teaser() for a in activities]
+    user_project = UserProject.find_all()
+    return [up.get_teaser() for up in user_project]
 
 
 @api.route("/users/<username>/projects")
-def list_activity_by_user(username):
-    """List all activity for a user
+def list_user_projects_by_user(username):
+    """List all user projects for a user
 
     Authenticated endpoint.
 
-    Returns: array[activity_teaser]
+    Returns: array[user_project_teaser]
     """
     if not is_authorized(request):
         return Unauthorized()
 
-    user_activity = Activity.find_all(username=username)
-    return [a.get_teaser() for a in user_activity]
+    user = g.site.get_user(username=username)
+    if user is None:
+        return NotFound("User not found")
+
+    user_projects = UserProject.find_all(user_id=user.id)
+    return [up.get_teaser() for up in user_projects]
 
 
 @api.route("/users/<username>/projects/<project_name>", methods=["GET", "PUT"])
-def get_or_create_activity(username, project_name):
+def get_or_create_user_project(username, project_name):
     """Get an activity for a user on a project, or create a new
     one (Sign Up for a project).
 
     Authenticated endpoint.
 
-    Returns: activity
+    Returns: user_project
     """
     if not is_authorized(request):
         return Unauthorized()
 
+    user = g.site.get_user(username=username)
+    if user is None:
+        return NotFound("User not found")
+
+    project = g.site.get_project(name=project_name)
+    if project is None:
+        return NotFound("Project not found")
+
     if request.method == "PUT":
-        if Activity.find(username=username, project_name=project_name) is not None:
+        if project.get_user_project(user_id=user.id) is not None:
             return Conflict("User is already signed up for the project")
-        activity = Activity(username=username, project_name=project_name)
-        activity.save()
-        return activity.get_json()
+
+        user_project = start_user_project(project=project, user=user)
+        return user_project.get_detail()
     else:
-        activity = Activity.find(
-            username=username, project_name=project_name,
-        )
-        if activity is None:
-            return NotFound("Activity not found")
-        return activity.get_json()
+        user_project = project.get_user_project(user_id=user.id)
+        if user_project is None:
+            return NotFound("User Project not found")
+        return user_project.get_detail()
 
-
-@api.route(
-    "/users/<username>/projects/<project_name>/tasks", methods=["GET", "PUT"])
-def get_or_update_activity_tasks(username, project_name):
-    """Get/update all task activity for a user on a project
-
-    Authenticated endpoint when updating.
-
-    Returns: array[task_activity]
-    """
-    activity = Activity.find(username=username, project_name=project_name)
-    if activity is None:
-        return NotFound("Activity not found")
-
-    if request.method == "PUT":
-        if not is_authorized(request):
-            return Unauthorized()
-
-        raw_tasks = request.json
-        tasks = [TaskActivityInput.from_json(**each) for each in raw_tasks]
-        activity.update_tasks(tasks)
-
-        return [t.get_json() for t in activity.get_task_activities()]
-    else:
-        return [t.get_json() for t in activity.get_task_activities()]
-
-
-@api.route(
-        "/users/<username>/projects/<project_name>/checks", methods=["POST"])
-def activity_run_checks(username, project_name):
-    """Run all checks for an activity and use them to update status.
-
-    Returns: array[task_activity]
-    """
-    activity = Activity.find(username=username, project_name=project_name)
-    if activity is None:
-        return NotFound("Activity not found")
-
-    project = activity.get_project()
-    for task in project.get_tasks():
-        check_statuses = []
-        for check in task.checks:
-            result = run_check(
-                base_url=project.checks_url,
-                context=checks_build_context(activity),
-                check_name=check.name,
-                arguments=check.args)
-            check_statuses.append(
-                CheckStatus(**result, name=check.name))
-        task_activity_input = TaskActivityInput(name=task.name, checks=check_statuses)
-        task_activity = activity.get_task_activity(task.id)
-        old_status = task_activity.status
-        task_activity.update_from_input(task_activity_input).save()
-        if old_status not in {"Completed", "Failing"} and task_activity.status != "Completed":
-            break
-
-    activity.set_in_progress_task()
-    return [t.get_json() for t in activity.get_task_activities()]
 
 
 @api.route("/projects/<name>/hook/<gito_repo_id>", methods=["POST"])
