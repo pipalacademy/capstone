@@ -16,5 +16,5 @@ docker build -t "$image_tag" "$build_path"
 # If an old version of the image exists, delete it
 if [ -n "$image_id" ]; then
     echo "Deleting previous image with tag: $image_tag"
-    docker rmi "$image_id"
+    docker rmi -f "$image_id"
 fi

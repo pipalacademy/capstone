@@ -137,7 +137,7 @@ def update_user_project(user_project_id: int, changelog_id: int) -> None:
                     "--username", user.username,
                     "--output", "/output/result.json",
                 ],
-                #auto_remove=True,
+                auto_remove=True,
                 network_mode="host",
                 stdout=True,
                 stderr=True,
