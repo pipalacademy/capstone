@@ -21,6 +21,7 @@ def migrate():
         add_gito_repo_id_column_to_user_project(schema)
         add_git_url_column_to_project(schema)
         add_gito_repo_id_column_to_project(schema)
+        add_changelog(schema)
 
 def initial_schema(schema):
     # schema is already initialized
@@ -82,3 +83,22 @@ def add_git_url_column_to_project(schema):
 def add_gito_repo_id_column_to_project(schema):
     db = schema.db
     db.query("ALTER TABLE project ADD COLUMN IF NOT EXISTS gito_repo_id text")
+
+def add_changelog(schema):
+    db = schema.db
+
+    if schema.has_table("changelog"):
+        return
+
+    db.query("""
+    create table changelog (
+        id serial primary key,
+        site_id integer not null references site,
+        project_id integer references project,
+        user_id integer references user_account,
+        action text not null,
+        details JSON not null default '{}'::json,
+        timestamp timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    
+        CHECK (json_typeof(details) = 'object')
+    )""")
