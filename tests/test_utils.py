@@ -11,7 +11,14 @@ from .test_db import site_id, project_id, user_id
 @patch("capstone.utils.user_project.extract_zipfile")
 @patch("capstone.utils.user_project.git")
 @patch("capstone.utils.user_project.gito.create_repo", return_value="testid1234")
-def test_start_user_project(_, _mock_git, mock_extract_zipfile, project_id, user_id):
+@patch("capstone.utils.user_project.gito.set_webhook")
+def test_start_user_project(
+        mock_set_webhook,
+        mock_create_repo,
+        mock_git,
+        mock_extract_zipfile,
+        project_id,
+        user_id):
     project = db.Project.find(id=project_id)
     user = db.User.find(id=user_id)
 
@@ -30,6 +37,10 @@ def test_start_user_project(_, _mock_git, mock_extract_zipfile, project_id, user
     assert mock_extract_zipfile.called_once_with(
         src=f"private/projects/{project.name}/repo-git.zip",
         dst=mock.ANY
+    )
+    assert mock_set_webhook.called_once_with(
+        id="testid1234",
+        webhook_url=f"{project.get_site().get_url()}/api/users/{user.username}/projects/{project.name}/hook/test1234",
     )
 
 

@@ -242,6 +242,7 @@ def get_or_create_user_project(username, project_name):
         return user_project.get_detail()
 
 
+# Webhooks
 
 @api.route("/projects/<name>/hook/<gito_repo_id>", methods=["POST"])
 def update_project_webhook(name, gito_repo_id):
@@ -269,5 +270,46 @@ def update_project_webhook(name, gito_repo_id):
 
     return {
         "message": f"Task has been enqueued to update project {project.name}",
+        "changelog_id": changelog.id,  # debug info
+    }
+
+
+@api.route("/users/<username>/projects/<project_name>/hook/<gito_repo_id>", methods=["POST"])
+def update_user_project_webhook(username, project_name, gito_repo_id):
+    # NOTE: there is no other authentication, only gito repo id
+    project = g.site.get_project(name=project_name)
+    if project is None:
+        return NotFound("Project not found")
+    user = g.site.get_user(username=username)
+    if user is None:
+        return NotFound("User not found")
+
+    user_project = UserProject.find(user_id=user.id, project_id=project.id)
+    if user_project is None:
+        return NotFound("User project not found")
+
+    if user_project.gito_repo_id != gito_repo_id:
+        return Unauthorized("Repo ID mismatch")
+
+    changelog = Changelog(
+        site_id=g.site.id,
+        user_id=user.id,
+        project_id=project.id,
+        action="update_user_project",
+        details={
+            "status": "pending",
+            "user_project_id": user_project.id,
+        }
+    )
+    changelog.save()
+
+    tq.add_task(
+        "update_user_project",
+        user_project_id=user_project.id, changelog_id=changelog.id,
+    )
+
+    return {
+        "message": "Task has been enqueued to update user project "
+                   f"(Project: {project_name}, Username: {username})",
         "changelog_id": changelog.id,  # debug info
     }

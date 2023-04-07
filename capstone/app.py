@@ -212,6 +212,34 @@ def project_history(name, user):
     return layout.render_page(page)
 
 
+@app.route("/projects/<name>/user/history")
+@authenticated
+def user_project_history(name, user):
+    project = g.site.get_project(name=name)
+    if not project:
+        abort(404)
+    user_project = project.get_user_project(user_id=user.id)
+
+    page = Page(title="Project History")
+
+    updates = user_project.get_history()
+    if not updates:
+        page << html.em("No updates have been made to this project.")
+    else:
+        accordion = Accordion()
+        page << accordion
+
+        for update in updates:
+            accordion.add_card(
+                header=html.div(class_="d-flex justify-content-between").add(
+                    html.div(update["timestamp"].strftime("%a, %B %d %Y, %I:%M %p UTC")),
+                    html.div(update["status"]),
+                ),
+                body=html.pre(update["log"]) if update["log"] else html.em("No logs"),
+            )
+
+    return layout.render_page(page)
+
 
 @app.route("/activity")
 @authenticated

@@ -12,17 +12,26 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
     assert project.site_id == user.site_id, "project and user must be on the same site"
     assert project.get_user_project(user_id=user.id) is None, "user has already started the project"
 
+    # TODO: there is a race condition where there could be two gito repositories created
+    # for the same user_project
+
     repo_id = gito.create_repo(name=project.name)
     repo_info = gito.get_repo(id=repo_id)
     git_url = repo_info["git_url"]
 
     template_zipfile = get_template_repo_as_zipfile(project=project)
     setup_remote_git_repo(git_url, template_zipfile=template_zipfile)
-    # TODO: set webhook-url to gito repo
 
-    return db.UserProject(
-        user_id=user.id, project_id=project.id, git_url=git_url,
-        gito_repo_id=repo_id).save()
+    with db.db.transaction():
+        user_project = db.UserProject(
+            user_id=user.id, project_id=project.id, git_url=git_url,
+            gito_repo_id=repo_id
+        ).save()
+        gito.set_webhook(
+            id=repo_id, webhook_url=user_project.get_webhook_url(),
+        )
+
+    return user_project
 
 
 def delete_user_project(user_project: db.UserProject) -> None:

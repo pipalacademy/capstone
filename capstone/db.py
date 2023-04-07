@@ -184,8 +184,10 @@ class Project(Document):
         d["tasks"] = [t.get_detail() for t in self.get_tasks()]
         return d
 
-    def get_site(self) -> Site | None:
-        return Site.find(id=self.site_id)
+    def get_site(self) -> Site:
+        site = Site.find(id=self.site_id)
+        assert site is not None
+        return site
 
     def get_tasks(self) -> list[Task]:
         return Task.find_all(project_id=self.id, order="position")
@@ -435,9 +437,20 @@ class UserProject(Document):
         return user and user.get_site() or None
 
     def get_context_vars(self) -> dict[str, Any]:
+        # TODO: must ensure that the app is deployed before sending app_url
         return {
             "git_url": self.git_url,
+            "app_url": self.get_app_url()
         }
+
+    def get_app_url(self):
+        # TODO: maybe store the app URL in database
+        site = self.get_site()
+        assert site is not None, "site not found"
+        return f"http://{self.user_id}.{site.domain}"
+
+    def get_task_statuses(self) -> list[UserTaskStatus]:
+        return UserTaskStatus.find_all(user_project_id=self.id)
 
     def get_task_status(self, task: Task) -> UserTaskStatus | None:
         return UserTaskStatus.find(
@@ -458,6 +471,49 @@ class UserProject(Document):
             user_task_status.status = status
             user_task_status.save()
         return user_task_status
+
+    def set_in_progress_task(self):
+        task_statuses = self.get_task_statuses()
+        with db.transaction():
+            for task_status, next_status in zip(task_statuses, task_statuses[1:]+[None]):
+                if task_status.status == "In Progress":
+                    task_status.status = "Pending"
+                    task_status.save()
+
+                if (task_status.status in {"Pending", "Failing"} and
+                        (not next_status or next_status.status == "Pending")):
+                    task_status.status = "In Progress"
+                    task_status.save()
+                    return
+
+    def get_webhook_url(self) -> str:
+        site = self.get_site()
+        assert site is not None, "site not found"
+        user = self.get_user()
+        assert user is not None, "user not found"
+        project = self.get_project()
+        assert project is not None, "project not found"
+
+        site_url = site.get_url()
+        return f"{site_url}/api/users/{user.username}/projects/{project.name}/hook/{self.gito_repo_id}"
+
+    def get_history(self) -> list[dict[str, Any]]:
+        """Return a list of updates for this user project.
+        """
+        updates = Changelog.find_all(
+            project_id=self.project_id,
+            user_id=self.user_id,
+            action="update_user_project",
+            order="timestamp desc"
+        )
+        return [
+            {
+                "timestamp": update.timestamp,
+                "status": update.details["status"],
+                "log": update.details.get("log", ""),
+            }
+            for update in updates
+        ]
 
 
 @dataclass(kw_only=True)
@@ -501,6 +557,22 @@ class UserTaskStatus(Document):
             user_check_status.save()
 
         return user_check_status
+
+    def compute_status(self) -> str:
+        """Returns one of 'Completed', 'Failing', 'Pending'
+        """
+        task = self.get_task()
+        assert task is not None
+
+        check_statuses = self.get_check_statuses()
+        assert len(task.get_checks()) == len(check_statuses), "check statuses are missing"
+
+        if all(cs.status == "pass" for cs in check_statuses):
+            return "Completed"
+        elif any(cs.status == "fail" or cs.status == "error" for cs in check_statuses):
+            return "Failing"
+        else:
+            return "Pending"
 
 
 @dataclass(kw_only=True)

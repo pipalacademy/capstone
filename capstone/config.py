@@ -23,3 +23,6 @@ google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
 project_template_dir = str(
     Path(__file__).parent.parent / "cookiecutter-capstone-project"
 )
+
+runner_docker_image = os.getenv("CAPSTONE_RUNNER_DOCKER_IMAGE", "capstone-runner")
+runner_capstone_token = os.getenv("CAPSTONE_RUNNER_CAPSTONE_TOKEN", "test123")
