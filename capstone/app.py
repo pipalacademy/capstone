@@ -131,8 +131,13 @@ def dashboard(user):
 @app.route("/projects/<name>", methods=["GET", "POST"])
 def project(name):
     project = g.site.get_project(name=name)
+    if project is None:
+        abort(404)
+
     user = get_authenticated_user()
     user_project = project.get_user_project(user.id) if user else None
+
+    # TODO: split this into two methods
 
     if request.method == "POST":
         if not user:
@@ -175,9 +180,10 @@ def project(name):
         page << hero
         page << main
         for task in project.get_tasks():
+            task_status = user_project and user_project.get_task_status(task)
             main << TaskDetails(
                 task,
-                status=None,
+                status=task_status and task_status.status or None,
                 description_vars=user_project and user_project.get_context_vars() or None,
             )
 
