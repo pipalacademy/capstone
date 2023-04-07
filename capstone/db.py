@@ -275,6 +275,13 @@ class Project(Document):
             for update in updates
         ]
 
+    def publish(self):
+        self.is_published = True
+        self.save()
+
+    def unpublish(self):
+        self.is_published = False
+        self.save()
 
 @dataclass(kw_only=True)
 class Task(Document):

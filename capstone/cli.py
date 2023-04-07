@@ -156,6 +156,38 @@ def projects_new(site, title=None, name=None):
     preview = dict(db_project.get_teaser(), git_url=db_project.git_url)
     print(prettify(preview))
 
+def get_project(site_name, project_name):
+    site = db.Site.find(name=site_name)
+    if site is None:
+        print("Site not found:", site_name, file=sys.stderr)
+        sys.exit(1)
+
+    project = site.get_project(name=project_name)
+    if project is None:
+        print("Project not found:", project_name, file=sys.stderr)
+        sys.exit(1)
+
+    return project
+
+
+@projects.command("publish")
+@site_option()
+@click.argument("project_name")
+def projects_publish(site, project_name):
+    """Publish a project in a site.
+    """
+    project = get_project(site, project_name)
+    project.publish()
+
+@projects.command("unpublish")
+@site_option()
+@click.argument("project_name")
+def projects_publish(site, project_name):
+    """Unpublish a project in a site.
+    """
+    project = get_project(site, project_name)
+    project.unpublish()
+
 ## USERS
 
 @cli.group()
