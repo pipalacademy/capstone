@@ -166,7 +166,10 @@ def main():
 
     try:
         task_results = run_checks_until_task_fails(
-            capstone_url, capstone_token, project_name, username
+            capstone_url=capstone_url,
+            capstone_token=capstone_token,
+            project_name=project_name,
+            username=username,
         )
     except Exception:
         result = {"ok": False, "log": traceback.format_exc(), "tasks": None}

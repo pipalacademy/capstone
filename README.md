@@ -31,7 +31,13 @@ $ createdb capstone
 $ python run.py --migrate
 ```
 
-**Step 5: Run the dev server**
+**Step 5: Build the docker image for capstone-runner**
+
+```
+$ runner/build-and-replace-docker-image.sh
+```
+
+**Step 6: Run the dev server**
 
 ```
 $ python run.py
