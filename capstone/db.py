@@ -212,6 +212,7 @@ class Site(Document):
                 "project_id": project_id,
                 "user_id": user_id,
                 "action": action,
+                "order": order,
             }
         )
         return Changelog.find_all(
