@@ -3,12 +3,12 @@ import zipfile
 import logging
 from typing import Any
 from pydantic import BaseModel, ValidationError
-from . import tq
 
 from flask import Blueprint, g, make_response, request
 
 from . import config
 from .db import Changelog, Project
+from .tasks import queue, update_project, update_user_project
 from .utils.user_project import start_user_project
 from .utils.files import get_private_file, save_private_file
 
@@ -261,8 +261,8 @@ def update_project_webhook(name, gito_repo_id):
         details={"status": "pending"}
     ).save()
 
-    tq.add_task(
-        "update_project",
+    queue.enqueue(
+        update_project,
         site_id=g.site.id, project_id=project.id, changelog_id=changelog.id,
     )
 
@@ -304,8 +304,8 @@ def update_user_project_webhook(username, project_name, gito_repo_id):
         }
     ).save()
 
-    tq.add_task(
-        "update_user_project",
+    queue.enqueue(
+        update_user_project,
         site_id=g.site.id,
         user_project_id=user_project.id,
         changelog_id=changelog.id,

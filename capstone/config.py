@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 
 # TODO: rename to database_url or DATABASE_URL
 db_uri = os.getenv("DATABASE_URL", "postgres:///capstone")
+redis_url = os.getenv("CAPSTONE_REDIS_URL", "redis://localhost:6379/0")
 
 capstone_api_token = os.getenv("CAPSTONE_API_TOKEN", "test123")
 

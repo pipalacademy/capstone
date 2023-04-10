@@ -13,3 +13,5 @@ gunicorn>=20.1
 git+https://github.com/pipalacademy/capstone-checker@main
 cookiecutter>=2.1.1
 docker==6.0.1
+rq>=1.13.0
+redis>=4.5.4

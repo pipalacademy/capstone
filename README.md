@@ -19,25 +19,70 @@ $ pip install -r requirements.txt dev-requirements.txt
 $ sudo apt install zip unzip
 ```
 
-**Step 3: Create database**
+**Step 3: Install Redis as a service**
+
+Refer [this](https://redis.io/docs/getting-started/installation/) for installation instructions.
+
+Set it up as a service with `supervisord`.
+
+```
+[program:redis-server]
+command=/usr/local/bin/redis-server /etc/redis/redis.conf
+user=redis
+group=redis
+autostart=true
+autorestart=unexpected
+stderr_logfile=/var/log/supervisor/redis.log
+stdout_logfile=/var/log/supervisor/redis-stdout.log
+```
+
+Make sure `daemonize` is set to `no` in `redis.conf`.
+
+**Step 4: Create database**
+
+PostgreSQL must be installed. Refer [this](https://www.postgresql.org/download/) for installation instructions.
 
 ```
 $ createdb capstone
 ```
 
-**Step 4: Run db migrations**
+**Step 5: Run db migrations**
 
 ```
 $ python run.py --migrate
 ```
 
-**Step 5: Build the docker image for capstone-runner**
+**Step 6: Build the docker image for capstone-runner**
 
 ```
 $ runner/build-and-replace-docker-image.sh
 ```
 
-**Step 6: Run the dev server**
+**Step 7: Start Gitto**
+
+Setup [Gitto](https://github.com/pipalacademy/gitto) and start it.
+
+You can also setup Gitto as a background service.
+
+```
+$ # from gitto's directory
+$ ./gitto
+```
+
+**Step 8: Start the worker**
+
+In another terminal.
+
+```
+$ python run.py --tasks
+Starting Capstone...
+Worker rq:worker:...: started, version 1.x.x
+...
+```
+
+**Step 9: Run the dev server**
+
+In another terminal.
 
 ```
 $ python run.py

@@ -1,16 +1,18 @@
 import argparse
+import logging
 
 from toolkit import setup_logger
-import logging
-setup_logger()
+from rq import Worker
 
-logger = logging.getLogger(__name__)
-
-from capstone import tasks, tq
+from capstone.tasks import queue
 from capstone.app import app
 from capstone.schema import migrate
 
+setup_logger()
+logger = logging.getLogger(__name__)
+
 logger.info("Starting Capstone...")
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -24,19 +26,10 @@ def main():
     if args.migrate:
         migrate()
     elif args.tasks:
-        tq.run_pending_tasks_in_loop()
-    elif args.add_dummy_tasks:
-        add_dummy_tasks()
+        worker = Worker([queue], connection=queue.connection)
+        worker.work()
     else:
-        app.run(debug=True)
-
-@tq.task_function
-def square(x):
-    print(f"square of {x} is {x*x}")
-
-def add_dummy_tasks():
-    for i in range(10):
-        tq.add_task("square", x=i)
+        app.run(host="localhost", debug=True)
 
 if __name__ == "__main__":
     main()

@@ -8,13 +8,17 @@ from typing import Any
 
 from pydantic import BaseModel
 from toolkit import setup_logger
+from redis import Redis
+from rq import Queue
 
-from . import config, db, tq
+from . import config, db
 from .utils import files, git
 from .utils.user_project import run_checks
 
 setup_logger()
 logger = logging.getLogger(__name__)
+
+queue = Queue(connection=Redis.from_url(config.redis_url))
 
 
 class CheckInputModel(BaseModel):
@@ -39,7 +43,6 @@ class ProjectUpsertModel(BaseModel):
     is_published: bool | None = None
 
 
-@tq.task_function
 def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
     logger.info(f"Task started: update_project(site_id={site_id}, "
                 f"project_id={project_id}, changelog_id={changelog_id})")
@@ -96,7 +99,6 @@ def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
         changelog.save()
 
 
-@tq.task_function
 def update_user_project(
     site_id: int, user_project_id: int, changelog_id: int
 ) -> None:
