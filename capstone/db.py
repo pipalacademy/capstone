@@ -44,7 +44,7 @@ class Document:
     def find_or_fail(cls: Type[DocumentT], **filters: Any) -> DocumentT:
         obj = cls.find(**filters)
         if obj is None:
-            raise Exception("not found")
+            raise Exception(f"{cls.__name__} not found")
         return obj
 
     def update(self: DocumentT, **fields: Any) -> DocumentT:
@@ -133,7 +133,7 @@ class Site(Document):
     def get_project_or_fail(self, name: str) -> Project:
         project = self.get_project(name=name)
         if project is None:
-            raise Exception("not found")
+            raise Exception(f"Project not found: '{name}'")
         return project
 
     def get_users(
@@ -159,7 +159,7 @@ class Site(Document):
     def get_user_or_fail(self, username: str) -> User:
         user = self.get_user(username=username)
         if user is None:
-            raise Exception("not found")
+            raise Exception(f"User not found: '{username}'")
         return user
 
     def get_user_projects(self) -> list[UserProject]:
@@ -317,7 +317,7 @@ class Project(Document):
     def get_user_project_or_fail(self, user_id: int) -> UserProject:
         user_project = self.get_user_project(user_id)
         if user_project is None:
-            raise Exception("not found")
+            raise Exception("UserProject not found")
         return user_project
 
     def get_private_file_key_for_zipball(self) -> str:
