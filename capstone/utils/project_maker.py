@@ -4,7 +4,12 @@ from pathlib import Path
 from cookiecutter.main import cookiecutter
 
 from . import git, gito
-from capstone import config, db
+from capstone import db
+
+
+project_template_dir = str(
+    Path(__file__).parent.parent.parent / "cookiecutter-capstone-project"
+)
 
 
 def create_project(site: db.Site, name: str, title: str) -> db.Project:
@@ -69,7 +74,7 @@ def init_project(project: db.Project) -> db.Project:
         git_dir = str(Path(tmp) / project.name)
         git.clone(project.git_url, git_dir, workdir=git_dir)
         cookiecutter(
-            template=config.project_template_dir,
+            template=project_template_dir,
             no_input=True,
             extra_context={
                 "project_name": project.name, "project_title": project.title

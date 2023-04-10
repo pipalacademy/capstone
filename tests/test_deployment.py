@@ -12,11 +12,9 @@ from capstone.utils import git
 def setup_dir(monkeypatch, tmp_path):
     """Fixture to start every test with a clean deployment directory.
     """
-    (tmp_path / "deployment").mkdir()
-    monkeypatch.setattr(config, "deployment_root", str(tmp_path / "deployment"))
-
+    (tmp_path / "deployments").mkdir()
     (tmp_path / "private").mkdir()
-    monkeypatch.setattr(config, "private_files_dir", str(tmp_path / "private"))
+    monkeypatch.setattr(config, "data_dir", str(tmp_path))
 
 
 @pytest.fixture(autouse=True)
@@ -45,7 +43,7 @@ class TestSimpleDeployment:
 
         SimpleDeployment.run(site=db_site, user_project=user_project)
 
-        deployment_dir = Path(config.deployment_root) / f"{user_id}.{db_site.domain}"
+        deployment_dir = Path(config.data_dir) / "deployments" / f"{user_id}.{db_site.domain}"
         assert deployment_dir.is_dir()
         assert (deployment_dir / ".git").is_dir()
         assert (deployment_dir / "index.html").is_file()

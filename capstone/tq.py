@@ -24,7 +24,7 @@ class Task:
 
     @property
     def path(self):
-        return Path(config.tasks_dir) / self.status / self.key
+        return get_tasks_dir() / self.status / self.key
 
     @property
     def func(self):
@@ -86,7 +86,7 @@ class Task:
 
     @classmethod
     def get_pending_tasks(cls):
-        root = Path(config.tasks_dir) / "pending"
+        root = get_tasks_dir() / "pending"
         if not root.exists():
             return []
         tasks = [Task.from_path(p) for p in root.iterdir()]
@@ -112,3 +112,6 @@ def run_pending_tasks_in_loop():
     while True:
         run_pending_tasks()
         time.sleep(1)
+
+def get_tasks_dir() -> Path:
+    return Path(config.data_dir) / "tasks"

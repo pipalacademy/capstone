@@ -64,7 +64,7 @@ class SimpleDeployment(Deployment):
     def run(cls, site, user_project):
         git_url = user_project.git_url
         app_domain = f"{user_project.user_id}.{site.domain}"
-        deployment_dir = Path(config.deployment_root) / app_domain
+        deployment_dir = get_deployment_root() / app_domain
         deployment_dir.mkdir(parents=True, exist_ok=True)
 
         # copy contents of Git repo to deployment dir
@@ -82,10 +82,10 @@ class SimpleDeployment(Deployment):
         )
 
     def can_serve_domain(self, domain):
-        return (Path(config.deployment_root) / domain).is_dir()
+        return (get_deployment_root() / domain).is_dir()
 
     def serve_domain(self, domain, env, start_response):
-        deployment_dir = str(Path(config.deployment_root) / domain)
+        deployment_dir = str(get_deployment_root() / domain)
         with add_sys_path(deployment_dir):
             return importlib.import_module("wsgi").app(env, start_response)
 
@@ -97,3 +97,7 @@ def add_sys_path(path):
         yield
     finally:
         sys.path.remove(path)
+
+
+def get_deployment_root() -> Path:
+    return Path(config.data_dir) / "deployments"

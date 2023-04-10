@@ -1,9 +1,10 @@
 import os
+from pathlib import Path
 
 from capstone import config
 
 
-PRIVATE_FILES_DIR = config.private_files_dir
+PRIVATE_FILES_DIR = Path(config.data_dir) / "private"
 
 
 def ensure_private_files_dir():
