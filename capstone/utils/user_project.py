@@ -1,10 +1,20 @@
 # TODO: ad-hoc module name, think of something better
+import json
 import os
 import subprocess
 import tempfile
+import logging
+from pathlib import Path
+from typing import Any
+
+import docker
+from toolkit import setup_logger
 
 from . import files, git, gito
-from capstone import db
+from capstone import config, db
+
+setup_logger()
+logger = logging.getLogger(__name__)
 
 
 def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
@@ -66,3 +76,70 @@ def extract_zipfile(src: str, dst: str) -> None:
     """
     os.makedirs(dst, exist_ok=True)
     subprocess.check_call(["unzip", "-d", dst, os.path.abspath(src)])
+
+
+def run_checks(
+    capstone_url: str, capstone_token: str, project_name: str, username: str
+) -> dict[str, Any]:
+    """
+    Returns result:
+    {
+        "ok": True|False,
+        "log": str|None,
+        "tasks": [
+            {
+                "checks": [
+                    {
+                        "status": "pass"|"fail"|"error",
+                        "message": str|None
+                    }
+                ]
+            }
+        ]
+    }
+    """
+    runner_path = Path(__file__).parent.parent.parent / "runner" / "run-checks.py"
+
+    with tempfile.TemporaryDirectory() as tmp:
+        result_file = str(Path(tmp) / "result.json")
+
+        if config.capstone_dev:
+            logger.info("Running checks in dev mode")
+            subprocess.check_call(
+                [
+                    config.runner_devmode_python_executable,
+                    str(runner_path),
+                    "--capstone-url", capstone_url,
+                    "--capstone-token", capstone_token,
+                    "--project-name", project_name,
+                    "--username", username,
+                    "--output", result_file,
+                ],
+                cwd=tmp,
+            )
+        else:
+            logger.info("Running checks in docker")
+            client = docker.from_env()
+            logs = client.containers.run(
+                config.runner_docker_image,
+                [
+                    "--capstone-url", capstone_url,
+                    "--capstone-token", capstone_token,
+                    "--project-name", project_name,
+                    "--username", username,
+                    "--output", "/output/result.json",
+                ],
+                auto_remove=True,
+                network_mode="host",
+                stdout=True,
+                stderr=True,
+                volumes={
+                    tmp: {"bind": "/output", "mode": "rw"},
+                },
+            )
+            logger.info(f"Container exited. Logs: {logs}")
+
+        with open(result_file) as f:
+            result = json.load(f)
+
+    return result

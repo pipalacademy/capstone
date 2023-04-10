@@ -1,4 +1,3 @@
-import json
 import logging
 import subprocess
 import tempfile
@@ -7,12 +6,12 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-import docker
 from pydantic import BaseModel
 from toolkit import setup_logger
 
 from . import config, db, tq
 from .utils import files, git
+from .utils.user_project import run_checks
 
 setup_logger()
 logger = logging.getLogger(__name__)
@@ -124,38 +123,19 @@ def update_user_project(user_project_id: int, changelog_id: int) -> None:
         if user is None:
             raise Exception("User not found")
 
-        client = docker.from_env()
-        with tempfile.TemporaryDirectory() as tmp:
-            result_file = str(Path(tmp) / "result.json")
-            logger.info("Starting container")
-            logs = client.containers.run(
-                config.runner_docker_image,
-                [
-                    "--capstone-url", project.get_site().get_url(),
-                    "--capstone-token", config.runner_capstone_token,
-                    "--project-name", project.name,
-                    "--username", user.username,
-                    "--output", "/output/result.json",
-                ],
-                auto_remove=True,
-                network_mode="host",
-                stdout=True,
-                stderr=True,
-                volumes={
-                    tmp: {"bind": "/output", "mode": "rw"},
-                },
-            )
-            logger.info(f"Container exited. Logs: {logs}")
+        result = run_checks(
+            capstone_url=project.get_site().get_url(),
+            capstone_token=config.runner_capstone_token,
+            project_name=project.name,
+            username=user.username,
+        )
 
-            with open(result_file) as f:
-                result = json.load(f)
-
-            if not result["ok"]:
-                logger.error("Runner failed with result not ok")
-                changelog.details["status"] = "failed"
-                changelog.details["log"] = result["log"]
-                changelog.save()
-                return
+        if not result["ok"]:
+            logger.error("Runner failed with result not ok")
+            changelog.details["status"] = "failed"
+            changelog.details["log"] = result["log"]
+            changelog.save()
+            return
 
         task_results = result["tasks"]
 

@@ -24,5 +24,8 @@ project_template_dir = str(
     Path(__file__).parent.parent / "cookiecutter-capstone-project"
 )
 
+capstone_dev = os.getenv("CAPSTONE_DEV", "0") == "1"
+
 runner_docker_image = os.getenv("CAPSTONE_RUNNER_DOCKER_IMAGE", "capstone-runner")
 runner_capstone_token = os.getenv("CAPSTONE_RUNNER_CAPSTONE_TOKEN", "test123")
+runner_devmode_python_executable = os.getenv("CAPSTONE_RUNNER_DEVMODE_PYTHON_EXECUTABLE", "python3")
