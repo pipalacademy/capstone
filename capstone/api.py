@@ -8,7 +8,7 @@ from . import tq
 from flask import Blueprint, g, make_response, request
 
 from . import config
-from .db import Changelog, Project, UserProject
+from .db import Changelog, Project
 from .utils.user_project import start_user_project
 from .utils.files import get_private_file, save_private_file
 
@@ -114,11 +114,10 @@ def get_or_upsert_project(name):
 
         project = g.site.get_project(name=name)
         if project is None:
-            project = Project(**body)
+            project = Project(**body).save()
         else:
-            project.update(**body)
+            project.update(**body).save()
 
-        project.save()
         project.update_tasks(tasks)
 
         return project.get_detail()
@@ -186,7 +185,7 @@ def list_user_projects():
     Returns: array[user_project_teaser]
     """
     # TODO: add pagination
-    user_project = UserProject.find_all()
+    user_project = g.site.get_user_projects()
     return [up.get_teaser() for up in user_project]
 
 
@@ -205,7 +204,7 @@ def list_user_projects_by_user(username):
     if user is None:
         return NotFound("User not found")
 
-    user_projects = UserProject.find_all(user_id=user.id)
+    user_projects = user.get_user_projects()
     return [up.get_teaser() for up in user_projects]
 
 
@@ -260,8 +259,7 @@ def update_project_webhook(name, gito_repo_id):
         project_id=project.id,
         action="update_project",
         details={"status": "pending"}
-    )
-    changelog.save()
+    ).save()
 
     tq.add_task(
         "update_project",
@@ -274,9 +272,13 @@ def update_project_webhook(name, gito_repo_id):
     }
 
 
-@api.route("/users/<username>/projects/<project_name>/hook/<gito_repo_id>", methods=["POST"])
+@api.route(
+    "/users/<username>/projects/<project_name>/hook/<gito_repo_id>",
+    methods=["POST"]
+)
 def update_user_project_webhook(username, project_name, gito_repo_id):
     # NOTE: there is no other authentication, only gito repo id
+
     project = g.site.get_project(name=project_name)
     if project is None:
         return NotFound("Project not found")
@@ -284,7 +286,7 @@ def update_user_project_webhook(username, project_name, gito_repo_id):
     if user is None:
         return NotFound("User not found")
 
-    user_project = UserProject.find(user_id=user.id, project_id=project.id)
+    user_project = project.get_user_project(user_id=user.id)
     if user_project is None:
         return NotFound("User project not found")
 
@@ -300,8 +302,7 @@ def update_user_project_webhook(username, project_name, gito_repo_id):
             "status": "pending",
             "user_project_id": user_project.id,
         }
-    )
-    changelog.save()
+    ).save()
 
     tq.add_task(
         "update_user_project",

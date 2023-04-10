@@ -5,8 +5,7 @@ from kutty import html, Markdown, Optional
 
 from .api import api
 from .auth import auth_bp, get_authenticated_user
-#from .db import Activity, Project, User, check_password
-from .db import Project, Site
+from .db import Site
 from .components import (
     AbsoluteCenter, Accordion, AuthNavEntry, Breadcrumb, Form, HiddenInput,
     Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,

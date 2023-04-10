@@ -40,6 +40,13 @@ class Document:
         row = find(cls._tablename, **filters)
         return row and cls.from_db(row) or None
 
+    @classmethod
+    def find_or_fail(cls: Type[DocumentT], **filters: Any) -> DocumentT:
+        obj = cls.find(**filters)
+        if obj is None:
+            raise Exception("not found")
+        return obj
+
     def update(self: DocumentT, **fields: Any) -> DocumentT:
         self.__dict__.update(**fields)
         return self
@@ -110,22 +117,76 @@ class Site(Document):
             name: str | None = None,
             title: str | None = None,
             is_published: bool | None = None) -> list[Project]:
-        filters = remove_none_values(dict(id=id, name=name, title=title, is_published=is_published))
+        filters = remove_none_values(
+            {
+                "id": id,
+                "name": name,
+                "title": title,
+                "is_published": is_published,
+            }
+        )
         return Project.find_all(site_id=self.id, **filters)
 
     def get_project(self, name: str) -> Project | None:
         return Project.find(site_id=self.id, name=name)
 
+    def get_project_or_fail(self, name: str) -> Project:
+        project = self.get_project(name=name)
+        if project is None:
+            raise Exception("not found")
+        return project
+
     def get_users(
-            self,
-            id: int | None = None,
-            name: str | None = None,
-            email: str | None = None) -> list[User]:
-        filters = remove_none_values(locals())
+        self,
+        id: int | None = None,
+        name: str | None = None,
+        username: str | None = None,
+        email: str | None = None
+    ) -> list[User]:
+        filters = remove_none_values(
+            {
+                "id": id,
+                "name": name,
+                "username": username,
+                "email": email,
+            }
+        )
         return User.find_all(site_id=self.id, **filters)
 
     def get_user(self, username: str) -> User | None:
         return User.find(site_id=self.id, username=username)
+
+    def get_user_or_fail(self, username: str) -> User:
+        user = self.get_user(username=username)
+        if user is None:
+            raise Exception("not found")
+        return user
+
+    def get_user_projects(self) -> list[UserProject]:
+        user_projects = []
+        for user in self.get_users():
+            user_projects.extend(user.get_user_projects())
+        return user_projects
+
+    def get_changelogs(
+        self,
+        project_id: int | None = None,
+        user_id: int | None = None,
+        action: str | None = None,
+        order: str = "timestamp desc",
+    ) -> list[Changelog]:
+        assert self.id is not None
+        filters = remove_none_values(
+            {
+                "project_id": project_id,
+                "user_id": user_id,
+                "action": action,
+            }
+        )
+        return Changelog.find_all(
+            site_id=self.id,
+            **filters
+        )
 
     def get_url(self) -> str:
         return f"http://{self.domain}"
@@ -185,9 +246,7 @@ class Project(Document):
         return d
 
     def get_site(self) -> Site:
-        site = Site.find(id=self.site_id)
-        assert site is not None
-        return site
+        return Site.find_or_fail(id=self.site_id)
 
     def get_tasks(self) -> list[Task]:
         return Task.find_all(project_id=self.id, order="position")
@@ -255,6 +314,12 @@ class Project(Document):
     def get_user_project(self, user_id: int) -> UserProject | None:
         return UserProject.find(user_id=user_id, project_id=self.id)
 
+    def get_user_project_or_fail(self, user_id: int) -> UserProject:
+        user_project = self.get_user_project(user_id)
+        if user_project is None:
+            raise Exception("not found")
+        return user_project
+
     def get_private_file_key_for_zipball(self) -> str:
         """`utils.files` module should be used with this key.
         """
@@ -263,8 +328,8 @@ class Project(Document):
     def get_history(self) -> list[dict[str, Any]]:
         """Return a list of updates for this project.
         """
-        updates = Changelog.find_all(
-            project_id=self.id, action="update_project", order="timestamp desc"
+        updates = self.get_site().get_changelogs(
+            project_id=self.id, action="update_project",
         )
         return [
             {
@@ -297,11 +362,11 @@ class Task(Document):
     title: str
     description: str
 
-    def get_project(self) -> Project | None:
-        return Project.find(id=self.project_id)
+    def get_project(self) -> Project:
+        return Project.find_or_fail(id=self.project_id)
 
-    def get_site(self) -> Site | None:
-        return (project := self.get_project()) and project.get_site() or None
+    def get_site(self) -> Site:
+        return self.get_project().get_site()
 
     def get_detail(self) -> dict[str, Any]:
         d = super().get_detail()
@@ -367,8 +432,8 @@ class TaskCheck(Document):
     title: str
     args: dict[str, Any]
 
-    def get_task(self) -> Task | None:
-        return Task.find(id=self.task_id)
+    def get_task(self) -> Task:
+        return Task.find_or_fail(id=self.task_id)
 
 
 @dataclass(kw_only=True)
@@ -390,8 +455,11 @@ class User(Document):
     created: datetime | None = None
     last_modified: datetime | None = None
 
-    def get_site(self) -> Site | None:
-        return Site.find(id=self.site_id)
+    def get_site(self) -> Site:
+        return Site.find_or_fail(id=self.site_id)
+
+    def get_user_projects(self) -> list[UserProject]:
+        return UserProject.find_all(user_id=self.id)
 
 
 @dataclass(kw_only=True)
@@ -430,18 +498,13 @@ class UserProject(Document):
         return d
 
     def get_project(self) -> Project:
-        project = Project.find(id=self.project_id)
-        assert project is not None
-        return project
+        return Project.find_or_fail(id=self.project_id)
 
     def get_user(self) -> User:
-        user = User.find(id=self.user_id)
-        assert user is not None
-        return user
+        return User.find_or_fail(id=self.user_id)
 
-    def get_site(self) -> Site | None:
-        user = self.get_user()
-        return user and user.get_site() or None
+    def get_site(self) -> Site:
+        return self.get_user().get_site()
 
     def get_context_vars(self) -> dict[str, Any]:
         # TODO: must ensure that the app is deployed before sending app_url
@@ -469,8 +532,7 @@ class UserProject(Document):
         assert task.id is not None
         assert status in ["Pending", "In Progress", "Completed", "Failing"]
 
-        user_task_status = UserTaskStatus.find(
-            user_project_id=self.id, task_id=task.id)
+        user_task_status = self.get_task_status(task=task)
         if user_task_status is None:
             user_task_status = UserTaskStatus(
                 user_project_id=self.id, task_id=task.id, status=status).save()
@@ -507,11 +569,10 @@ class UserProject(Document):
     def get_history(self) -> list[dict[str, Any]]:
         """Return a list of updates for this user project.
         """
-        updates = Changelog.find_all(
+        updates = self.get_site().get_changelogs(
             project_id=self.project_id,
             user_id=self.user_id,
             action="update_user_project",
-            order="timestamp desc"
         )
         return [
             {
@@ -538,8 +599,8 @@ class UserTaskStatus(Document):
     def get_task(self) -> Task | None:
         return Task.find(id=self.task_id)
 
-    def get_user_project(self) -> UserProject | None:
-        return UserProject.find(id=self.user_project_id)
+    def get_user_project(self) -> UserProject:
+        return UserProject.find_or_fail(id=self.user_project_id)
 
     def get_check_statuses(self) -> list[UserCheckStatus]:
         return UserCheckStatus.find_all(user_task_status_id=self.id)
@@ -548,17 +609,25 @@ class UserTaskStatus(Document):
         return UserCheckStatus.find(
             user_task_status_id=self.id, task_check_id=check.id)
 
-    def update_check_status(self, check: TaskCheck, status: str, message: str | None = None) -> UserCheckStatus:
+    def update_check_status(
+        self,
+        check: TaskCheck,
+        status: str,
+        message: str | None = None,
+    ) -> UserCheckStatus:
         assert check.task_id == self.task_id
         assert self.id is not None
         assert check.id is not None
         assert status in ["pending", "pass", "fail", "error"]
 
-        user_check_status = UserCheckStatus.find(
-            user_task_status_id=self.id, task_check_id=check.id)
+        user_check_status = self.get_check_status(check=check)
         if user_check_status is None:
             user_check_status = UserCheckStatus(
-                user_task_status_id=self.id, task_check_id=check.id, status=status, message=message).save()
+                user_task_status_id=self.id,
+                task_check_id=check.id,
+                status=status,
+                message=message,
+            ).save()
         else:
             user_check_status.update(status=status, message=message)
             user_check_status.save()
@@ -595,11 +664,11 @@ class UserCheckStatus(Document):
     created: datetime | None = None
     last_modified: datetime | None = None
 
-    def get_task_check(self) -> TaskCheck | None:
-        return TaskCheck.find(id=self.task_check_id)
+    def get_task_check(self) -> TaskCheck:
+        return TaskCheck.find_or_fail(id=self.task_check_id)
 
-    def get_user_task_status(self) -> UserTaskStatus | None:
-        return UserTaskStatus.find(id=self.user_task_status_id)
+    def get_user_task_status(self) -> UserTaskStatus:
+        return UserTaskStatus.find_or_fail(id=self.user_task_status_id)
 
 
 @dataclass(kw_only=True)
@@ -617,14 +686,20 @@ class Changelog(Document):
     timestamp: datetime | None = None  # defaults to utcnow in db
     details: dict[str, Any] = field(default_factory=dict)
 
-    def get_site(self) -> Site | None:
-        return Site.find(id=self.site_id)
+    def get_site(self) -> Site:
+        return Site.find_or_fail(id=self.site_id)
 
     def get_project(self) -> Project | None:
-        return Project.find(id=self.project_id) if self.project_id is not None else None
+        if self.project_id is not None:
+            return Project.find_or_fail(id=self.project_id)
+        else:
+            return None
 
     def get_user(self) -> User | None:
-        return User.find(id=self.user_id) if self.user_id is not None else None
+        if self.user_id is not None:
+            return User.find_or_fail(id=self.user_id)
+        else:
+            return None
 
 
 # db queries
