@@ -35,6 +35,53 @@ def sanitize_rows(rows):
     else:
         return rows
 
+def get_project(site_name, project_name):
+    site = db.Site.find_or_fail(name=site_name)
+    project = site.get_project_or_fail(name=project_name)
+
+    return project
+
+def get_projects(site_name):
+    site = db.Site.find_or_fail(name=site_name)
+    projects = site.get_projects()
+
+    return projects
+
+def get_user(site_name, username):
+    site = db.Site.find_or_fail(name=site_name)
+    user = site.get_user_or_fail(username=username)
+
+    return user
+
+def get_users(site_name):
+    site = db.Site.find_or_fail(name=site_name)
+    users = site.get_users()
+
+    return users
+
+def get_user_projects(site_name, username=None, project_name=None):
+    site = db.Site.find_or_fail(name=site_name)
+    user = username and get_user(site_name, username)
+    project = project_name and get_project(site_name, project_name)
+
+    if user and project:
+        user_projects = [project.get_user_project(user_id=user.id)]
+    elif user:
+        user_projects = user.get_user_projects()
+    elif project:
+        user_projects = project.get_user_projects()
+    else:
+        user_projects = site.get_user_projects()
+
+    return user_projects
+
+def get_user_project(site_name, user_project_id):
+    site = db.Site.find_or_fail(name=site_name)
+    user_project = db.UserProject.find_or_fail(
+        id=user_project_id,
+    )
+    assert user_project.get_site().id == site.id
+    return user_project
 
 ## SITES
 
@@ -55,13 +102,18 @@ def sites_list():
 def sites_show(site):
     """Show a site."""
     print("Show site", site)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    else:
-        site_dict = db_site.get_dict()
-        print(prettify(site_dict))
+    db_site = db.Site.find_or_fail(name=site)
+    print(prettify(db_site.get_dict()))
+
+@sites.command("new")
+@click.option("-t", "--title", prompt=True, required=True, help="Site title")
+@click.option("-n", "--name", prompt=True, required=True, help="Site name")
+@click.option("-d", "--domain", prompt=True, required=True, help="Site domain")
+def sites_new(title, name, domain):
+    """Create a new site."""
+    print("New site", title, name, domain)
+    db_site = db.Site(title=title, name=name, domain=domain).save()
+    print(prettify(db_site.get_dict()))
 
 ## PROJECTS
 
@@ -75,31 +127,19 @@ def projects():
 def projects_list(site):
     """Lists projects of a site."""
     print("List projects", site)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    projects = db.Project.find_all(site_id=db_site.id)
+    projects = get_projects(site)
     print(prettify([project.get_teaser() for project in projects]))
 
 
 @projects.command("show")
 @site_option()
-@click.argument("project")
-def projects_show(site, project):
+@click.argument("project_name")
+def projects_show(site, project_name):
     """Show a project in a site."""
-    print("Show project", site, project)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_project = db.Project.find(name=project)
-    tasks = db_project.get_tasks()
-    if db_project is None:
-        print("Project not found")
-        sys.exit(1)
-    project_dict = db_project.get_dict()
-    project_dict["num_tasks"] = len(tasks)
+    print("Show project", site, project_name)
+    project = get_project(site, project_name)
+    tasks = project.get_tasks()
+    project_dict = dict(project.get_dict(), num_tasks=len(tasks))
     print(prettify(project_dict))
     if tasks:
         # TODO: maybe figure out a better way to print checks?
@@ -115,21 +155,13 @@ def projects_show(site, project):
 
 @projects.command("delete")
 @site_option()
-@click.argument("project")
-def projects_delete(site, project):
+@click.argument("project_name")
+def projects_delete(site, project_name):
     """Delete a project in a site."""
-    print("Delete project", site, project)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_project = db.Project.find(name=project)
-    if db_project is None:
-        print("Project not found")
-        sys.exit(1)
-    project_name = db_project.name
-    db_project.delete()
+    print("Delete project", site, project_name)
+    get_project(site, project_name).delete()
     print(f"Deleted project {project_name}")
+
 
 @projects.command("new")
 @site_option()
@@ -146,28 +178,10 @@ def projects_new(site, title=None, name=None):
         )
 
     print("New project", site, title, name)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-
-    db_project = create_project(site=db_site, name=name, title=title)
-
-    preview = dict(db_project.get_teaser(), git_url=db_project.git_url)
+    db_site = db.Site.find_or_fail(name=site)
+    project = create_project(site=db_site, name=name, title=title)
+    preview = dict(project.get_teaser(), git_url=project.git_url)
     print(prettify(preview))
-
-def get_project(site_name, project_name):
-    site = db.Site.find(name=site_name)
-    if site is None:
-        print("Site not found:", site_name, file=sys.stderr)
-        sys.exit(1)
-
-    project = site.get_project(name=project_name)
-    if project is None:
-        print("Project not found:", project_name, file=sys.stderr)
-        sys.exit(1)
-
-    return project
 
 
 @projects.command("publish")
@@ -179,6 +193,7 @@ def projects_publish(site, project_name):
     project = get_project(site, project_name)
     project.publish()
 
+
 @projects.command("unpublish")
 @site_option()
 @click.argument("project_name")
@@ -188,6 +203,7 @@ def projects_unpublish(site, project_name):
     project = get_project(site, project_name)
     project.unpublish()
 
+
 ## USERS
 
 @cli.group()
@@ -195,17 +211,16 @@ def users():
     """manage projects"""
     pass
 
+
 @users.command("list")
 @site_option()
 def users_list(site):
     """Lists users of a site."""
     print("List users", site)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    users = db.User.find_all(site_id=db_site.id)
-    print(prettify([user.get_teaser() for user in users]))
+    print(
+        prettify([user.get_teaser() for user in get_users(site)])
+    )
+
 
 @users.command("show")
 @site_option()
@@ -213,16 +228,8 @@ def users_list(site):
 def users_show(site, username):
     """Show a user in a site."""
     print("Show user", site, username)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user = db.User.find(username=username)
-    if db_user is None:
-        print("User not found")
-        sys.exit(1)
-    user_dict = db_user.get_dict()
-    print(prettify(user_dict))
+    print(prettify(get_user(site, username).get_dict()))
+
 
 @users.command("delete")
 @site_option()
@@ -230,17 +237,9 @@ def users_show(site, username):
 def users_delete(site, username):
     """Delete a user in a site."""
     print("Delete user", site, username)
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user = db.User.find(username=username)
-    if db_user is None:
-        print("User not found")
-        sys.exit(1)
-    user_name = db_user.username
-    db_user.delete()
-    print(f"Deleted user {user_name}")
+    get_user(site, username).delete()
+    print(f"Deleted user {username}")
+
 
 ## USER PROJECTS
 
@@ -249,91 +248,65 @@ def user_projects():
     """manage user projects"""
     pass
 
+
 @user_projects.command("list")
 @site_option()
-@click.option("-u", "--user", default=None)
-@click.option("-p", "--project", default=None)
-def user_projects_list(site, user, project):
-    print("List user projects", site, f"user={user or 'any'}", f"project={project or 'any'}")
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user = db.User.find(username=user) if user else None
-    if user:
-        if db_user is None:
-            print("User not found")
-            sys.exit(1)
-        elif db_user.site_id != db_site.id:
-            print("User not found in site")
-            sys.exit(1)
-    db_project = db.Project.find(name=project) if project else None
-    if project:
-        if db_project is None:
-            print("Project not found")
-            sys.exit(1)
-        elif db_project.site_id != db_site.id:
-            print("Project not found in site")
-            sys.exit(1)
-    filters = {}
-    if db_user:
-        filters["user_id"] = db_user.id
-    if db_project:
-        filters["project_id"] = db_project.id
-    if filters:
-        user_projects = db.UserProject.find_all(**filters)
-    else:
-        user_projects = sum([p.get_user_projects() for p in db.Project.find_all(site_id=db_site.id)], [])
+@click.option("-u", "--user", "username", default=None)
+@click.option("-p", "--project", "project_name", default=None)
+def user_projects_list(site, username, project_name):
+    # TODO: list username instead of email?
+    print(
+        "List user projects",
+        site,
+        f"user={username or 'any'}",
+        f"project={project_name or 'any'}"
+    )
+    user_projects = get_user_projects(
+        site, username=username, project_name=project_name
+    )
+
     table_data = []
     for user_project in user_projects:
         table_data.append({
             "id": user_project.id,
-            "project": db.Project.find(id=user_project.project_id).name,
-            "email": db.User.find(id=user_project.user_id).email,
+            "project": user_project.get_project().name,
+            "email": user_project.get_user().email,
             "git_url": user_project.git_url,
             # "progress": user_project.get_progress(),  # TODO: add progress here
         })
-    if not table_data:
+    if table_data:
+        print(prettify(table_data))
+    else:
         print("No matching rows found")
-        sys.exit(0)
-    print(prettify(table_data))
+
 
 @user_projects.command("show")
 @site_option()
 @click.argument("user_project_id")
 def user_projects_show(site, user_project_id):
     """Show a user project in a site."""
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user_project = db.UserProject.find(id=user_project_id)
-    if db_user_project is None:
-        print("User project not found")
-        sys.exit(1)
-    user_project_dict = db_user_project.get_dict()
-    project_name = db_user_project.get_project().name
-    user_email = db_user_project.get_user().email
-    print(prettify(dict(user_project_dict, project=project_name, email=user_email)))
+    # TODO: show username instead of email?
+    print("Show user project", site, user_project_id)
+    user_project = get_user_project(site, user_project_id)
+    user_project_dict = user_project.get_dict()
+    project_name = user_project.get_project().name
+    user_email = user_project.get_user().email
+    print(
+        prettify(
+            dict(user_project_dict, project=project_name, email=user_email)
+        )
+    )
+
 
 @user_projects.command("delete")
 @site_option()
 @click.argument("user_project_id")
 def user_projects_delete(site, user_project_id):
     """Delete a user project in a site."""
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user_project = db.UserProject.find(id=user_project_id)
-    if db_user_project is None:
-        print("User project not found")
-        sys.exit(1)
-    if db_user_project.get_project().site_id != db_site.id:
-        print("User project does not belong to site")
-        sys.exit(1)
+    print("Delete user project", site, user_project_id)
+    get_user_project(site, user_project_id).delete()
+    print(f"Deleted user project {user_project_id}")
 
-    db_user_project.delete()
 
 ## DEPLOYMENTS
 
@@ -342,73 +315,57 @@ def deploys():
     """manage deployments"""
     pass
 
+
 @deploys.command("list")
 @site_option()
-@click.option("-u", "--user", default=None)
-@click.option("-p", "--project", default=None)
-def deploys_list(site, user, project):
+@click.option("-u", "--user", "username", default=None)
+@click.option("-p", "--project", "project_name", default=None)
+def deploys_list(site, username, project_name):
     """List deployments in a site."""
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user = db_site.get_user(username=user) if user else None
-    if user:
-        if db_user is None:
-            print("User not found")
-            sys.exit(1)
-        elif db_user.site_id != db_site.id:
-            print("User not found in site")
-            sys.exit(1)
-    db_project = db_site.get_project(name=project) if project else None
-    if project:
-        if db_project is None:
-            print("Project not found")
-            sys.exit(1)
-        elif db_project.site_id != db_site.id:
-            print("Project not found in site")
-            sys.exit(1)
+    print(
+        "List deployments",
+        site,
+        f"user={username or 'any'}",
+        f"project={project_name or 'any'}"
+    )
+    db_site = db.Site.find_or_fail(name=site)
+    user = get_user(site, username) if username else None
+    project = get_project(site, project_name) if project_name else None
     filters = {}
-    if db_user:
-        filters["user_id"] = db_user.id
-    if db_project:
-        filters["project_id"] = db_project.id
+    if user:
+        filters["user_id"] = user.id
+    if project:
+        filters["project_id"] = project.id
     deployments = deployment.get_deployments(site=db_site, **filters)
-    if not deployments:
+    if deployments:
+        print(prettify(deployments))
+    else:
         print("No matching rows found")
-        sys.exit(0)
-    print(prettify(deployments))
+
 
 @deploys.command("new")
 @site_option()
-@click.option("-u", "--user")
-@click.option("-p", "--project")
-def deploys_new(site, user, project):
-    """List deployments in a site."""
-    db_site = db.Site.find(name=site)
-    if db_site is None:
-        print("Site not found")
-        sys.exit(1)
-    db_user = db_site.get_user(username=user)
-    if db_user is None:
-        print("User not found")
-        sys.exit(1)
-    if db_user.site_id != db_site.id:
-        print("User not found in site")
-        sys.exit(1)
-    db_project = db_site.get_project(name=project)
-    if db_project is None:
-        print("Project not found")
-        sys.exit(1)
-    if db_project.site_id != db_site.id:
-        print("Project not found in site")
-        sys.exit(1)
-    user_project = db.UserProject.find(user_id=db_user.id, project_id=db_project.id)
+@click.option("-u", "--user", "username", required=True)
+@click.option("-p", "--project", "project_name", required=True)
+def deploys_new(site, username, project_name):
+    """Create a new deployment in a site."""
+    print(
+        "Create deployment",
+        site,
+        f"user={username or 'any'}",
+        f"project={project_name or 'any'}"
+    )
+    user = get_user(site, username)
+    project = get_project(site, project_name)
+
+    user_project = project.get_user_project(user_id=user.id)
     if user_project is None:
         print("User hasn't started project")
         sys.exit(1)
+
     deployment.new_deployment(user_project=user_project)
     print("Deployment created")
+
 
 if __name__ == "__main__":
     cli()
