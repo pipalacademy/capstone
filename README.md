@@ -23,20 +23,11 @@ $ sudo apt install zip unzip
 
 Refer [this](https://redis.io/docs/getting-started/installation/) for installation instructions.
 
-Set it up as a service with `supervisord`.
+Redis must already be installed as a systemd service. Check that with `systemctl`:
 
 ```
-[program:redis-server]
-command=/usr/local/bin/redis-server /etc/redis/redis.conf
-user=redis
-group=redis
-autostart=true
-autorestart=unexpected
-stderr_logfile=/var/log/supervisor/redis.log
-stdout_logfile=/var/log/supervisor/redis-stdout.log
+$ sudo systemctl status redis-server
 ```
-
-Make sure `daemonize` is set to `no` in `redis.conf`.
 
 **Step 4: Create database**
 
