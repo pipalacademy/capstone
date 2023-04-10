@@ -22,6 +22,7 @@ def migrate():
         add_git_url_column_to_project(schema)
         add_gito_repo_id_column_to_project(schema)
         add_changelog(schema)
+        rename_gito_repo_id_to_repo_id(schema)
 
 def initial_schema(schema):
     # schema is already initialized
@@ -74,7 +75,11 @@ def fix_user_email_unique_constraint(schema):
 
 def add_gito_repo_id_column_to_user_project(schema):
     db = schema.db
-    db.query("ALTER TABLE user_project ADD COLUMN IF NOT EXISTS gito_repo_id text not null unique")
+    user_project = schema.get_table("user_project")
+
+    if (not user_project.has_column("gito_repo_id") and
+            not user_project.has_column("repo_id")):
+        db.query("ALTER TABLE user_project ADD COLUMN IF NOT EXISTS gito_repo_id text not null unique")
 
 def add_git_url_column_to_project(schema):
     db = schema.db
@@ -82,7 +87,11 @@ def add_git_url_column_to_project(schema):
 
 def add_gito_repo_id_column_to_project(schema):
     db = schema.db
-    db.query("ALTER TABLE project ADD COLUMN IF NOT EXISTS gito_repo_id text")
+    project = schema.get_table("project")
+
+    if (not project.has_column("gito_repo_id") and
+            not project.has_column("repo_id")):
+        db.query("ALTER TABLE project ADD COLUMN IF NOT EXISTS gito_repo_id text")
 
 def add_changelog(schema):
     db = schema.db
@@ -102,3 +111,12 @@ def add_changelog(schema):
     
         CHECK (json_typeof(details) = 'object')
     )""")
+
+def rename_gito_repo_id_to_repo_id(schema):
+    db = schema.db
+
+    if not schema.get_table("project").has_column("repo_id"):
+        db.query("ALTER TABLE project RENAME COLUMN gito_repo_id TO repo_id")
+
+    if not schema.get_table("user_project").has_column("repo_id"):
+        db.query("ALTER TABLE user_project RENAME COLUMN gito_repo_id TO repo_id")

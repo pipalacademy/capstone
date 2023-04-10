@@ -10,7 +10,7 @@ from typing import Any
 import docker
 from toolkit import setup_logger
 
-from . import files, git, gito
+from . import files, git, gitto
 from capstone import config, db
 
 setup_logger()
@@ -22,11 +22,11 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
     assert project.site_id == user.site_id, "project and user must be on the same site"
     assert project.get_user_project(user_id=user.id) is None, "user has already started the project"
 
-    # TODO: there is a race condition where there could be two gito repositories created
+    # TODO: there is a race condition where there could be two gitto repositories created
     # for the same user_project
 
-    repo_id = gito.create_repo(name=project.name)
-    repo_info = gito.get_repo(id=repo_id)
+    repo_id = gitto.create_repo(name=project.name)
+    repo_info = gitto.get_repo(id=repo_id)
     git_url = repo_info["git_url"]
 
     template_zipfile = get_template_repo_as_zipfile(project=project)
@@ -35,9 +35,9 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
     with db.db.transaction():
         user_project = db.UserProject(
             user_id=user.id, project_id=project.id, git_url=git_url,
-            gito_repo_id=repo_id
+            repo_id=repo_id
         ).save()
-        gito.set_webhook(
+        gitto.set_webhook(
             id=repo_id, webhook_url=user_project.get_webhook_url(),
         )
 
@@ -47,8 +47,8 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
 def delete_user_project(user_project: db.UserProject) -> None:
     assert user_project.id is not None, "user_project must be saved"
 
-    # delete from gito
-    gito.delete_repo(id=user_project.gito_repo_id)
+    # delete from gitto
+    gitto.delete_repo(id=user_project.repo_id)
 
     # delete from db
     user_project.delete()

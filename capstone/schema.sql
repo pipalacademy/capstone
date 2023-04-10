@@ -50,7 +50,7 @@ create table project (
     -- TODO: making git_url unique would also need it to be non-nullable
     -- maybe make it non nullable and unique later?
     git_url text,
-    gito_repo_id text,
+    repo_id text,
 
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
@@ -85,7 +85,7 @@ create table user_project (
     project_id integer not null references project,
     user_id integer not null references user_account,
     git_url text not null,
-    gito_repo_id text not null unique,
+    repo_id text not null unique,
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 

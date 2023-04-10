@@ -243,15 +243,15 @@ def get_or_create_user_project(username, project_name):
 
 # Webhooks
 
-@api.route("/projects/<name>/hook/<gito_repo_id>", methods=["POST"])
-def update_project_webhook(name, gito_repo_id):
-    # NOTE: there is no other authentication, only gito_repo_id
+@api.route("/projects/<name>/hook/<repo_id>", methods=["POST"])
+def update_project_webhook(name, repo_id):
+    # NOTE: there is no other authentication, only repo_id
 
     project = g.site.get_project(name=name)
     if project is None:
         return NotFound("Project not found")
 
-    if project.gito_repo_id != gito_repo_id:
+    if project.repo_id != repo_id:
         return Unauthorized("Repo ID mismatch")
 
     changelog = Changelog(
@@ -273,11 +273,11 @@ def update_project_webhook(name, gito_repo_id):
 
 
 @api.route(
-    "/users/<username>/projects/<project_name>/hook/<gito_repo_id>",
+    "/users/<username>/projects/<project_name>/hook/<repo_id>",
     methods=["POST"]
 )
-def update_user_project_webhook(username, project_name, gito_repo_id):
-    # NOTE: there is no other authentication, only gito repo id
+def update_user_project_webhook(username, project_name, repo_id):
+    # NOTE: there is no other authentication, only gitto repo id
 
     project = g.site.get_project(name=project_name)
     if project is None:
@@ -290,7 +290,7 @@ def update_user_project_webhook(username, project_name, gito_repo_id):
     if user_project is None:
         return NotFound("User project not found")
 
-    if user_project.gito_repo_id != gito_repo_id:
+    if user_project.repo_id != repo_id:
         return Unauthorized("Repo ID mismatch")
 
     changelog = Changelog(

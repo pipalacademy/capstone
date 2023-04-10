@@ -237,13 +237,13 @@ class Project(Document):
         "name", "title", "url", "short_description", "description",
         "tags", "is_published", "created", "last_modified",
         # "tasks"
-        "gito_repo_id", "git_url"
+        "repo_id", "git_url"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
         "tags", "is_published", "created", "last_modified",
         # private:
-        "gito_repo_id", "git_url"
+        "repo_id", "git_url"
     ]
 
     site_id: int
@@ -255,7 +255,7 @@ class Project(Document):
 
     is_published: bool | None = None
 
-    gito_repo_id: str | None = None
+    repo_id: str | None = None
     git_url: str | None = None
 
     created: datetime | None = None
@@ -500,9 +500,9 @@ class User(Document):
 @dataclass(kw_only=True)
 class UserProject(Document):
     _tablename = "user_project"
-    _db_fields = ["id", "project_id", "user_id", "git_url", "gito_repo_id", "created", "last_modified"]
+    _db_fields = ["id", "project_id", "user_id", "git_url", "repo_id", "created", "last_modified"]
     _detail_fields = [
-        "git_url", "gito_repo_id", "created", "last_modified",
+        "git_url", "repo_id", "created", "last_modified",
         # added by hand: "project_name", "username", "app_url"
     ]
     _teaser_fields = [
@@ -513,7 +513,7 @@ class UserProject(Document):
     project_id: int
     user_id: int
     git_url: str
-    gito_repo_id: str
+    repo_id: str
 
     created: datetime | None = None
     last_modified: datetime | None = None
@@ -599,7 +599,7 @@ class UserProject(Document):
         assert project is not None, "project not found"
 
         site_url = site.get_url()
-        return f"{site_url}/api/users/{user.username}/projects/{project.name}/hook/{self.gito_repo_id}"
+        return f"{site_url}/api/users/{user.username}/projects/{project.name}/hook/{self.repo_id}"
 
     def get_history(self) -> list[dict[str, Any]]:
         """Return a list of updates for this user project.

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from cookiecutter.main import cookiecutter
 
-from . import git, gito
+from . import git, gitto
 from capstone import db
 
 
@@ -13,38 +13,38 @@ project_template_dir = str(
 
 
 def create_project(site: db.Site, name: str, title: str) -> db.Project:
-    """Creates a project, its repository on gito, and initialises it.
+    """Creates a project, its repository on gitto, and initialises it.
 
-    1. Create repo on gito
-    2. Create project in DB (delete gito repo if this fails)
-    3. Set webhook on gito
+    1. Create repo on gitto
+    2. Create project in DB (delete gitto repo if this fails)
+    3. Set webhook on gitto
     4. Call init_project() to do the rest
     """
     assert site.id is not None
 
     repo_name = f"capstone-{name}"
-    repo_id = gito.create_repo(name=repo_name)
-    repo_info = gito.get_repo(id=repo_id)
+    repo_id = gitto.create_repo(name=repo_name)
+    repo_info = gitto.get_repo(id=repo_id)
 
     project = db.Project(
         site_id=site.id, name=name, title=title,
         short_description="placeholder", description="placeholder",
         is_published=False, tags=[],
-        git_url=repo_info["git_url"], gito_repo_id=repo_id,
+        git_url=repo_info["git_url"], repo_id=repo_id,
     )
 
     with db.db.transaction():
-        # TODO: maybe also use a context manager for the gito repo?
+        # TODO: maybe also use a context manager for the gitto repo?
         # Like the transaction, it should also be deleted if any of
         # the next steps fail
         try:
             project.save()
         except Exception:
-            gito.delete_repo(id=repo_id)
+            gitto.delete_repo(id=repo_id)
             raise
 
-        webhook_endpoint = f"/api/projects/{project.name}/hook/{project.gito_repo_id}"
-        gito.set_webhook(
+        webhook_endpoint = f"/api/projects/{project.name}/hook/{project.repo_id}"
+        gitto.set_webhook(
             id=repo_id,
             webhook_url=site.get_url() + webhook_endpoint
         )
@@ -54,7 +54,7 @@ def create_project(site: db.Site, name: str, title: str) -> db.Project:
     try:
         init_project(project)
     except Exception:
-        # note that project.delete() should also delete the gito repo
+        # note that project.delete() should also delete the gitto repo
         project.delete()
         raise
 

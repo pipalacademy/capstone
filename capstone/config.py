@@ -7,8 +7,8 @@ redis_url = os.getenv("CAPSTONE_REDIS_URL", "redis://localhost:6379/0")
 capstone_api_token = os.getenv("CAPSTONE_API_TOKEN", "test123")
 
 git_base_url = os.getenv("CAPSTONE_GIT_BASE_URL")
-gito_base_url = os.getenv("CAPSTONE_GITO_BASE_URL", "http://localhost:8080")
-gito_api_token = os.getenv("CAPSTONE_GITO_API_TOKEN", "")
+gitto_base_url = os.getenv("CAPSTONE_GITTO_BASE_URL", "http://localhost:8080")
+gitto_api_token = os.getenv("CAPSTONE_GITTO_API_TOKEN", "")
 
 data_dir = os.getenv("CAPSTONE_DATA_DIR", "data")
 
