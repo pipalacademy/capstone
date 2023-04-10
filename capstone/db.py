@@ -136,6 +136,15 @@ class Site(Document):
             raise Exception(f"Project not found: '{name}'")
         return project
 
+    def get_project_by_id(self, id: int) -> Project | None:
+        return Project.find(site_id=self.id, id=id)
+
+    def get_project_by_id_or_fail(self, id: int) -> Project:
+        project = self.get_project_by_id(id=id)
+        if project is None:
+            raise Exception(f"Project not found: id={id}")
+        return project
+
     def get_users(
         self,
         id: int | None = None,
@@ -162,11 +171,33 @@ class Site(Document):
             raise Exception(f"User not found: '{username}'")
         return user
 
+    def get_user_by_id(self, id: int) -> User | None:
+        return User.find(site_id=self.id, id=id)
+
+    def get_user_by_id_or_fail(self, id: int) -> User:
+        user = self.get_user_by_id(id=id)
+        if user is None:
+            raise Exception(f"User not found: id={id}")
+        return user
+
     def get_user_projects(self) -> list[UserProject]:
         user_projects = []
         for user in self.get_users():
             user_projects.extend(user.get_user_projects())
         return user_projects
+
+    def get_user_project_by_id(self, id: int) -> UserProject | None:
+        user_project = UserProject.find(id=id)
+        if user_project and user_project.get_site().id == self.id:
+            return user_project
+        else:
+            return None
+
+    def get_user_project_by_id_or_fail(self, id: int) -> UserProject:
+        user_project = self.get_user_project_by_id(id=id)
+        if user_project is None:
+            raise Exception(f"UserProject not found: id={id}")
+        return user_project
 
     def get_changelogs(
         self,
@@ -187,6 +218,9 @@ class Site(Document):
             site_id=self.id,
             **filters
         )
+
+    def get_changelog_or_fail(self, id: int) -> Changelog:
+        return Changelog.find_or_fail(site_id=self.id, id=id)
 
     def get_url(self) -> str:
         return f"http://{self.domain}"

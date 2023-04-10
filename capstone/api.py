@@ -263,7 +263,7 @@ def update_project_webhook(name, gito_repo_id):
 
     tq.add_task(
         "update_project",
-        project_id=project.id, changelog_id=changelog.id,
+        site_id=g.site.id, project_id=project.id, changelog_id=changelog.id,
     )
 
     return {
@@ -306,7 +306,9 @@ def update_user_project_webhook(username, project_name, gito_repo_id):
 
     tq.add_task(
         "update_user_project",
-        user_project_id=user_project.id, changelog_id=changelog.id,
+        site_id=g.site.id,
+        user_project_id=user_project.id,
+        changelog_id=changelog.id,
     )
 
     return {
