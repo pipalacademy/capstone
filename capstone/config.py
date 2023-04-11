@@ -6,14 +6,17 @@ redis_url = os.getenv("CAPSTONE_REDIS_URL", "redis://localhost:6379/0")
 
 capstone_api_token = os.getenv("CAPSTONE_API_TOKEN", "test123")
 
-git_base_url = os.getenv("CAPSTONE_GIT_BASE_URL")
 gitto_base_url = os.getenv("CAPSTONE_GITTO_BASE_URL", "http://localhost:8080")
-gitto_api_token = os.getenv("CAPSTONE_GITTO_API_TOKEN", "")
+gitto_api_token = os.getenv("CAPSTONE_GITTO_API_TOKEN", "gitto")
 
 data_dir = os.getenv("CAPSTONE_DATA_DIR", "data")
 
-google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
-google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+# Default Google OAuth Credentials, works only for internal users of Pipal Academy 
+DEFAULT_GOOGLE_OAUTH_CLIENT_ID = "184068666662-6f05u07212f7s86vueaba15uihkprmui.apps.googleusercontent.com"
+DEFAULT_GOOGLE_OAUTH_CLIENT_SECRET = "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"
+
+google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID") or DEFAULT_GOOGLE_OAUTH_CLIENT_ID
+google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET") or DEFAULT_GOOGLE_OAUTH_CLIENT_SECRET
 
 capstone_dev = os.getenv("CAPSTONE_DEV", "0") == "1"
 

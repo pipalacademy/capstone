@@ -1,6 +1,7 @@
 pytest
 pytest-mypy
-mkdocs-material
+mkdocs-material>=9.1.6
+honcho
 
 #
 # types required for mypy

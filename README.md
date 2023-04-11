@@ -3,82 +3,58 @@ Capstone is a framework for building guided programming projects.
 
 ## Setup
 
-Run the following steps after cloning the repo.
+These instructions are to setup a dev instance on Linux/Mac.
 
-**Step 1: Setup a virtualenv**
+**Step 1: Install system software**
 
-```
-$ python -m venv venv
-$ source venv/bin/activate
-```
+Capstone requires the following system software:
 
-**Step 2: Install dependencies**
+* zip
+* unzip
+* PostgreSQL
+* Redis
 
-```
-$ pip install -r requirements.txt dev-requirements.txt
-$ sudo apt install zip unzip
-```
-
-**Step 3: Install Redis as a service**
-
-Refer [this](https://redis.io/docs/getting-started/installation/) for installation instructions.
-
-Redis must already be installed as a systemd service. Check that with `systemctl`:
+If you are using Ubuntu/Debian Linux, you can install them using:
 
 ```
-$ sudo systemctl status redis-server
+$ sudo apt-get install zip unzip postgresql redis-server
 ```
 
-**Step 4: Create database**
+If you are using Mac OS X:
 
-PostgreSQL must be installed. Refer [this](https://www.postgresql.org/download/) for installation instructions.
+* https://postgres.app/ is the simplest way to install Postgres. See [macOS packages page on postgres documentation] for other alternatives.
+* See [Installing Redis on Mac OS X](https://redis.io/docs/getting-started/installation/install-redis-on-mac-os/) for instructions for installing Redis.
+
+**Step 2: Create Postgres database**
+
+Create a postgres database.
 
 ```
 $ createdb capstone
 ```
 
-**Step 5: Run db migrations**
+This expects you to have a postgres user with your username with privilages to create a database. You can set that up using:
 
 ```
-$ python run.py --migrate
+$ sudo -u postgres createuser -s $USER
 ```
 
-**Step 6: Build the docker image for capstone-runner**
+**Step 3: Setup a virtualenv**
+
+Run the following command in the working directory after cloning the repo.
 
 ```
-$ runner/build-and-replace-docker-image.sh
+$ make venv
 ```
 
-**Step 7: Start Gitto**
+You can also update the virtualenv by running the same command.
 
-Setup [Gitto](https://github.com/pipalacademy/gitto) and start it.
-
-You can also setup Gitto as a background service.
+**Step 4: Start the services**
 
 ```
-$ # from gitto's directory
-$ ./gitto
+$ make run
 ```
 
-**Step 8: Start the worker**
-
-In another terminal.
-
-```
-$ python run.py --tasks
-Starting Capstone...
-Worker rq:worker:...: started, version 1.x.x
-...
-```
-
-**Step 9: Run the dev server**
-
-In another terminal.
-
-```
-$ python run.py
-...
- * Running on http://localhost:5000/
-```
+The application will be live at <http://localhost:5000/>.
 
 Please note that capstone support multi-tenancy and it determines the tenant based on the hostname. For the devserver, use only localhost as the domain. Using 127.0.0.1 does not work.
