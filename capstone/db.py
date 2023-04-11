@@ -224,7 +224,10 @@ class Site(Document):
         return Changelog.find_or_fail(site_id=self.id, id=id)
 
     def get_url(self) -> str:
-        return f"http://{self.domain}"
+        if self.domain == "localhost":
+            return f"http://{self.domain}:5000"
+        else:
+            return f"https://{self.domain}" 
 
 
 @dataclass(kw_only=True)
