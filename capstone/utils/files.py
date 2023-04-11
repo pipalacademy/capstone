@@ -32,7 +32,7 @@ class InvalidKey(FilesException):
 
 
 def ensure_private_files_dir():
-    PRIVATE_FILES_DIR.mkdir(exist_ok=True)
+    PRIVATE_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def save_private_file(key: str, stream: IO[bytes]) -> Path:
