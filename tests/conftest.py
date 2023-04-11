@@ -33,7 +33,8 @@ def safe_popen(*args, **kwargs):
         p.kill()
 
 def get_arch():
-    return platform.machine()
+    arch = platform.machine()
+    return "amd64" if arch in {"i386", "AMD64", "x86_64"} else arch
 
 @pytest.fixture()
 def gitto(tmp_path):
