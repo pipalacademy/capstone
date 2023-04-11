@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import json
 import subprocess
 import sys
@@ -100,6 +101,15 @@ def install_requirements(filepath: str) -> None:
     subprocess.check_call(["pip", "install", "-r", filepath])
 
 
+def load_custom_checks(parent_dir: Path) -> None:
+    if (parent_dir / "checks.py").is_file():
+        sys.path.insert(0, str(parent_dir))
+        try:
+            importlib.import_module("checks")
+        finally:
+            sys.path.remove(str(parent_dir))
+
+
 def run_checks_until_task_fails(
     capstone_url: str, capstone_token: str, project_name: str, username: str
 ) -> list[dict[str, Any]]:
@@ -113,7 +123,6 @@ def run_checks_until_task_fails(
             project_name=project_name
         )
         clone_repository(git_url=project["git_url"], dest_dir=str(project_dir))
-        install_requirements(str(project_dir / "requirements.txt"))
 
         user_project = get_user_project(
             capstone_url=capstone_url,
@@ -122,10 +131,14 @@ def run_checks_until_task_fails(
             username=username
         )
         app_url = user_project["app_url"]
+
         clone_repository(
             git_url=user_project["git_url"],
             dest_dir=str(user_project_dir)
         )
+
+        install_requirements(str(project_dir / "requirements.txt"))
+        load_custom_checks(parent_dir=project_dir)
 
         task_results = []
         context = {"app_url": app_url, "app_dir": user_project_dir}
