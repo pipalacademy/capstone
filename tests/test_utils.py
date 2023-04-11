@@ -24,14 +24,14 @@ def test_start_user_project(
 
     with patch("capstone.utils.user_project.gitto.get_repo",
                return_value={"id": "testid1234",
-                             "git_url": f"{config.git_base_url}/testid1234/{project.name}",
+                             "git_url": f"{config.gitto_base_url}/testid1234/{project.name}",
                              "name": project.name,
                              "repo_name": f"testid1234/{project.name}"}):
         user_project = start_user_project(project=project, user=user)
 
     assert user_project.project_id == project_id
     assert user_project.user_id == user_id
-    assert user_project.git_url == f"{config.git_base_url}/testid1234/{project.name}"
+    assert user_project.git_url == f"{config.gitto_base_url}/testid1234/{project.name}"
     assert user_project.repo_id == "testid1234"
 
     assert mock_extract_zipfile.called_once_with(
@@ -48,7 +48,7 @@ def test_start_user_project(
 @patch("capstone.utils.user_project.db.UserProject.delete")
 def test_delete_user_project(mock_db_delete, mock_delete_repo, project_id, user_id):
     repo_name = "random_hash/project_name.git"
-    git_url = f"{config.git_base_url}/{repo_name}"
+    git_url = f"{config.gitto_base_url}/{repo_name}"
     user_project = db.UserProject(
         user_id=user_id, project_id=project_id, git_url=git_url, repo_id="random_hash").save()
 

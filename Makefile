@@ -14,3 +14,6 @@ venv:
 run:
 	python run.py --migrate
 	honcho start
+
+test:
+	./runtests.sh

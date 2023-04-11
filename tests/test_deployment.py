@@ -20,7 +20,7 @@ def setup_dir(monkeypatch, tmp_path):
 @pytest.fixture(autouse=True)
 def setup_git(monkeypatch, tmp_path):
     (tmp_path / "git").mkdir()
-    monkeypatch.setattr(config, "git_base_url", str(tmp_path / "git"))
+    monkeypatch.setattr(config, "gitto_base_url", str(tmp_path / "git"))
 
 
 def setup_sample_git_repo(dir):
@@ -32,7 +32,7 @@ def setup_sample_git_repo(dir):
 
 class TestSimpleDeployment:
     def test_simple_deployment_repo_is_being_copied(self, user_id, project_id, site_id):
-        git_path = config.git_base_url + f"/{project_id}/{user_id}"
+        git_path = config.gitto_base_url + f"/{project_id}/{user_id}"
         setup_sample_git_repo(git_path)
         (Path(git_path) / "index.html").touch()
         git.add("index.html", workdir=git_path)
@@ -49,7 +49,7 @@ class TestSimpleDeployment:
         assert (deployment_dir / "index.html").is_file()
 
     def test_simple_deployment_changelog(self, user_id, project_id, site_id):
-        git_path = config.git_base_url + f"/{project_id}/{user_id}"
+        git_path = config.gitto_base_url + f"/{project_id}/{user_id}"
         setup_sample_git_repo(git_path)
 
         db_site = db.Site.find(id=site_id)
