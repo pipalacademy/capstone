@@ -184,6 +184,7 @@ def project(name):
                 task,
                 status=task_status and task_status.status or None,
                 description_vars=user_project and user_project.get_context_vars() or None,
+                check_statuses=task_status and task_status.get_check_statuses() or (),
             )
 
         return layout.render_page(page)
@@ -353,14 +354,13 @@ def TaskDetails(task, status, check_statuses=(), description_vars=None):
         collapsed=False if status == "In Progress" else True,
     )
     # TODO: move this to another element, and make it part of the TaskCard
-    # if check_statuses:
-    #     card.body.add_subtitle("Checks:")
-    #     checks_list = card.body.add_check_list()
-    #     for check, check_status in zip(task.checks, check_statuses):
-    #         if check.name == check_status.name:
-    #             checks_list.add_item(
-    #                 title=check.title or check_status.name,
-    #                 status=check_status.status,
-    #                 message=check_status.message
-    #             )
+    if check_statuses:
+        card.body.add_subtitle("Checks:")
+        checks_list = card.body.add_check_list()
+        for check, check_status in zip(task.get_checks(), check_statuses):
+            checks_list.add_item(
+                title=check.title or check_status.name,
+                status=check_status.status,
+                message=check_status.message
+            )
     return card
