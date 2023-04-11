@@ -1,16 +1,16 @@
 # TODO: ad-hoc module name, think of something better
 import json
+import logging
 import os
 import subprocess
 import tempfile
-import logging
 from pathlib import Path
 from typing import Any
 
 import docker
 from toolkit import setup_logger
 
-from . import files, git, gitto
+from . import git, gitto
 from capstone import config, db
 
 setup_logger()
@@ -29,8 +29,8 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
     repo_info = gitto.get_repo(id=repo_id)
     git_url = repo_info["git_url"]
 
-    template_zipfile = get_template_repo_as_zipfile(project=project)
-    setup_remote_git_repo(git_url, template_zipfile=template_zipfile)
+    zipfile_path = get_template_repo_as_zipfile(project=project)
+    setup_remote_git_repo(git_url, template_zipfile=str(zipfile_path))
 
     with db.db.transaction():
         user_project = db.UserProject(
@@ -65,10 +65,10 @@ def setup_remote_git_repo(git_url: str, template_zipfile: str) -> None:
         git.push(git_url, "main", workdir=repo_path)
 
 
-def get_template_repo_as_zipfile(project: db.Project) -> str:
-    return files.get_private_file_path(
-            project.get_private_file_key_for_zipball()
-        )
+def get_template_repo_as_zipfile(project: db.Project) -> Path:
+    return project.get_site().get_private_file_path(
+        project.get_private_file_key_for_zipball()
+    )
 
 
 def extract_zipfile(src: str, dst: str) -> None:

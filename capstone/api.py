@@ -10,7 +10,6 @@ from . import config
 from .db import Changelog, Project
 from .tasks import queue, update_project, update_user_project
 from .utils.user_project import start_user_project
-from .utils.files import get_private_file, save_private_file
 
 
 logger = logging.getLogger(__name__)
@@ -134,7 +133,7 @@ def get_or_upsert_repo_zip(project_name):
         return Unauthorized()
 
     if request.method == "GET":
-        gen = get_private_file(f"projects/{project_name}/repo.zip")
+        gen = g.site.get_private_file(f"projects/{project_name}/repo.zip")
         response = make_response(gen)
         response.headers["Content-Type"] = "application/zip"
         return response
@@ -151,7 +150,7 @@ def get_or_upsert_repo_zip(project_name):
                 return {"message": "Not a valid zipfile"}, 400
 
             with open(repo_zip, "rb") as f:
-                save_private_file(f"projects/{project_name}/repo.zip", f)
+                g.site.save_private_file(f"projects/{project_name}/repo.zip", f)
 
         return {}, 201
 

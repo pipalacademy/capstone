@@ -12,7 +12,7 @@ from redis import Redis
 from rq import Queue
 
 from . import config, db
-from .utils import files, git
+from .utils import git
 from .utils.user_project import run_checks
 
 setup_logger()
@@ -84,7 +84,7 @@ def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
                     ["zip", "-r", "repo.zip", "."], cwd=repo_dir
                 )
                 with open(repo_dir / "repo.zip", "rb") as f:
-                    files.save_private_file(
+                    site.save_private_file(
                         key=f"projects/{project.name}/repo.zip", stream=f,
                     )
     except Exception:

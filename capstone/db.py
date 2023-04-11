@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, fields as get_fields
 from datetime import datetime
-from typing import Any, ClassVar, Type, TypeVar
+from pathlib import Path
+from typing import Any, ClassVar, IO, Type, TypeVar
 
 from web import database
 from web.db import SQLLiteral
@@ -10,6 +11,7 @@ from psycopg2.extensions import register_adapter
 from psycopg2.extras import Json
 
 from . import config
+from .utils import files
 
 
 db = database(config.db_uri)
@@ -227,7 +229,34 @@ class Site(Document):
         if self.domain == "localhost":
             return f"http://{self.domain}:5000"
         else:
-            return f"https://{self.domain}" 
+            return f"https://{self.domain}"
+
+    def save_private_file(self, key: str, stream: IO[bytes]) -> None:
+        """
+        Possible errors:
+        - capstone.utils.files.InvalidKey
+        - capstone.utils.files.FileNotFound
+        """
+        assert self.id is not None
+        files.save_private_file(key=f"{self.id}/{key}", stream=stream)
+
+    def get_private_file(self, key: str) -> IO[bytes]:
+        """
+        Possible errors:
+        - capstone.utils.files.InvalidKey
+        - capstone.utils.files.FileNotFound
+        """
+        assert self.id is not None
+        return files.get_private_file(key=f"{self.id}/{key}")
+
+    def get_private_file_path(self, key: str) -> Path:
+        """
+        This file should not be edited or deleted.
+        Possible errors:
+        - capstone.utils.files.InvalidKey
+        """
+        assert self.id is not None
+        return files.get_private_file_path(key=f"{self.id}/{key}")
 
 
 @dataclass(kw_only=True)
