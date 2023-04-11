@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 from capstone import config, db
-from capstone.utils import files
 from capstone.utils.user_project import delete_user_project, start_user_project
 
 from .test_db import site_id, project_id, user_id
@@ -19,7 +18,9 @@ def test_start_user_project(project_id, user_id, gitto, tmp_path):
         f.write("test\n")
     subprocess.check_call(["zip", "repo.zip", "test.txt"], cwd=tmp_path)
     with open(Path(tmp_path) / "repo.zip", "rb") as f:
-        files.save_private_file(key=project.get_private_file_key_for_zipball(), stream=f)
+        project.get_site().save_private_file(
+            key=project.get_private_file_key_for_zipball(), stream=f,
+        )
 
     user_project = start_user_project(project=project, user=user)
 
