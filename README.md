@@ -22,7 +22,7 @@ $ sudo apt-get install zip unzip postgresql redis-server
 
 If you are using Mac OS X:
 
-* https://postgres.app/ is the simplest way to install Postgres. See [macOS packages page on postgres documentation] for other alternatives.
+* https://postgres.app/ is the simplest way to install Postgres. See [macOS packages page on postgres documentation](https://www.postgresql.org/download/macosx/) for other alternatives.
 * See [Installing Redis on Mac OS X](https://redis.io/docs/getting-started/installation/install-redis-on-mac-os/) for instructions for installing Redis.
 
 **Step 2: Create Postgres database**
