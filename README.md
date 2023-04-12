@@ -39,7 +39,13 @@ This expects you to have a postgres user with your username with privilages to c
 $ sudo -u postgres createuser -s $USER
 ```
 
-**Step 3: Setup a virtualenv**
+**Step 3: Install Gitto**
+
+```
+go install github.com/pipalacademy/gitto@latest
+```
+
+**Step 4: Setup a virtualenv**
 
 Run the following command in the working directory after cloning the repo.
 
@@ -49,7 +55,7 @@ $ make venv
 
 You can also update the virtualenv by running the same command.
 
-**Step 4: Start the services**
+**Step 5: Start the services**
 
 ```
 $ make run

@@ -1,5 +1,5 @@
 
-gitto: GITTO_API_TOKEN=gitto ../gitto/gitto
+gitto: GITTO_API_TOKEN=gitto gitto
 
 web: python run.py
 
