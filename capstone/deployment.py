@@ -24,7 +24,6 @@ def write_deploy_changelog(site_id, user_id, project_id, type, git_commit_hash, 
 
 
 def get_deployments(site, user_id=None, project_id=None):
-    # TODO: use username instead of email?
     filters = {"site_id": site.id}
     if user_id:
         filters["user_id"] = user_id
@@ -36,7 +35,7 @@ def get_deployments(site, user_id=None, project_id=None):
             "timestamp": deployment["timestamp"],
             "type": deployment["details"]["type"],
             "project": site.get_projects(id=deployment["project_id"])[0].name,
-            "user": site.get_users(id=deployment["user_id"])[0].email,
+            "user": site.get_users(id=deployment["user_id"])[0].username,
             "git_hash": deployment["details"]["git_commit_hash"],
             "app_url": deployment["details"]["app_url"],
         }

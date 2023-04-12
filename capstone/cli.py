@@ -254,7 +254,6 @@ def user_projects():
 @click.option("-u", "--user", "username", default=None)
 @click.option("-p", "--project", "project_name", default=None)
 def user_projects_list(site, username, project_name):
-    # TODO: list username instead of email?
     print(
         "List user projects",
         site,
@@ -270,7 +269,7 @@ def user_projects_list(site, username, project_name):
         table_data.append({
             "id": user_project.id,
             "project": user_project.get_project().name,
-            "email": user_project.get_user().email,
+            "username": user_project.get_user().username,
             "git_url": user_project.git_url,
             # "progress": user_project.get_progress(),  # TODO: add progress here
         })
@@ -285,15 +284,14 @@ def user_projects_list(site, username, project_name):
 @click.argument("user_project_id")
 def user_projects_show(site, user_project_id):
     """Show a user project in a site."""
-    # TODO: show username instead of email?
     print("Show user project", site, user_project_id)
     user_project = get_user_project(site, user_project_id)
     user_project_dict = user_project.get_dict()
     project_name = user_project.get_project().name
-    user_email = user_project.get_user().email
+    username = user_project.get_user().username
     print(
         prettify(
-            dict(user_project_dict, project=project_name, email=user_email)
+            dict(user_project_dict, project=project_name, username=username)
         )
     )
 
