@@ -1,9 +1,11 @@
+import string
 import requests
 from flask import Blueprint, g, redirect, request, session, url_for
 from urllib.parse import urlencode
 
 from . import config
-from .db import User
+from .db import db, Site, User
+from .utils import get_random_string
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -45,13 +47,63 @@ def google_oauth_callback():
         revoke_token(CLIENT_SECRET, user_info["access_token"])
 
     email = user_info["email"]
-    user = User.find(site_id=g.site.id, email=email)
-    if user is None:
-        user = User(
-            site_id=g.site.id, email=email, username=email,
-            full_name=user_info["name"]).save()
+    user = get_or_create_user(site=g.site, email=email, full_name=user_info["name"])
     login_user(user_id=user.id)
     return redirect("/")
+
+
+# create user
+
+def get_or_create_user(site: Site, email: str, full_name: str) -> User:
+    user = User.find(site_id=site.id, email=email)
+
+    # user exists
+    if user is not None:
+        return user
+
+    # user must be created
+    with db.transaction():
+        user = User(
+            site_id=site.id,  # type: ignore
+            email=email,
+            username=get_random_username(site=site),
+            full_name=full_name
+        ).save()
+
+        # set the actual username. try for email prefix, then
+        # fallback to appending user id to this prefix
+        new_username = get_username_from_email(user.email)
+        if not is_username_available(site, new_username):
+            new_username = get_fallback_username(user)
+
+        user.update(username=new_username).save()
+
+    return user
+
+
+# extract username from email
+
+def get_username_from_email(email: str) -> str:
+    return email.split("@")[0]
+
+
+def is_username_available(site: Site, username: str) -> bool:
+    return site.get_user(username=username) is None
+
+
+def get_random_username(site: Site) -> str:
+    username = get_random_string(allowed_chars=string.ascii_lowercase)
+    while not is_username_available(site, username):
+        username = get_random_string(allowed_chars=string.ascii_lowercase)
+    return username
+
+
+def get_fallback_username(user: User) -> str:
+    """Get a fallback username for a user.
+
+    But, the user must be saved to database.
+    """
+    return get_username_from_email(user.email) + f"-{user.id}"
 
 
 # authentication helpers
