@@ -39,7 +39,7 @@ def get_arch():
 @pytest.fixture()
 def gitto(tmp_path):
     """Fixture to start a gitto server for testing."""
-    gitto_executable_path = Path(__file__).parent.parent / "gitto" / f"gitto-{get_arch()}"
+    gitto_executable_path = "gitto"
     with safe_popen(
         [gitto_executable_path],
         env={

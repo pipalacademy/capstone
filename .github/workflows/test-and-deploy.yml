@@ -32,6 +32,14 @@ jobs:
       run: pip install -r dev-requirements.txt -r requirements.txt
     - name: Install apt dependencies
       run: sudo apt-get install -y zip unzip
+    - name: Set up Go for Gitto
+      uses: actions/setup-go@v4
+      with:
+        go-version: '>=1.18.0'
+    - name: Install Gitto
+      shell: bash
+      run: |
+        go install github.com/pipalacademy/gitto@latest
     - name: Run tests
       run: ./runtests.sh
 
