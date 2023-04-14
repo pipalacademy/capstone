@@ -1,7 +1,12 @@
+"""Deployment interface for capstone.
+"""
+
 import contextlib
 import importlib
 import sys
 from pathlib import Path
+from jinja2 import Template
+import nomad
 
 from capstone import config
 from capstone.db import db
@@ -101,3 +106,61 @@ def add_sys_path(path):
 
 def get_deployment_root() -> Path:
     return Path(config.data_dir) / "deployments"
+
+NOMAD_JOB_TEMPLATE = """
+job "{{name}}" {
+  type = "service"
+
+  group "{{name}}" {
+    count = 1
+
+    network {
+      port "web" {
+        to = 8080
+      }
+    }
+
+    service {
+      name     = "{{name}}"
+      port     = "web"
+
+      tags = ["capstone-service"]
+
+      meta {
+        host = "{{host}}"
+      }
+    }
+
+    task "{{name}}" {
+
+      driver = "docker"
+
+      config {
+        image = "{{docker_image}}"
+        ports = ["web"]
+      }
+    }
+  }
+}
+"""
+
+def get_nomad_job_hcl(name, host, docker_image):
+    t = Template(NOMAD_JOB_TEMPLATE)
+    return t.render(name=name, host=host, docker_image=docker_image)
+
+class NomadDeployer:
+    """Creates a deployer based on Nomad.
+
+    Uses env vars like NOMAD_ADDR to connect to Nomad.
+
+    See documentation of python-nomad for more details.
+    """
+    def __init__(self):
+       self.nomad = nomad.Nomad() 
+
+    def deploy(self, name, hostname, docker_image):
+        job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
+        job = self.nomad.jobs.parse(job_hcl)
+        
+        # TODO: check the response for errors and return a handle to the deployment
+        self.nomad.jobs.register_job({"job": job})
