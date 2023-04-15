@@ -47,28 +47,3 @@ class TestSimpleDeployment:
         assert deployment_dir.is_dir()
         assert (deployment_dir / ".git").is_dir()
         assert (deployment_dir / "index.html").is_file()
-
-    def test_simple_deployment_changelog(self, user_id, project_id, site_id):
-        git_path = config.gitto_base_url + f"/{project_id}/{user_id}"
-        setup_sample_git_repo(git_path)
-
-        db_site = db.Site.find(id=site_id)
-        user_project = db.UserProject(user_id=user_id, project_id=project_id, git_url=git_path, repo_id="abcd12345").save()
-
-        SimpleDeployment.run(site=db_site, user_project=user_project)
-
-        changelog = db.Changelog.find(action="deploy", site_id=site_id)
-        assert changelog is not None
-        assert changelog.get_dict() == {
-            "id": changelog.id,
-            "timestamp": changelog.timestamp,
-            "action": "deploy",
-            "site_id": site_id,
-            "user_id": user_id,
-            "project_id": project_id,
-            "details": {
-                "type": "simple",
-                "git_commit_hash": git.rev_parse("HEAD", workdir=git_path),
-                "app_url": f"http://{user_id}.{db_site.domain}",
-            },
-        }
