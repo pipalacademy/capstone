@@ -13,6 +13,7 @@ venv:
 
 run:
 	python run.py --migrate
+	./nomad/start-jobs.sh
 	honcho start
 
 test:

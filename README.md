@@ -45,7 +45,13 @@ $ sudo -u postgres createuser -s $USER
 go install github.com/pipalacademy/gitto@latest
 ```
 
-**Step 4: Setup a virtualenv**
+**Step 4: Install Nomad**
+
+Nomad is used in the deployment module to deploy learners' apps.
+
+Refer to [these steps](https://developer.hashicorp.com/nomad/docs/install).
+
+**Step 5: Setup a virtualenv**
 
 Run the following command in the working directory after cloning the repo.
 
@@ -55,7 +61,16 @@ $ make venv
 
 You can also update the virtualenv by running the same command.
 
-**Step 5: Start the services**
+**Step 6: Start Nomad**
+
+In one terminal, start Nomad
+
+```
+$ ./nomad/nomad.sh
+...
+```
+
+**Step 7: Start the services**
 
 ```
 $ make run
