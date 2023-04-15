@@ -86,6 +86,7 @@ create table user_project (
     user_id integer not null references user_account,
     git_url text not null,
     repo_id text not null unique,
+    app_settings json not null default '{}'::json,
     created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
     last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
 

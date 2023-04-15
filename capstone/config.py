@@ -29,3 +29,9 @@ runner_devmode_python_executable = os.getenv(
     "CAPSTONE_RUNNER_DEVMODE_PYTHON_EXECUTABLE",
     str(Path(__file__).parent.parent / "venv" / "bin" / "python3")
 )
+
+app_url_hostname_template = os.getenv(
+    "CAPSTONE_APP_URL_HOSTNAME_TEMPLATE",
+    "{username}-{project_name}.local.pipal.in"
+)
+app_url_scheme = os.getenv("CAPSTONE_APP_URL_SCHEME", "http")

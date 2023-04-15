@@ -14,7 +14,7 @@ import tempfile
 import os
 
 from capstone import config
-from capstone.db import db
+from capstone.db import db, Site, UserProject
 from capstone.utils import git
 
 
@@ -88,7 +88,7 @@ class SimpleDeployment(Deployment):
             project_id=user_project.project_id,
             type="simple",
             git_commit_hash=commit_hash,
-            app_url=f"http://{app_domain}",
+            app_url=user_project.get_app_url(),
         )
 
     def can_serve_domain(self, domain):
@@ -172,13 +172,13 @@ class Task:
         logfile.parent.mkdir(parents=True, exist_ok=True)
         handler = logging.FileHandler(str(logfile))
         formatter = logging.Formatter(
-            fmt=f'[%(asctime)s] [%(levelname)s] %(message)s',
+            fmt='[%(asctime)s] [%(levelname)s] %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.addHandler(logging.StreamHandler(sys.stdout))
-        return logger 
+        return logger
 
 class DeployTask(Task):
     def __init__(self, site: str, name, hostname, git_url):
@@ -194,12 +194,15 @@ class DeployTask(Task):
         self.cwd = os.path.join(self.cwd or "", directory)
 
     def run(self):
-        self.logger.info(f"Starting DeploTask {self.task_id} to deploy {self.hostname}")
-        
+        self.logger.info(f"Starting DeployTask {self.task_id} to deploy {self.hostname}")
         image = self.build_docker_image()
         self.logger.info("deploying the job to nomad")
-        NomadDeployer().deploy(self.name, self.hostname, image)
-        self.logger.info("The webapp %s is deployed", self.hostname)
+        ok = NomadDeployer().deploy(self.name, self.hostname, image)
+        if ok:
+            self.logger.info("The webapp %s is deployed", self.hostname)
+        else:
+            self.logger.error("The webapp %s failed to deploy", self.hostname)
+        return ok
 
     def run_command(self, *args, **kwargs):
         self.logger.info("")
@@ -236,12 +239,50 @@ class NomadDeployer:
     See documentation of python-nomad for more details.
     """
     def __init__(self):
-       self.nomad = nomad.Nomad() 
+        self.nomad = nomad.Nomad()
 
     def deploy(self, name, hostname, docker_image):
         job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
         job = self.nomad.jobs.parse(job_hcl)
-        
+
         # TODO: check the response for errors and return a handle to the deployment
         response = self.nomad.jobs.register_job({"job": job})
         print(response)
+
+        return True
+
+
+class NomadDeployment(Deployment):
+    TYPE = "nomad"
+
+    @classmethod
+    def run(cls, site: Site, user_project: UserProject) -> None:
+        if site.id != user_project.get_site().id:
+            raise ValueError("Site and user_project must be from the same site")
+
+        username = user_project.get_user().username
+        project_name = user_project.get_project().name
+        name = f"{username}-{project_name}"
+        hostname = config.app_url_hostname_template.format(
+            username=username,
+            project_name=project_name,
+            site_name=site.name
+        )
+        app_url = config.app_url_scheme + "://" + hostname
+        if hostname.endswith(".local.pipal.in"):
+            # running locally
+            app_url += ":8080"
+
+        task = DeployTask(site.name, name=name, hostname=hostname, git_url=user_project.git_url)
+        deployment_ok = task.run()
+
+        if deployment_ok:
+            user_project.set_app_url(app_url)
+            write_deploy_changelog(
+                site_id=site.id,
+                user_id=user_project.user_id,
+                project_id=user_project.project_id,
+                type=cls.TYPE,
+                git_commit_hash=None,  # TODO: set commit hash
+                app_url=app_url,
+            )

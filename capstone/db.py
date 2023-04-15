@@ -532,9 +532,9 @@ class User(Document):
 @dataclass(kw_only=True)
 class UserProject(Document):
     _tablename = "user_project"
-    _db_fields = ["id", "project_id", "user_id", "git_url", "repo_id", "created", "last_modified"]
+    _db_fields = ["id", "project_id", "user_id", "git_url", "repo_id", "app_settings", "created", "last_modified"]
     _detail_fields = [
-        "git_url", "repo_id", "created", "last_modified",
+        "git_url", "repo_id", "app_settings", "created", "last_modified",
         # added by hand: "project_name", "username", "app_url"
     ]
     _teaser_fields = [
@@ -546,6 +546,8 @@ class UserProject(Document):
     user_id: int
     git_url: str
     repo_id: str
+
+    app_settings: dict[str, Any] = field(default_factory=dict)
 
     created: datetime | None = None
     last_modified: datetime | None = None
@@ -578,13 +580,15 @@ class UserProject(Document):
         return {
             "git_url": self.git_url,
             "app_url": self.get_app_url()
+            # add app_settings too?
         }
 
-    def get_app_url(self):
-        # TODO: maybe store the app URL in database
-        site = self.get_site()
-        assert site is not None, "site not found"
-        return f"http://{self.user_id}.{site.domain}"
+    def get_app_url(self) -> str | None:
+        return self.app_settings.get("app_url")
+
+    def set_app_url(self, value: str) -> None:
+        self.app_settings["app_url"] = value
+        self.save()
 
     def get_task_statuses(self) -> list[UserTaskStatus]:
         return UserTaskStatus.find_all(user_project_id=self.id)

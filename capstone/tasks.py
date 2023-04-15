@@ -12,6 +12,7 @@ from redis import Redis
 from rq import Queue
 
 from . import config, db
+from .deployment import NomadDeployment
 from .utils import git
 from .utils.user_project import run_checks
 
@@ -114,6 +115,11 @@ def update_user_project(
 
     try:
         user_project = site.get_user_project_by_id_or_fail(id=user_project_id)
+
+        # run deployment
+        NomadDeployment.run(site=site, user_project=user_project)
+
+        # run checks
         project = user_project.get_project()
         user = user_project.get_user()
 
