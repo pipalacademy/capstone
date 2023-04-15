@@ -1,7 +1,17 @@
+"""Deployment interface for capstone.
+"""
+
 import contextlib
 import importlib
 import sys
 from pathlib import Path
+from jinja2 import Template
+import nomad
+import subprocess
+import logging
+import uuid
+import tempfile
+import os
 
 from capstone import config
 from capstone.db import db
@@ -101,3 +111,137 @@ def add_sys_path(path):
 
 def get_deployment_root() -> Path:
     return Path(config.data_dir) / "deployments"
+
+NOMAD_JOB_TEMPLATE = """
+job "{{name}}" {
+  type = "service"
+
+  group "{{name}}" {
+    count = 1
+
+    network {
+      port "web" {
+        to = 8080
+      }
+    }
+
+    service {
+      name     = "{{name}}"
+      port     = "web"
+
+      tags = ["capstone-service"]
+
+      meta {
+        host = "{{host}}"
+      }
+    }
+
+    task "{{name}}" {
+
+      driver = "docker"
+
+      config {
+        image = "{{docker_image}}"
+        force_pull = true
+        ports = ["web"]
+      }
+    }
+  }
+}
+"""
+
+def get_nomad_job_hcl(name, host, docker_image):
+    t = Template(NOMAD_JOB_TEMPLATE)
+    return t.render(name=name, host=host, docker_image=docker_image)
+
+class Task:
+    def __init__(self, site: str):
+        self.site = site
+        self.task_id = uuid.uuid4().hex
+        self.logger = self.make_logger(self.site, self.task_id)
+
+    def make_logger(self, site: str, task_id: str) -> logging.Logger:
+        '''Creates a logger for a particular upload and sets up relevant parameters
+        '''
+        log_root = Path(config.data_dir)
+
+        logger = logging.Logger(task_id)
+        logger.setLevel(logging.DEBUG)
+        filename = f'{task_id}.log'
+        logfile = log_root.joinpath("tasks", site, filename)
+        logfile.parent.mkdir(parents=True, exist_ok=True)
+        handler = logging.FileHandler(str(logfile))
+        formatter = logging.Formatter(
+            fmt=f'[%(asctime)s] [%(levelname)s] %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.addHandler(logging.StreamHandler(sys.stdout))
+        return logger 
+
+class DeployTask(Task):
+    def __init__(self, site: str, name, hostname, git_url):
+        super().__init__(site)
+        self.name = name
+        self.hostname = hostname
+        self.git_url = git_url
+        self.cwd = None
+
+    def chdir(self, directory):
+        self.logger.info("")
+        self.logger.info("$ cd %s", directory)
+        self.cwd = os.path.join(self.cwd or "", directory)
+
+    def run(self):
+        self.logger.info(f"Starting DeploTask {self.task_id} to deploy {self.hostname}")
+        
+        image = self.build_docker_image()
+        self.logger.info("deploying the job to nomad")
+        NomadDeployer().deploy(self.name, self.hostname, image)
+        self.logger.info("The webapp %s is deployed", self.hostname)
+
+    def run_command(self, *args, **kwargs):
+        self.logger.info("")
+        self.logger.info("$ %s", ' '.join(args))
+        p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=self.cwd, **kwargs)
+        status = p.wait()
+        self.logger.info(p.stdout.read())
+        if status != 0:
+            self.logger.error("Command failed with exit status: %s", status)
+            return False
+        else:
+            self.logger.info("Command finished successfully.")
+            return True
+
+    def build_docker_image(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.chdir(root)
+
+            docker_image = f"{config.docker_registry}/capstone-{self.site}-{self.name}"
+            self.run_command("git", "clone", self.git_url, "repo")
+
+            self.chdir("repo")
+            self.run_command("cat", "Dockerfile")
+            self.run_command("docker", "build", ".", "-t", docker_image)
+            self.run_command("docker", "push", docker_image)
+            return docker_image
+
+
+class NomadDeployer:
+    """Creates a deployer based on Nomad.
+
+    Uses env vars like NOMAD_ADDR to connect to Nomad.
+
+    See documentation of python-nomad for more details.
+    """
+    def __init__(self):
+       self.nomad = nomad.Nomad() 
+
+    def deploy(self, name, hostname, docker_image):
+        job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
+        job = self.nomad.jobs.parse(job_hcl)
+        
+        # TODO: check the response for errors and return a handle to the deployment
+        response = self.nomad.jobs.register_job({"job": job})
+        print(response)
