@@ -6,7 +6,8 @@ job "docker-registry" {
 
     network {
       port "http" {
-        to = 5000
+        static = 7979
+        to     = 5000
       }
     }
 
