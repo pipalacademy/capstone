@@ -19,7 +19,6 @@ job "nginx" {
 
       config {
         image = "nginx"
-        network_mode = "host"
 
         ports = ["http"]
 
@@ -55,6 +54,10 @@ server {
 
    location / {
       proxy_pass http://upstream-{{ .Name | toLower }};
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-Proto $scheme;
    }
 }
 
