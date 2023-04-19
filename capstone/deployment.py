@@ -1,36 +1,21 @@
 """Deployment interface for capstone.
 """
 
-import contextlib
-import importlib
-import sys
-from pathlib import Path
-from jinja2 import Template
-import nomad
-import subprocess
 import logging
-import uuid
-import tempfile
 import os
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+from pathlib import Path
+from typing import Any
+
+import nomad
+from jinja2 import Template
 
 from capstone import config
 from capstone.db import db, Site, UserProject
-from capstone.utils import git
-
-
-def write_deploy_changelog(site_id, user_id, project_id, type, git_commit_hash, app_url=None):
-    return db.insert(
-        "changelog",
-        action="deploy",
-        site_id=site_id,
-        user_id=user_id,
-        project_id=project_id,
-        details={
-            "type": type,
-            "git_commit_hash": git_commit_hash,
-            "app_url": app_url,
-        }
-    )
 
 
 def get_deployments(site, user_id=None, project_id=None):
@@ -53,10 +38,10 @@ def get_deployments(site, user_id=None, project_id=None):
     ]
 
 
-def new_deployment(user_project, type="simple"):
+def new_deployment(user_project, type="nomad"):
     site = user_project.get_site()
-    if type == "simple":
-        return SimpleDeployment.run(site=site, user_project=user_project)
+    if type == "nomad":
+        return NomadDeployment.run(site=site, user_project=user_project)
     else:
         raise ValueError(f"Unknown deployment type: {type}")
 
@@ -66,51 +51,6 @@ class Deployment:
     def run(cls, site, user_project):
         raise NotImplementedError
 
-
-class SimpleDeployment(Deployment):
-    TYPE = "simple"
-
-    @classmethod
-    def run(cls, site, user_project):
-        git_url = user_project.git_url
-        app_domain = f"{user_project.user_id}.{site.domain}"
-        deployment_dir = get_deployment_root() / app_domain
-        deployment_dir.mkdir(parents=True, exist_ok=True)
-
-        # copy contents of Git repo to deployment dir
-        git.clone(git_url, ".", workdir=str(deployment_dir))
-
-        commit_hash = git.rev_parse("HEAD", workdir=str(deployment_dir))
-
-        write_deploy_changelog(
-            site_id=site.id,
-            user_id=user_project.user_id,
-            project_id=user_project.project_id,
-            type="simple",
-            git_commit_hash=commit_hash,
-            app_url=user_project.get_app_url(),
-        )
-
-    def can_serve_domain(self, domain):
-        return (get_deployment_root() / domain).is_dir()
-
-    def serve_domain(self, domain, env, start_response):
-        deployment_dir = str(get_deployment_root() / domain)
-        with add_sys_path(deployment_dir):
-            return importlib.import_module("wsgi").app(env, start_response)
-
-
-@contextlib.contextmanager
-def add_sys_path(path):
-    sys.path.insert(0, path)
-    try:
-        yield
-    finally:
-        sys.path.remove(path)
-
-
-def get_deployment_root() -> Path:
-    return Path(config.data_dir) / "deployments"
 
 NOMAD_JOB_TEMPLATE = """
 job "{{name}}" {
@@ -150,9 +90,11 @@ job "{{name}}" {
 }
 """
 
+
 def get_nomad_job_hcl(name, host, docker_image):
     t = Template(NOMAD_JOB_TEMPLATE)
     return t.render(name=name, host=host, docker_image=docker_image)
+
 
 class Task:
     def __init__(self, site: str):
@@ -180,6 +122,7 @@ class Task:
         logger.addHandler(logging.StreamHandler(sys.stdout))
         return logger
 
+
 class DeployTask(Task):
     def __init__(self, site: str, name, hostname, git_url):
         super().__init__(site)
@@ -188,47 +131,138 @@ class DeployTask(Task):
         self.git_url = git_url
         self.cwd = None
 
+    def run(self):
+        self.logger.info(f"Starting DeployTask {self.task_id} to deploy {self.hostname}")
+
+        with tempfile.TemporaryDirectory() as root:
+            repo = Path(root) / "repo"
+            repo.mkdir()
+            self.chdir(str(repo))
+
+            commit_hash, logs, ok = self.clone_repo(repo)
+            if not ok:
+                self.logger.error(f"INTERNAL ERROR: Failed to clone repo\n{logs}")
+                return {
+                    "ok": False,
+                    "log": f"Failed to clone Git repo\n{logs}",
+                }
+
+            image_tag, logs, ok = self.build_docker_image()
+            if not ok:
+                self.logger.error(f"Failed to build docker image: {logs}")
+                return {
+                    "ok": False,
+                    "log": f"Failed to build docker image\n{logs}",
+                }
+
+            job_id, logs, ok = self.deploy_to_nomad(image_tag)
+            if not ok:
+                self.logger.error(
+                    "INTERNAL ERROR: Failed to deploy app to Nomad"
+                )
+                return {
+                    "ok": False,
+                    "log": f"Failed to deploy to Nomad\n{logs}",
+                }
+
+            _, logs, ok = self.check_health(job_id)
+            if not ok:
+                self.logger.error("App health check failed")
+                return {
+                    "ok": False,
+                    "log": f"App health check failed\n{logs}",
+                }
+
+        return {"ok": True, "log": None}
+
+    def run_command(self, *args, **kwargs) -> tuple[str, bool]:
+        self.logger.info("")
+        self.logger.info("$ %s", ' '.join(args))
+        p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=self.cwd, **kwargs)
+        status = p.wait()
+        logs = p.stdout.read()  # type: ignore
+        self.logger.info(logs)
+        if status != 0:
+            self.logger.error("Command failed with exit status: %s", status)
+            return logs, False
+        else:
+            self.logger.info("Command finished successfully.")
+            return logs, True
+
     def chdir(self, directory):
         self.logger.info("")
         self.logger.info("$ cd %s", directory)
         self.cwd = os.path.join(self.cwd or "", directory)
 
-    def run(self):
-        self.logger.info(f"Starting DeployTask {self.task_id} to deploy {self.hostname}")
-        image = self.build_docker_image()
-        self.logger.info("deploying the job to nomad")
-        ok = NomadDeployer().deploy(self.name, self.hostname, image)
-        if ok:
-            self.logger.info("The webapp %s is deployed", self.hostname)
-        else:
-            self.logger.error("The webapp %s failed to deploy", self.hostname)
-        return ok
+    def clone_repo(self, to: Path) -> tuple[str|None, str|None, bool]:
+        self.logger.info("Cloning the git repository")
+        logs_1, ok = self.run_command("git", "clone", self.git_url, str(to))
+        cumulative_logs = "\n\n$ git clone {self.git_url} {to}\n" + logs_1
+        if not ok:
+            return None, logs_1, False
 
-    def run_command(self, *args, **kwargs):
-        self.logger.info("")
-        self.logger.info("$ %s", ' '.join(args))
-        p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=self.cwd, **kwargs)
-        status = p.wait()
-        self.logger.info(p.stdout.read())
-        if status != 0:
-            self.logger.error("Command failed with exit status: %s", status)
-            return False
-        else:
-            self.logger.info("Command finished successfully.")
-            return True
+        logs_2, ok = self.run_command("git", "rev-parse", "HEAD")
+        cumulative_logs += "\n\n$ git rev-parse HEAD\n" + logs_2
+        if not ok:
+            return None, cumulative_logs, False
 
-    def build_docker_image(self):
-        with tempfile.TemporaryDirectory() as root:
-            self.chdir(root)
+        return logs_2.strip(), cumulative_logs, True
 
-            docker_image = f"{config.docker_registry}/capstone-{self.site}-{self.name}"
-            self.run_command("git", "clone", self.git_url, "repo")
+    def build_docker_image(self) -> tuple[str|None, str|None, bool]:
+        docker_image = f"{config.docker_registry}/capstone-{self.site}-{self.name}"
+        self.logger.info("Building the docker image")
+        logs_1, ok = self.run_command("cat", "Dockerfile")
+        cumulative_logs = "\n\n$ cat Dockerfile\n" + logs_1
+        if not ok:
+            return None, cumulative_logs, False
 
-            self.chdir("repo")
-            self.run_command("cat", "Dockerfile")
-            self.run_command("docker", "build", ".", "-t", docker_image)
-            self.run_command("docker", "push", docker_image)
-            return docker_image
+        logs_2, ok = self.run_command("docker", "build", "-t", docker_image, ".")
+        cumulative_logs += "\n\n$ docker build -t {docker_image} .\n" + logs_2
+        if not ok:
+            return None, cumulative_logs, False
+
+        logs_3, ok = self.run_command("docker", "push", docker_image)
+        cumulative_logs += "\n\n$ docker push {docker_image}\n" + logs_3
+        if not ok:
+            return None, cumulative_logs, False
+
+        return docker_image, cumulative_logs, True
+
+    def deploy_to_nomad(self, image: str) -> tuple[str|None, str|None, bool]:
+        self.logger.info(f"Deploying the job to nomad {image}")
+        try:
+            job_id = NomadDeployer().deploy(self.name, self.hostname, image)
+        except nomad.api.exceptions.BaseNomadException as e:
+            self.logger.exception(f"Failed to deploy to Nomad: {e}")
+            return None, str(e), False
+
+        return job_id, None, True
+
+    def check_health(
+        self, job_id: str, timeout: int = 60, sleep_interval: int = 5,
+    ) -> tuple[None, str|None, bool]:
+        self.logger.info(f"Checking health of job {job_id}")
+        start = time.perf_counter()
+        while True:
+            try:
+                depl = nomad.Nomad().job.get_deployment(job_id)
+            except nomad.api.exceptions.BaseNomadException as e:
+                self.logger.exception(f"Failed to get deployment from Nomad: {e}")
+                return None, str(e), False
+
+            status = depl["Status"]
+            if status == "successful":
+                return None, None, True
+
+            # TODO: use this logs API to stream app logs
+            # https://developer.hashicorp.com/nomad/api-docs/client#stream-logs
+            now = time.perf_counter()
+            if now - start >= timeout:
+                return None, f"Timeout after {timeout} seconds. Job status: {status}", False
+
+            self.logger.info(f"Waiting for job to start. Current status: {status}. "
+                             f"Will check again in {sleep_interval} seconds.")
+            time.sleep(sleep_interval)
 
 
 class NomadDeployer:
@@ -241,22 +275,23 @@ class NomadDeployer:
     def __init__(self):
         self.nomad = nomad.Nomad()
 
-    def deploy(self, name, hostname, docker_image):
+    def deploy(self, name: str, hostname: str, docker_image: str) -> str:
+        """Returns job ID
+        """
         job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
         job = self.nomad.jobs.parse(job_hcl)
 
-        # TODO: check the response for errors and return a handle to the deployment
         response = self.nomad.jobs.register_job({"job": job})
-        print(response)
-
-        return True
+        print("response", response, file=sys.stderr)
+        # job ID is same as the "name", refer to the NOMAD_JOB_TEMPLATE
+        return name
 
 
 class NomadDeployment(Deployment):
     TYPE = "nomad"
 
     @classmethod
-    def run(cls, site: Site, user_project: UserProject) -> None:
+    def run(cls, site: Site, user_project: UserProject) -> dict[str, Any]:
         if site.id != user_project.get_site().id:
             raise ValueError("Site and user_project must be from the same site")
 
@@ -274,15 +309,6 @@ class NomadDeployment(Deployment):
             app_url += ":8080"
 
         task = DeployTask(site.name, name=name, hostname=hostname, git_url=user_project.git_url)
-        deployment_ok = task.run()
-
-        if deployment_ok:
-            user_project.set_app_url(app_url)
-            write_deploy_changelog(
-                site_id=site.id,
-                user_id=user_project.user_id,
-                project_id=user_project.project_id,
-                type=cls.TYPE,
-                git_commit_hash=None,  # TODO: set commit hash
-                app_url=app_url,
-            )
+        result = task.run()
+        result["app_url"] = app_url
+        return result
