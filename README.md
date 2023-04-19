@@ -66,7 +66,7 @@ You can also update the virtualenv by running the same command.
 In one terminal, start Nomad
 
 ```
-$ ./nomad/nomad.sh
+$ ./nomad-scripts/nomad.sh
 ...
 ```
 

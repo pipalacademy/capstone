@@ -54,4 +54,4 @@ jobs:
           username: capstone
           key: ${{ secrets.PIPAL_BOT_SSH_KEY }}
           script: |
-            bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && sudo apt-get install -y zip unzip && venv/bin/python run.py --migrate && ./nomad/start-jobs.sh && sudo supervisorctl restart capstone capstone-tasks && ./runner/build-and-replace-docker-image.sh'
+            bash -c 'cd capstone; git pull && venv/bin/python -m pip install -U -r requirements.txt && sudo apt-get install -y zip unzip && venv/bin/python run.py --migrate && ./nomad-scripts/start-jobs.sh && sudo supervisorctl restart capstone capstone-tasks && ./runner/build-and-replace-docker-image.sh'

@@ -232,7 +232,7 @@ class DeployTask(Task):
         self.logger.info(f"Deploying the job to nomad {image}")
         try:
             job_id = NomadDeployer().deploy(self.name, self.hostname, image)
-        except nomad.api.exceptions.BaseNomadException as e:
+        except nomad.api.exceptions.BaseNomadException as e:  # type: ignore
             self.logger.exception(f"Failed to deploy to Nomad: {e}")
             return None, str(e), False
 
@@ -245,8 +245,8 @@ class DeployTask(Task):
         start = time.perf_counter()
         while True:
             try:
-                depl = nomad.Nomad().job.get_deployment(job_id)
-            except nomad.api.exceptions.BaseNomadException as e:
+                depl = nomad.Nomad().job.get_deployment(job_id)  # type: ignore
+            except nomad.api.exceptions.BaseNomadException as e:  # type: ignore
                 self.logger.exception(f"Failed to get deployment from Nomad: {e}")
                 return None, str(e), False
 

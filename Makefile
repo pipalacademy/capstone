@@ -1,10 +1,4 @@
-
-DEPLOY_HOST=capstone@capstone.k8x.in
-
 export PATH := $(PWD)/venv/bin:$(PATH)
-
-deploy:
-	ssh $(DEPLOY_HOST) capstone/deploy.sh
 
 .PHONY: venv
 venv:
@@ -13,7 +7,7 @@ venv:
 
 run:
 	python run.py --migrate
-	./nomad/start-jobs.sh
+	./nomad-scripts/start-jobs.sh
 	honcho start
 
 test:
