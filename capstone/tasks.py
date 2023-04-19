@@ -117,44 +117,27 @@ def update_user_project(
         user_project = site.get_user_project_by_id_or_fail(id=user_project_id)
 
         # run deployment
-        NomadDeployment.run(site=site, user_project=user_project)
-
-        # run checks
-        project = user_project.get_project()
-        user = user_project.get_user()
-
-        result = run_checks(
-            capstone_url=project.get_site().get_url(),
-            capstone_token=config.runner_capstone_token,
-            project_name=project.name,
-            username=user.username,
-        )
-
+        changelog.details["stage"] = "deployment"
+        result = run_deployer(site=site, user_project=user_project)
+        logger.info(f"Deployment result:\n{result}")
         if not result["ok"]:
-            logger.error("Runner failed with result not ok")
+            logger.error("Deployment failed with result not ok")
             changelog.details["status"] = "failed"
             changelog.details["log"] = result["log"]
             changelog.save()
             return
 
-        task_results = result["tasks"]
+        # run checks
+        changelog.details["stage"] = "checks"
+        result = run_checker(site=site, user_project=user_project)
+        logger.info(f"Checker result:\n{result}")
+        if not result["ok"]:
+            logger.error("Checker failed with result not ok")
+            changelog.details["status"] = "failed"
+            changelog.details["log"] = result["log"]
+            changelog.save()
+            return
 
-        with db.db.transaction():
-            for task, task_result in zip(project.get_tasks(), task_results):
-                task_status = user_project.get_task_status(task=task)
-                if task_status is None:
-                    task_status = user_project.update_task_status(task=task, status="Pending")
-                for check, check_result in zip(task.get_checks(), task_result["checks"]):
-                    task_status.update_check_status(
-                        check=check,
-                        status=check_result["status"],
-                        message=check_result["message"]
-                    )
-                user_project.update_task_status(
-                    task=task,
-                    status=task_status.compute_status()
-                )
-            user_project.set_in_progress_task()
     except Exception:
         logger.error("Caught an exception")
         changelog.details["status"] = "failed"
@@ -165,3 +148,43 @@ def update_user_project(
         logger.info("UserProject updated without errors")
         changelog.details["status"] = "success"
         changelog.save()
+
+
+def run_deployer(site, user_project):
+    result = NomadDeployment.run(site=site, user_project=user_project)
+    if result["ok"]:
+        user_project.set_app_url(result["app_url"])
+    return result
+
+
+def run_checker(site, user_project):
+    project = user_project.get_project()
+    user = user_project.get_user()
+
+    result = run_checks(
+        capstone_url=project.get_site().get_url(),
+        capstone_token=config.runner_capstone_token,
+        project_name=project.name,
+        username=user.username,
+    )
+
+    task_results = result["tasks"]
+
+    with db.db.transaction():
+        for task, task_result in zip(project.get_tasks(), task_results):
+            task_status = user_project.get_task_status(task=task)
+            if task_status is None:
+                task_status = user_project.update_task_status(task=task, status="Pending")
+            for check, check_result in zip(task.get_checks(), task_result["checks"]):
+                task_status.update_check_status(
+                    check=check,
+                    status=check_result["status"],
+                    message=check_result["message"]
+                )
+            user_project.update_task_status(
+                task=task,
+                status=task_status.compute_status()
+            )
+        user_project.set_in_progress_task()
+
+    return result
