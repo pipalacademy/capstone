@@ -85,6 +85,11 @@ job "{{name}}" {
         force_pull = true
         ports = ["web"]
       }
+
+      resources {
+        cpu   = 100
+        memory = 128
+      }
     }
   }
 }
