@@ -29,6 +29,11 @@ job "docker-registry" {
         image = "registry:2"
         ports = ["http"]
       }
+
+      resources {
+        cpu    = 100
+        memory = 128
+      }
     }
   }
 }

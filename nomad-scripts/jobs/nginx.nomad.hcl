@@ -17,6 +17,11 @@ job "nginx" {
     task "nginx" {
       driver = "docker"
 
+      resources {
+        cpu    = 100
+        memory = 128
+      }
+
       config {
         image = "nginx"
 
