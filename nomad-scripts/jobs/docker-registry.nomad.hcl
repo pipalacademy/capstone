@@ -17,9 +17,9 @@ job "docker-registry" {
 
       tags = ["capstone-service"]
 
-     meta {
-      host = "registry.local.pipal.in"
-     }
+      meta {
+        host = "registry.local.pipal.in"
+      }
     }
 
     task "docker-registry" {

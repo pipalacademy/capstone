@@ -24,6 +24,7 @@ job "nginx" {
 
       config {
         image = "nginx"
+        network_mode = "host"
 
         ports = ["http"]
 
@@ -44,7 +45,7 @@ job "nginx" {
 
 upstream upstream-{{ .Name | toLower }} {
   {{- range service .Name }}
-  server {{ .Address }}:{{ .Port }}; 
+  server host.docker.internal:{{ .Port }};
 
   {{ $host = .ServiceMeta.host }}
 
