@@ -45,7 +45,7 @@ jobs:
       run: |
         until nomad status; do sleep 2; done
     - name: Start jobs
-      run: ./nomad/start-jobs.sh
+      run: ./nomad-scripts/start-jobs.sh
     - name: Run tests
       run: ./runtests.sh
 
