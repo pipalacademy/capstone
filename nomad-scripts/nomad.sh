@@ -26,4 +26,6 @@ client {
 } 
 END
 
-exec sudo nomad agent -dev -bind 0.0.0.0  -config $NOMAD_CONFIG
+# TODO: ^^ do the same for docker-registry
+
+exec sudo nomad agent -dev -bind 127.0.0.1 -config $NOMAD_CONFIG
