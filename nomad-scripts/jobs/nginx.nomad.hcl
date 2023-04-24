@@ -35,6 +35,17 @@ job "nginx" {
 
       template {
         data = <<EOF
+server {
+    listen 8080 default;
+
+    client_max_body_size 0;
+
+    location / {
+        add_header 'Content-Type' 'text/plain';
+        return 404 'Capstone: App not found\n';
+    }
+}
+
 {{ range services }}
 
 {{ $host := "localhost" }}
