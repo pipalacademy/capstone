@@ -38,6 +38,9 @@ jobs:
         wget -O /tmp/nomad.zip https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip
         sudo unzip /tmp/nomad.zip -d /usr/local/bin/
         nomad version
+    - name: Start Nomad
+      run: |
+        sudo nomad agent -dev -config=./nomad/nomad.hcl -bind 0.0.0.0 &
     - name: Wait for Nomad
       run: |
         until nomad status; do sleep 2; done
