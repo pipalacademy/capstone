@@ -16,7 +16,8 @@ job "gitto" {
 
     network {
       port "web" {
-        to = 7878
+        static  = 7878
+        to      = 7878
       }
     }
 
