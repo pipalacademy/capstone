@@ -45,7 +45,7 @@ job "nginx" {
 
 upstream upstream-{{ .Name | toLower }} {
   {{- range service .Name }}
-  server host.docker.internal:{{ .Port }};
+  server {{ .Address }}:{{ .Port }};
 
   {{ $host = .ServiceMeta.host }}
 
