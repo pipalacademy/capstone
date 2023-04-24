@@ -40,7 +40,7 @@ jobs:
         nomad version
     - name: Start Nomad
       run: |
-        sudo nomad agent -dev -config=./nomad/nomad.hcl -bind 0.0.0.0 &
+        sudo nomad agent -dev -bind 0.0.0.0 &
     - name: Wait for Nomad
       run: |
         until nomad status; do sleep 2; done
