@@ -3,6 +3,11 @@ variable "gitto_api_token" {
   default = "gitto"
 }
 
+variable "gitto_host" {
+  type = string
+  default = "git.local.pipal.in"
+}
+
 job "gitto" {
   type = "service"
 
@@ -27,7 +32,7 @@ job "gitto" {
       tags = ["capstone-service"]
 
       meta {
-        host = "git.local.pipal.in"
+        host = var.gitto_host
       }
     }
 
@@ -39,10 +44,14 @@ job "gitto" {
         destination = "/git"
       }      
 
+      resources {
+        cpu    = 100
+        memory = 128
+      }
 
       env {
         GITTO_API_TOKEN = var.gitto_api_token
-        GITTO_ROOT = "/git"      
+        GITTO_ROOT = "/git"
       }
 
       config {
