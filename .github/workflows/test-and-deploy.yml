@@ -49,8 +49,8 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     env:
-      NOMAD_VAR_gitto_api_token = ${{ secrets.CAPSTONE_STAGING_GITTO_API_TOKEN }}
-      NOMAD_VAR_gitto_host = git.capstone-staging.pipal.in
+      NOMAD_VAR_gitto_api_token: ${{ secrets.CAPSTONE_STAGING_GITTO_API_TOKEN }}
+      NOMAD_VAR_gitto_host: git.capstone-staging.pipal.in
     needs: run-tests
     steps:
       - name: Deploy to staging
