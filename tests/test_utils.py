@@ -9,7 +9,7 @@ from capstone.utils.user_project import delete_user_project, start_user_project
 from .test_db import site_id, project_id, user_id
 
 
-def test_start_user_project(project_id, user_id, tmp_path):
+def test_start_user_project(project_id, user_id, gitto, tmp_path):
     project = db.Project.find_or_fail(id=project_id)
     user = db.User.find_or_fail(id=user_id)
 
