@@ -7,6 +7,7 @@ on:
 
 env:
   TEST_DATABASE_URL: "postgres://postgres:postgres@localhost/postgres"
+  NOMAD_VERSION: "1.5.2"
 
 jobs:
   run-tests:
@@ -32,14 +33,16 @@ jobs:
       run: pip install -r dev-requirements.txt -r requirements.txt
     - name: Install apt dependencies
       run: sudo apt-get install -y zip unzip
-    - name: Set up Go for Gitto
-      uses: actions/setup-go@v4
-      with:
-        go-version: '>=1.18.0'
-    - name: Install Gitto
-      shell: bash
+    - name: Install Nomad
       run: |
-        go install github.com/pipalacademy/gitto@latest
+        wget -O /tmp/nomad.zip https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip
+        sudo unzip /tmp/nomad.zip -d /usr/local/bin/
+        nomad version
+    - name: Wait for Nomad
+      run: |
+        until nomad status; do sleep 2; done
+    - name: Start jobs
+      run: ./nomad/start-jobs.sh
     - name: Run tests
       run: ./runtests.sh
 
