@@ -41,7 +41,7 @@ server {
     client_max_body_size 0;
 
     location / {
-        add_header 'Content-Type' 'text/plain';
+        add_header 'Content-Type' 'text/plain' always;
         return 404 'Capstone: App not found\n';
     }
 }
