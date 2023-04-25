@@ -37,22 +37,6 @@ def get_arch():
     return "amd64" if arch in {"i386", "AMD64", "x86_64"} else arch
 
 @pytest.fixture()
-def gitto(tmp_path):
-    """Fixture to start a gitto server for testing."""
-    gitto_executable_path = "gitto"
-    with safe_popen(
-        [gitto_executable_path],
-        env={
-            "GITTO_ROOT": str(tmp_path),
-            "GITTO_PORT": "8080",
-            "GITTO_API_TOKEN": "gitto",
-            "PATH": os.getenv("PATH"),
-        }
-    ):
-        time.sleep(0.5)  # wait for the app to start
-        yield
-
-@pytest.fixture()
 def api_client():
     return APIClient()
 
