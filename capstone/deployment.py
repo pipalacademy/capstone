@@ -185,7 +185,7 @@ class DeployTask(Task):
         self.logger.info("$ %s", ' '.join(args))
         p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=self.cwd, **kwargs)
         status = p.wait()
-        logs = p.stdout.read()
+        logs = p.stdout.read()  # type: ignore
         self.logger.info(logs)
         if status != 0:
             self.logger.error("Command failed with exit status: %s", status)
