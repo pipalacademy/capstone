@@ -185,7 +185,7 @@ class DeployTask(Task):
         self.logger.info("$ %s", ' '.join(args))
         p = subprocess.Popen(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=self.cwd, **kwargs)
         status = p.wait()
-        logs = p.stdout.read()  # type: ignore
+        logs = p.stdout.read()
         self.logger.info(logs)
         if status != 0:
             self.logger.error("Command failed with exit status: %s", status)
@@ -237,7 +237,7 @@ class DeployTask(Task):
         self.logger.info(f"Deploying the job to nomad {image}")
         try:
             job_id = NomadDeployer().deploy(self.name, self.hostname, image)
-        except nomad.api.exceptions.BaseNomadException as e:  # type: ignore
+        except nomad.api.exceptions.BaseNomadException as e:
             self.logger.exception(f"Failed to deploy to Nomad: {e}")
             return None, str(e), False
 
@@ -250,8 +250,8 @@ class DeployTask(Task):
         start = time.perf_counter()
         while True:
             try:
-                depl = nomad.Nomad().job.get_deployment(job_id)  # type: ignore
-            except nomad.api.exceptions.BaseNomadException as e:  # type: ignore
+                depl = nomad.Nomad().job.get_deployment(job_id)
+            except nomad.api.exceptions.BaseNomadException as e:
                 self.logger.exception(f"Failed to get deployment from Nomad: {e}")
                 return None, str(e), False
 
@@ -286,10 +286,17 @@ class NomadDeployer:
         job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
         job = self.nomad.jobs.parse(job_hcl)
 
+        # try to stop a job. then register it from here
+        job_id = name
+
+        try:
+            self.nomad.jobs.deregister_job(job_id)
+        except nomad.api.exceptions.BaseNomadException:
+            pass
         response = self.nomad.jobs.register_job({"job": job})
+
         print("response", response, file=sys.stderr)
-        # job ID is same as the "name", refer to the NOMAD_JOB_TEMPLATE
-        return name
+        return job_id
 
 
 class NomadDeployment(Deployment):
