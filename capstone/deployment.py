@@ -286,17 +286,11 @@ class NomadDeployer:
         job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
         job = self.nomad.jobs.parse(job_hcl)
 
-        # try to stop a job. then register it from here
-        job_id = name
-
-        try:
-            self.nomad.jobs.deregister_job(job_id)
-        except nomad.api.exceptions.BaseNomadException:
-            pass
-        response = self.nomad.jobs.register_job({"job": job})
-
+        response = self.nomad.job.register_job(name, {"job": job})
         print("response", response, file=sys.stderr)
-        return job_id
+
+        # nomad assigns the name as the job ID
+        return name
 
 
 class NomadDeployment(Deployment):
