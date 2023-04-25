@@ -41,7 +41,6 @@ class ProjectUpsertModel(BaseModel):
     description: str
     tags: list[str]
     tasks: list[TaskInputModel]
-    is_published: bool | None = None
 
 
 def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
