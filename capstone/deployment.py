@@ -291,12 +291,6 @@ class NomadDeployer:
         job = self.nomad.jobs.parse(job_hcl)
 
         job_id = name
-
-        try:
-            self.nomad.job.deregister_job(job_id, purge=True)
-        except nomad.api.exceptions.URLNotFoundNomadException:
-            pass
-
         response = self.nomad.job.register_job(job_id, {"job": job})
         print("response", response, file=sys.stderr)
 
