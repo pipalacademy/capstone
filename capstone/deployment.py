@@ -286,11 +286,17 @@ class NomadDeployer:
         job_hcl = get_nomad_job_hcl(name, hostname, docker_image)
         job = self.nomad.jobs.parse(job_hcl)
 
-        response = self.nomad.job.register_job(name, {"job": job})
+        job_id = name
+
+        try:
+            self.nomad.job.deregister_job(job_id, purge=True)
+        except nomad.api.exceptions.URLNotFoundNomadException:
+            pass
+
+        response = self.nomad.job.register_job(job_id, {"job": job})
         print("response", response, file=sys.stderr)
 
-        # nomad assigns the name as the job ID
-        return name
+        return job_id
 
 
 class NomadDeployment(Deployment):
