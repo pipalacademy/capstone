@@ -213,8 +213,12 @@ class DeployTask(Task):
 
         return logs_2.strip(), cumulative_logs, True
 
+    def get_docker_image_tag(self) -> str:
+        random_suffix = uuid.uuid4().hex[:10]
+        return f"{config.docker_registry}/capstone-{self.site}-{self.name}:{random_suffix}"
+
     def build_docker_image(self) -> tuple[str|None, str|None, bool]:
-        docker_image = f"{config.docker_registry}/capstone-{self.site}-{self.name}"
+        docker_image = self.get_docker_image_tag()
         self.logger.info("Building the docker image")
         logs_1, ok = self.run_command("cat", "Dockerfile")
         cumulative_logs = "\n\n$ cat Dockerfile\n" + logs_1
