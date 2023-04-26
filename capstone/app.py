@@ -76,7 +76,7 @@ def home():
         <div class="jumbotron hero"> 
         <div class="container">
             <div class="hero-image" >
-                <img src="/static/images/undraw-programming.svg" style="width: 100%;">
+                <img src="/static/images/undraw-programming-dark.svg" style="width: 100%;">
             </div>
 
             <div class="hero-body">

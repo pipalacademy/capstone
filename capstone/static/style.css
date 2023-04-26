@@ -1,10 +1,23 @@
 :root {
-    --gray-50: rgb(250, 250, 250);
-    --page-bg: var(--gray-50);
+
+    --color1: #c9c3e6;
+    --color2: #6762a6;
+
+    --color3: #79589F;
+
+    --color4: #4A4090;
+
+    --text-color: #212529;
+
+
+    --page-bg: rgb(245, 245, 245);
     --hero-bg: #DFDBE5;
 
-    --heading-color: #192734;
-    --text-color: #212529;
+    --hero-bg: var(--color4);
+    --hero-title: white;
+    --hero-text: var(--color1);
+
+    --heading-color: --var(color3);
 }
 
 body {
@@ -30,10 +43,11 @@ pre {
 
 .hero {
     background-color: var(--hero-bg);
+    color: var(--hero-text);
 }
 
 .hero h1.hero-title {
-    color: #226;
+    color: var(--hero-title);
     font-size: 1.8em;
     margin-bottom: 20px;
 }
