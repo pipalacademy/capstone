@@ -20,6 +20,7 @@ app.register_blueprint(api, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/auth")
 
 layout = Layout("Capstone")
+layout.navbar.add_link("Projects", url="/projects")
 layout.navbar.right_entries.add(
     AuthNavEntry(
         login_link="/auth/login", login_content=LoginButton("Login"),
@@ -63,7 +64,54 @@ def index():
     if user:
         return redirect("/dashboard")
     else:
-        return redirect("/projects")
+        return redirect("/home")
+
+
+@app.route("/home")
+def home():
+    projects = g.site.get_projects(is_published=True)
+
+    page = Page(title="", container=html.div())
+    page << """
+        <div class="jumbotron hero"> 
+        <div class="container">
+            <div class="hero-image" >
+                <img src="/static/images/undraw-programming.svg" style="width: 100%;">
+            </div>
+
+            <div class="hero-body">
+                <h1 class="hero-title">What would you like to build today?</h1>
+                <p class="lead">Level up your coding skills by building something challenging.</p>
+                
+                <p>The capstone platform makes it easier to work with complex projects by taking care of deploying the application and validating it on every git push.</p>
+                <p>Ready to start?</p>
+            </div>
+
+            <div style="clear: both;"></div> 
+        </div>
+        </div>
+
+        </div>    
+    """
+    div = html.div(class_="container section")
+    page << div
+
+    if projects:
+        div << html.h2("Featured Projects")
+
+        div << ProjectGrid(
+            class_="mt-3",
+            columns=[
+                ProjectTeaser(project, is_started=False) for project in projects
+            ],
+        )
+        div << Optional(
+            # empty state
+            html.em("No projects available."),
+            render_condition=lambda _: not projects,
+        )
+    return layout.render_page(page)
+
 
 
 @app.route("/projects")
@@ -79,7 +127,7 @@ def projects():
     )
     page << Optional(
         # empty state
-        html.em("No projects have been added."),
+        html.em("No projects available."),
         render_condition=lambda _: not projects,
     )
     return layout.render_page(page)
@@ -339,8 +387,9 @@ def ProjectTeaser(project, is_started):
             short_description=project.short_description,
             tags=project.tags,
             is_started=is_started,
+            class_="teaser-card"
         ),
-        href=f"/projects/{project.name}",
+        href=f"/projects/{project.name}"
     )
 
 

@@ -1,17 +1,77 @@
+:root {
+    --gray-50: rgb(250, 250, 250);
+    --page-bg: var(--gray-50);
+    --hero-bg: #DFDBE5;
+
+    --heading-color: #192734;
+    --text-color: #212529;
+}
+
 body {
-    background-color: #e9ecef;
+    /* background-color: #e9ecef; */
+    background-color: var(--page-bg);
+    font-family: system-ui, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+    color: var(--text-color);
 }
 
-.jumbotron {
-    background-color: #ECF2FF;
-}
-
-.jumbotron h1 {
-    color: #226;
+h1,
+h2,
+h3,
+h4 {
+    color: var(--heading-color);
 }
 
 pre {
     background: #eee;
     padding: 20px;
     border-radius: 10px;
+}
+
+.hero {
+    background-color: var(--hero-bg);
+}
+
+.hero h1.hero-title {
+    color: #226;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.teaser-card {
+    border-radius: 10px;
+    box-shadow: rgba(25, 39, 52, 0.06) 0px 4px 8px 0px, rgba(25, 39, 52, 0.12) 0px 0px 4px 0px;
+}
+
+.hero-image {
+    width: 340px;
+    float: right;
+    padding: 20px;
+}
+
+.hero-body {
+    margin-right: 340px;
+}
+
+.navbar-brand {
+    color: #333 !important;
+    font-weight: 500;
+}
+
+.navbar.bg-light {
+    background-color: white !important;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.section h2 {
+    margin-bottom: 40px;
+}
+
+.section {
+    padding-top: 60px;
 }
