@@ -5,6 +5,7 @@ This is the directory structure:
 ```
 /
 |-- repo/  # -> starter code for learners
+|---+-- Dockerfile  # -> for deploying learners' code
 |---+-- README.md
 |-- capstone.yml  # -> project information
 |-- checks.py  # -> custom checks. entrypoint to run checks locally, and validate the project directory
