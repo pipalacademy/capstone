@@ -35,3 +35,7 @@ app_url_hostname_template = os.getenv(
     "{username}-{project_name}.local.pipal.in"
 )
 app_url_scheme = os.getenv("CAPSTONE_APP_URL_SCHEME", "http")
+
+copyright_owner = os.getenv("CAPSTONE_COPYRIGHT_OWNER", "Pipal Academy LLP")
+github_repository = os.getenv(
+    "CAPSTONE_GITHUB_REPOSITORY", "https://github.com/pipalacademy/capstone")

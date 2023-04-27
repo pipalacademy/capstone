@@ -1,3 +1,4 @@
+from datetime import datetime
 from textwrap import dedent
 
 from flask import get_flashed_messages
@@ -8,7 +9,8 @@ from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardHeader, CardBody, CardText, CardTitle
 from kutty.components.navbar import NavEntry
 
-from capstone.utils import get_random_string
+from . import config
+from .utils import get_random_string
 
 
 class Page(_Page):
@@ -58,7 +60,33 @@ class Layout(_Layout):
 
 class Footer(BootstrapElement):
     TAG = "footer"
-    CLASS = "my-3 py-3"
+    CLASS = "footer pt-4 my-4 my-md-5 pt-md-5 border-top"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        footer_grid = Grid(col_class="col-12 col-md")
+        footer_grid.add_column(
+            html.div(
+                html.a(
+                    "About", href="/about",
+                    target="_blank", class_="mr-3 text-reset"
+                ),
+                html.a(
+                    "GitHub", href=config.github_repository,
+                    target="_blank", class_="text-reset"
+                ),
+                class_="d-flex justify-content-center justify-content-md-start",
+            )
+        )
+        footer_grid.add_column(
+            html.div(
+                f"© {datetime.utcnow().year} {config.copyright_owner}",
+                class_="d-flex justify-content-center justify-content-md-end text-muted"
+            )
+        )
+
+        self << html.div(footer_grid, class_="container")
 
 
 class Accordion(BootstrapElement):
