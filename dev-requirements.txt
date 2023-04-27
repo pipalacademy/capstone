@@ -2,6 +2,7 @@ pytest
 pytest-mypy
 mkdocs-material>=9.1.6
 honcho
+fakeredis>=2.11.1
 
 #
 # types required for mypy

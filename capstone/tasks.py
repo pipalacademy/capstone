@@ -19,7 +19,13 @@ from .utils.user_project import run_checks
 setup_logger()
 logger = logging.getLogger(__name__)
 
-queue = Queue(connection=Redis.from_url(config.redis_url))
+if config.capstone_test:
+    from fakeredis import FakeRedis
+    _redis_conn: Redis = FakeRedis()
+else:
+    _redis_conn = Redis.from_url(config.redis_url)
+
+queue = Queue(connection=_redis_conn)
 
 
 class CheckInputModel(BaseModel):
