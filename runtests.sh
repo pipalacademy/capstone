@@ -13,6 +13,7 @@ export DATABASE_URL=$TEST_DATABASE_URL
 
 python run.py --migrate
 
+export CAPSTONE_TEST=1
 export CAPSTONE_API_TOKEN=test123
 export PYTHONPATH=.
 pytest --mypy "$@"
