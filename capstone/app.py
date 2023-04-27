@@ -72,27 +72,25 @@ def home():
     projects = g.site.get_projects(is_published=True)
 
     page = Page(title="", container=html.div())
-    page << """
-        <div class="jumbotron hero"> 
-        <div class="container">
-            <div class="hero-image" >
-                <img src="/static/images/undraw-programming-dark.svg" style="width: 100%;">
+    page << html.HTML("""
+        <div class="jumbotron hero">
+          <div class="container">
+            <div class="hero-image">
+              <img src="/static/images/undraw-programming-dark.svg" style="width: 100%;">
             </div>
 
             <div class="hero-body">
-                <h1 class="hero-title">What would you like to build today?</h1>
-                <p class="lead">Level up your coding skills by building something challenging.</p>
-                
-                <p>The capstone platform makes it easier to work with complex projects by taking care of deploying the application and validating it on every git push.</p>
-                <p>Ready to start?</p>
+              <h1 class="hero-title">What would you like to build today?</h1>
+              <p class="lead">Level up your coding skills by building something challenging.</p>
+
+              <p>The capstone platform makes it easier to work with complex projects by taking care of deploying the application and validating it on every git push.</p>
+              <p>Ready to start?</p>
             </div>
 
-            <div style="clear: both;"></div> 
+            <div style="clear: both;"></div>
+          </div>
         </div>
-        </div>
-
-        </div>    
-    """
+    """)
     div = html.div(class_="container section")
     page << div
 
