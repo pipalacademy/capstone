@@ -22,6 +22,7 @@ google_client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID") or DEFAULT_GOOGLE_OAUTH_C
 google_client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET") or DEFAULT_GOOGLE_OAUTH_CLIENT_SECRET
 
 capstone_dev = os.getenv("CAPSTONE_DEV", "0") == "1"
+capstone_test = os.getenv("CAPSTONE_TEST", "0") == "1"
 
 runner_docker_image = os.getenv("CAPSTONE_RUNNER_DOCKER_IMAGE", "capstone-runner")
 runner_capstone_token = os.getenv("CAPSTONE_RUNNER_CAPSTONE_TOKEN", "test123")
