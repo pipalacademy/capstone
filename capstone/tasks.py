@@ -21,11 +21,9 @@ logger = logging.getLogger(__name__)
 
 if config.capstone_test:
     from fakeredis import FakeRedis
-    _redis_conn: Redis = FakeRedis()
+    queue = Queue(is_async=False, connection=FakeRedis())
 else:
-    _redis_conn = Redis.from_url(config.redis_url)
-
-queue = Queue(connection=_redis_conn)
+    queue = Queue(connection=Redis.from_url(config.redis_url))
 
 
 class CheckInputModel(BaseModel):
