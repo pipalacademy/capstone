@@ -20,7 +20,7 @@ python run.py --migrate
 if [ -z "$TEST_NOMAD_NAMESPACE" ]
 then
   # stop all existing jobs in namespace, delete namespace, then recreate it
-  nomad job status -no-color -namespace=capstone-test | awk 'NR>1 {print $1}' | xargs nomad job stop -namespace=capstone-test -purge
+  nomad job status -no-color -namespace=capstone-test | awk 'NR>1 {print $1}' | xargs -r nomad job stop -namespace=capstone-test -purge
   nomad namespace delete capstone-test || true
   nomad namespace apply -description "Instances for testing" capstone-test
   export TEST_NOMAD_NAMESPACE=capstone-test
