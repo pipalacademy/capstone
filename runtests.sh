@@ -37,5 +37,7 @@ export NOMAD_VAR_nginx_port=18080
 
 export CAPSTONE_TEST=1
 export CAPSTONE_API_TOKEN=test123
+export CAPSTONE_DOCKER_REGISTRY=localhost:$NOMAD_VAR_registry_port
+export CAPSTONE_GITTO_BASE_URL=http://localhost:$NOMAD_VAR_gitto_port
 export PYTHONPATH=.
 pytest --mypy "$@"
