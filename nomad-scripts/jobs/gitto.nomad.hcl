@@ -1,3 +1,8 @@
+variable "gitto_port" {
+    type = number
+    default = 7878
+}
+
 variable "gitto_api_token" {
   type = string
   default = "gitto"
@@ -16,7 +21,7 @@ job "gitto" {
 
     network {
       port "web" {
-        static  = 7878
+        static  = var.gitto_port
         to      = 7878
       }
     }

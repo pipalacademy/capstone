@@ -1,3 +1,8 @@
+variable "registry_port" {
+    type    = number
+    default = 7979
+}
+
 job "docker-registry" {
   type = "service"
 
@@ -6,7 +11,7 @@ job "docker-registry" {
 
     network {
       port "http" {
-        static = 7979
+        static = var.registry_port
         to     = 5000
       }
     }

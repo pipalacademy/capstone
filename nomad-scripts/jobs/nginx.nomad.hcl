@@ -1,3 +1,8 @@
+variable "nginx_port" {
+  type    = number
+  default = 8080
+}
+
 job "nginx" {
 
   group "nginx" {
@@ -5,7 +10,7 @@ job "nginx" {
 
     network {
       port "http" {
-        static = 8080
+        static = var.nginx_port
       }
     }
 
@@ -36,7 +41,7 @@ job "nginx" {
       template {
         data = <<EOF
 server {
-    listen 8080 default_server;
+    listen {{ env "NOMAD_PORT_http" }} default_server;
 
     client_max_body_size 0;
 
@@ -64,7 +69,7 @@ upstream upstream-{{ .Name | toLower }} {
 }
 
 server {
-   listen 8080;
+   listen {{ env "NOMAD_PORT_http" }};
 
    server_name {{ $host }};
    client_max_body_size 0;   
