@@ -1,3 +1,5 @@
+-e .  # to install capstone-server CLI
+
 pytest
 pytest-mypy
 mkdocs-material>=9.1.6
