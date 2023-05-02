@@ -58,10 +58,13 @@ job "gitto" {
       env {
         GITTO_API_TOKEN = var.gitto_api_token
         GITTO_ROOT = "/git"
+        GITTO_PORT = var.gitto_port
       }
 
       config {
         image = "pipalacademy/gitto"
+        network_mode = "host"
+
         ports = ["web"]
       }
     }

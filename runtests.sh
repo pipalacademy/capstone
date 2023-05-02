@@ -27,7 +27,7 @@ then
 fi
 
 export NOMAD_NAMESPACE=$TEST_NOMAD_NAMESPACE
-export NOMAD_VAR_gitto_port=17878
+export NOMAD_VAR_gitto_port=7878
 export NOMAD_VAR_registry_port=17979
 export NOMAD_VAR_nginx_port=18080
 
