@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - git-cicd
 
 env:
   TEST_DATABASE_URL: "postgres://postgres:postgres@localhost/postgres"
@@ -33,6 +34,10 @@ jobs:
       run: pip install -r dev-requirements.txt -r requirements.txt
     - name: Install apt dependencies
       run: sudo apt-get install -y zip unzip
+    - name: Setup git
+      run: |
+        git config --global user.name "capstone-pipal"
+        git config --global user.email "capstone@pipal.in.test"
     - name: Install Nomad
       run: |
         wget -O /tmp/nomad.zip https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip
