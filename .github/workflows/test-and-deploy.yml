@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - git-cicd
+      - '**-cicd'
 
 env:
   TEST_DATABASE_URL: "postgres://postgres:postgres@localhost/postgres"
