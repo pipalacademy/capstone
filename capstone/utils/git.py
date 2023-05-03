@@ -134,7 +134,7 @@ def build_cmd(
     return ["git", *git_options, subcommand, *cmd_options, *args]
 
 
-def build_options(options: dict[str, str|bool]) -> list[list[str]]:
+def build_options(options: dict) -> list[list[str]]:
     def _build_option(key, value):
         match key.replace("_", "-"), value:
             case _, False: return []  # is this case needed?
