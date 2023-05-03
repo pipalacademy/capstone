@@ -6,6 +6,7 @@ import re
 import subprocess
 import yaml
 
+from capstone.utils import git
 from .conftest import create_site, create_project
 
 
@@ -58,7 +59,7 @@ def test_cli_command_initial_metadata_is_consistent(capstone_app, tmp_path):
 
     project.refresh()
 
-    subprocess.check_call(["git", "clone", project.git_url, tmp_path])
+    repo = git.Repo.clone_from(project.git_url, tmp_path)
     metadata = yaml.safe_load((tmp_path / "capstone.yml").read_text())
     assert metadata["title"] == project.title
     assert metadata["short_description"] == project.short_description
@@ -90,16 +91,16 @@ def test_metadata_is_updated_with_capstone_yml(capstone_app, tmp_path):
     site = create_site(name="localhost", domain="localhost")
     project = create_project(site, name="test-project", title="Test Project")
 
-    subprocess.check_call(["git", "clone", project.git_url, tmp_path])
+    repo = git.Repo.clone_from(project.git_url, tmp_path)
 
     metadata_file = tmp_path / "capstone.yml"
     metadata = yaml.safe_load(metadata_file.read_text())
     metadata.update(title="Updated title")
     metadata_file.write_text(yaml.safe_dump(metadata))
 
-    subprocess.check_call(["git", "add", "capstone.yml"], cwd=tmp_path)
-    subprocess.check_call(["git", "commit", "-m", "update title"], cwd=tmp_path)
-    subprocess.check_call(["git", "push"], cwd=tmp_path)
+    repo.add(metadata_file.name)
+    repo.commit(message="update title")
+    repo.push()
 
     project.refresh()
 
