@@ -72,7 +72,7 @@ def init_project(project: db.Project) -> db.Project:
         # into this directory when tmp is passed as output_dir
         Path(tmp) / project.name
         git_dir = str(Path(tmp) / project.name)
-        git.clone(project.git_url, git_dir, workdir=git_dir)
+        git.clone(project.git_url, git_dir)
         cookiecutter(
             template=project_template_dir,
             no_input=True,

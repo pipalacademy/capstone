@@ -61,7 +61,7 @@ def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
         project = site.get_project_by_id_or_fail(project_id)
 
         with tempfile.TemporaryDirectory() as tmp:
-            git.clone(project.git_url, tmp, workdir=tmp)
+            git.clone(project.git_url, tmp)
 
             if not Path(f"{tmp}/capstone.yml").is_file():
                 raise Exception("capstone.yml not found in the root of the repository")
