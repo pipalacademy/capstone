@@ -4,7 +4,6 @@ Viewing, creating, updating projects should be tested here.
 """
 import re
 import subprocess
-import time
 import yaml
 
 from .conftest import create_site, create_project
@@ -57,8 +56,6 @@ def test_cli_command_initial_metadata_is_consistent(capstone_app, tmp_path):
     site = create_site(name="localhost", domain="localhost")
     project = create_project(site, name="test-project", title="Test Project")
 
-    # wait for initialisation to happen from webhook call
-    time.sleep(0.1)
     project.refresh()
 
     subprocess.check_call(["git", "clone", project.git_url, tmp_path])
@@ -104,8 +101,6 @@ def test_metadata_is_updated_with_capstone_yml(capstone_app, tmp_path):
     subprocess.check_call(["git", "commit", "-m", "update title"], cwd=tmp_path)
     subprocess.check_call(["git", "push"], cwd=tmp_path)
 
-    # wait for webhook call and updates to happen
-    time.sleep(0.1)
     project.refresh()
 
     assert project.title == "Updated title"
