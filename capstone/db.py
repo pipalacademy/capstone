@@ -443,7 +443,12 @@ class Task(Document):
     def delete(self) -> int:
         with db.transaction():
             self.delete_checks()
+            for task_status in self.get_user_task_statuses():
+                task_status.delete()
             return super().delete()
+
+    def get_user_task_statuses(self) -> list[UserTaskStatus]:
+        return UserTaskStatus.find_all(task_id=self.id)
 
     def delete_checks(self) -> int:
         count = 0
@@ -505,8 +510,17 @@ class TaskCheck(Document):
     title: str
     args: dict[str, Any]
 
+    def delete(self):
+        with db.transaction():
+            for user_check_status in self.get_user_check_statuses():
+                user_check_status.delete()
+            return super().delete()
+
     def get_task(self) -> Task:
         return Task.find_or_fail(id=self.task_id)
+
+    def get_user_check_statuses(self) -> list[UserCheckStatus]:
+        return UserCheckStatus.find_all(task_check_id=self.id)
 
 
 @dataclass(kw_only=True)
