@@ -463,23 +463,29 @@ class Task(Document):
         required_fields = ["name", "title", "args"]
 
         with db.transaction():
-            # remove previous checks, then add new checks
-            for old_check in self.get_checks():
-                old_check.delete()
+            new_checks = {HashableCheck(name=t["name"], title=t["title"], args=t["args"]): t for t in check_inputs}
+            old_checks = {HashableCheck(name=t.name, title=t.title, args=t.args): t for t in self.get_checks()}
 
-            checks = []
-            for (i, check_dict) in enumerate(check_inputs, start=0):
-                for field_name in required_fields:
-                    assert field_name in check_dict
-                check = TaskCheck(
-                    name=check_dict["name"],
-                    title=check_dict["title"],
-                    args=check_dict["args"],
-                    task_id=self.id,
-                    position=i).save()
-                checks.append(check)
+            to_delete = [t for t in old_checks if t not in new_checks]
+            to_create = [t for t in new_checks if t not in old_checks]
 
-        return checks
+            for check_hash in to_delete:
+                old_checks[check_hash].delete()
+
+            for i, check_hash in enumerate(new_checks):
+                check_dict = new_checks[check_hash]
+                if check_hash in to_create:
+                    check = TaskCheck(
+                        name=check_dict["name"],
+                        title=check_dict["title"],
+                        args=check_dict["args"],
+                        task_id=self.id,
+                        position=i).save()
+                else:
+                    check = old_checks[check_hash]
+                    check.update(title=check_dict["title"], position=i).save()
+
+        return self.get_checks()
 
     def render_description(self, vars: dict[str, Any] | None = None) -> str:
         # TODO: maybe use %(...)s instead of formatting? so it doesn't break when keys are not present
@@ -815,3 +821,16 @@ def remove_none_values(d: dict) -> dict:
     return {
         k: v for k, v in d.items() if v is not None
     }
+
+
+class HashableCheck:
+    def __init__(self, name, title, args):
+        self.name = name
+        self.title = title
+        self.args = args
+
+    def __hash__(self):
+        return hash(f"{self.name}/{self.args}")
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
