@@ -22,7 +22,6 @@ job "gitto" {
     network {
       port "web" {
         static  = var.gitto_port
-        to      = 7878
       }
     }
 
