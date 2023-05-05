@@ -49,6 +49,8 @@ jobs:
     - name: Wait for Nomad
       run: |
         until nomad status; do sleep 2; done
+    - name: Build capstone runner image
+      run: ./runner/build-and-replace-docker-image.sh
     - name: Run tests
       run: ./runtests.sh
 
