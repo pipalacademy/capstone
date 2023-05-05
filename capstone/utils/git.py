@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 class Repo:
@@ -10,7 +11,7 @@ class Repo:
         return cls(path)
 
     def __init__(self, path: os.PathLike):
-        self.path = path
+        self.path = Path(path)
 
     def init(self, *args, **kwargs):
         return init(*args, workdir=self.path, **kwargs)
