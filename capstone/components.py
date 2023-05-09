@@ -109,7 +109,7 @@ class Accordion(BootstrapElement):
 
 class Breadcrumb(BootstrapElement):
     TAG = "nav"
-    CLASS = "breadcrumb"
+    CLASS = "breadcrumb p-0"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -2,12 +2,13 @@ from functools import wraps
 
 from flask import Flask, abort, flash, g, redirect, request, url_for
 from kutty import html, Markdown, Optional
+from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 
 from .api import api
 from .auth import auth_bp, get_authenticated_user
 from .db import Site
 from .components import (
-    AbsoluteCenter, Accordion, AuthNavEntry, Breadcrumb, Form, HiddenInput,
+    AbsoluteCenter, Accordion, AuthNavEntry, Breadcrumb, Card, Form, HiddenInput,
     Layout, LinkWithoutDecoration, LoginButton, LoginCard, Page,
     ProjectHero, ProjectCard, ProjectGrid, ProgressBar, TaskCard, LinkButton,
     SubmitButton
@@ -296,6 +297,85 @@ def user_project_history(name, user):
                 body=html.pre(update["log"]) if update["log"] else html.em("No logs"),
             )
 
+    return layout.render_page(page)
+
+
+@app.route("/courses")
+def courses():
+    page = Page(title="Courses")
+    for course in g.site.get_courses():
+        page << LinkWithoutDecoration(
+            Card(
+                title=course.title,
+                text=html.div(course.description, class_="text-truncate"),
+            ),
+            href=course.get_url(),
+        )
+    return layout.render_page(page)
+
+
+@app.route("/courses/<name>")
+def course(name):
+    course = g.site.get_course(name)
+    if not course:
+        abort(404)
+
+    page = Page("", container=html.div())
+    page << Hero(
+        title=course.title,
+    )
+
+    container = html.div(class_="container")
+    page << container
+
+    container << html.tag("ol").add(
+        *[
+            html.li(
+                html.div(
+                    html.strong(module.title),
+                    html.tag("ol", type_="a").add(
+                        *[
+                            html.li(html.a(lesson.title, href=lesson.get_url()))
+                            for lesson in module.get_lessons()
+                        ]
+                    )
+                )
+            )
+            for module in course.get_modules()
+        ]
+    )
+    return layout.render_page(page)
+
+
+@app.route("/courses/<name>/lessons/<module_name>/<lesson_name>")
+def lesson(name, module_name, lesson_name):
+    course = g.site.get_course(name)
+    if not course:
+        abort(404)
+    module = course.get_module(module_name)
+    if not module:
+        abort(404)
+    lesson = module.get_lesson(lesson_name)
+    if not lesson:
+        abort(404)
+
+    page = Page("", container=html.div())
+    page << Hero(
+        HeroContainer(
+            HeroSubtitle(
+                html.a(course.title, href=course.get_url()),
+                " / ",
+                html.a(module.title),
+            ),
+            HeroSeparator(),
+            HeroTitle(lesson.title)
+        )
+    )
+
+    container = html.div(class_="container")
+    container << html.div(html.HTML(lesson.get_html()))
+
+    page << container
     return layout.render_page(page)
 
 
