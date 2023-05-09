@@ -22,6 +22,7 @@ app.register_blueprint(auth_bp, url_prefix="/auth")
 
 layout = Layout("Capstone")
 layout.navbar.add_link("Projects", url="/projects")
+layout.navbar.add_link("Courses", url="/courses")
 layout.navbar.right_entries.add(
     AuthNavEntry(
         login_link="/auth/login", login_content=LoginButton("Login"),
