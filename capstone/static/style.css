@@ -9,6 +9,8 @@
 
     --text-color: #212529;
 
+    --color-neutral-muted: rgba(175, 184, 193, 0.2);
+
 
     --page-bg: rgb(245, 245, 245);
     --hero-bg: #DFDBE5;
@@ -88,4 +90,21 @@ pre {
 
 .section {
     padding-top: 60px;
+}
+
+code {
+    color: inherit;
+    padding: .2em .4em;
+    border-radius: 6px;
+    background-color: var(--color-neutral-muted);
+    font-size: 0.9em;
+}
+
+pre code {
+    padding: none;
+    margin: none;
+    font-size: inherit;
+    color: inherit;
+    border-radius: none;
+    background-color: inherit;
 }
