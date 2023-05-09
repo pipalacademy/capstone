@@ -12,6 +12,7 @@ from psycopg2.extras import Json
 
 from . import config
 from .utils import files
+from .utils import course as course_utils
 
 
 db = database(config.db_uri)
@@ -224,6 +225,30 @@ class Site(Document):
 
     def get_changelog_or_fail(self, id: int) -> Changelog:
         return Changelog.find_or_fail(site_id=self.id, id=id)
+
+    def get_courses(
+        self,
+        id: int | None = None,
+        name: str | None = None,
+        title: str | None = None,
+    ) -> list[Course]:
+        filters = remove_none_values(
+            {
+                "id": id,
+                "name": name,
+                "title": title,
+            }
+        )
+        return Course.find_all(site_id=self.id, **filters)
+
+    def get_course(self, name: str) -> Course | None:
+        return Course.find(site_id=self.id, name=name)
+
+    def get_course_or_fail(self, name: str) -> Course:
+        course = self.get_course(name=name)
+        if course is None:
+            raise Exception(f"Course not found: '{name}'")
+        return course
 
     def get_url(self) -> str:
         if self.domain == "localhost":
@@ -796,6 +821,8 @@ class Changelog(Document):
 @dataclass(kw_only=True)
 class Course(Document):
     _tablename = "course"
+    _teaser_fields = ["name", "title", "description"]
+    _detail_fields = ["id", "name", "title", "description", "created", "last_modified"]  # + ["modules"]
     _db_fields = ["id", "site_id", "name", "title", "description", "created", "last_modified"]
 
     site_id: int
@@ -812,21 +839,82 @@ class Course(Document):
                 module.delete()
             return super().delete()
 
+    def get_detail(self):
+        d = super().get_detail()
+        d["modules"] = [m.get_detail() for m in self.get_modules()]
+        return d
+
+    def get_media_dir(self) -> Path:
+        return course_utils.get_media_dir(self)
+
+    def get_lessons_dir(self) -> Path:
+        return course_utils.get_lessons_dir(self)
+
+    def get_url(self) -> str:
+        return f"/courses/{self.name}"
+
     def get_site(self) -> Site:
         return Site.find_or_fail(id=self.site_id)
 
+    def get_module(self, name: str) -> Module | None:
+        return Module.find(course_id=self.id, name=name)
+
     def get_modules(self) -> list[Module]:
         return Module.find_all(course_id=self.id)
+
+    def update_modules(self, module_inputs: list[dict[str, Any]]) -> list[Module]:
+        assert self.id is not None
+
+        required_fields = ["name", "title", "lessons"]
+        for module in module_inputs:
+            assert all(k in module for k in required_fields), \
+                f"module {module} is missing required fields"
+
+        with db.transaction():
+            new_modules = {t["name"]: t for t in module_inputs}
+            old_modules = {t.name: t for t in self.get_modules()}
+
+            to_delete = [t for t in old_modules if t not in new_modules]
+            to_create = [t for t in new_modules if t not in old_modules]
+
+            for name in to_delete:
+                old_modules[name].delete()
+
+            for i, name in enumerate(new_modules):
+                if name in to_create:
+                    self.create_module(
+                        position=i,
+                        name=name,
+                        title=new_modules[name]["title"],
+                        lessons=new_modules[name]["lessons"],
+                    )
+                else:
+                    old_modules[name].update(
+                        position=i,
+                        title=new_modules[name]["title"],
+                    ).save().update_lessons(new_modules[name]["lessons"])
+
+        return self.get_modules()
+
+    def create_module(
+        self, position: int, name: str, title: str, lessons: list[dict[str, Any]],
+    ) -> Module:
+        assert self.id is not None, "course must be saved before creating modules"
+        with db.transaction():
+            module = Module(course_id=self.id, name=name, title=title, position=position)
+            module.save().update_lessons(lessons)
+        return module
 
 
 @dataclass(kw_only=True)
 class Module(Document):
     _tablename = "module"
-    _db_fields = ["id", "course_id", "name", "title", "created", "last_modified"]
+    _db_fields = ["id", "course_id", "name", "title", "position", "created", "last_modified"]
 
     course_id: int
     name: str
     title: str
+    position: int
 
     created: datetime | None = None
     last_modified: datetime | None = None
@@ -837,28 +925,88 @@ class Module(Document):
                 lesson.delete()
             return super().delete()
 
+    def get_detail(self):
+        d = super().get_detail()
+        d["lessons"] = [l.get_detail() for l in self.get_lessons()]
+        return d
+
     def get_course(self) -> Course:
         return Course.find_or_fail(id=self.course_id)
 
+    def get_lesson(self, name: str) -> Lesson:
+        return Lesson.find(module_id=self.id, name=name)
+
+    def create_lesson(self, position: int, name: str, title: str, path: str) -> Lesson:
+        return Lesson(module_id=self.id, position=position, name=name, title=title, path=path).save()
+
     def get_lessons(self) -> Lesson:
         return Lesson.find_all(module_id=self.id)
+
+    def update_lessons(self, lesson_inputs: list[dict[str, Any]]) -> list[Lesson]:
+        assert self.id is not None
+
+        required_fields = ["name", "title", "path"]
+        for lesson in lesson_inputs:
+            assert all(k in lesson for k in required_fields), \
+                f"lesson {lesson} is missing required fields"
+
+        with db.transaction():
+            new_lessons = {t["name"]: t for t in lesson_inputs}
+            old_lessons = {t.name: t for t in self.get_lessons()}
+
+            to_delete = [t for t in old_lessons if t not in new_lessons]
+            to_create = [t for t in new_lessons if t not in old_lessons]
+
+            for name in to_delete:
+                old_lessons[name].delete()
+
+            for i, name in enumerate(new_lessons):
+                if name in to_create:
+                    self.create_lesson(
+                        position=i,
+                        name=name,
+                        title=new_lessons[name]["title"],
+                        path=new_lessons[name]["path"],
+                    )
+                else:
+                    old_lessons[name].update(
+                        position=i,
+                        title=new_lessons[name]["title"],
+                        path=new_lessons[name]["path"],
+                    ).save()
+
+        return self.get_lessons()
 
 
 @dataclass(kw_only=True)
 class Lesson(Document):
     _tablename = "lesson"
-    _db_fields = ["id", "module_id", "name", "title", "path", "created", "last_modified"]
+    _db_fields = [
+        "id", "module_id", "name", "title", "path", "position",
+        "created", "last_modified"
+    ]
 
     module_id: int
     name: str
     title: str
     path: str
+    position: int
 
     created: datetime | None = None
     last_modified: datetime | None = None
 
     def get_module(self) -> Module:
         return Module.find_or_fail(id=self.module_id)
+
+    def get_course(self) -> Course:
+        return self.get_module().get_course()
+
+    def get_url(self) -> str:
+        course, module = self.get_course(), self.get_module()
+        return f"/courses/{course.name}/lessons/{module.name}/{self.name}"
+
+    def get_html(self) -> str:
+        return (self.get_course().get_lessons_dir() / self.path).read_text()
 
 
 @dataclass(kw_only=True)
