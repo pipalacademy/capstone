@@ -213,13 +213,19 @@ def project(name):
             hero.body.add(LinkButton("Start Project",
                                      class_="btn-lg", href=url_for("auth.login")))
         elif not user_project:
-            hero.body.add(Form(HiddenInput(name="action", value="start"),
-                               SubmitButton("Start Project", class_="btn-lg"),
-                               method="POST"))
+            hero.body << Form(method="POST").add(
+                HiddenInput(name="action", value="start"),
+                SubmitButton("Start Project", class_="btn-lg"),
+            )
         else:
-            hero.body.add(Form(HiddenInput(name="action", value="reset"),
-                               SubmitButton("Reset Project", class_="btn-lg btn-danger"),
-                               method="POST", onclick="return confirm('Are you sure?');"))
+            hero.body << Form(method="POST").add(
+                HiddenInput(name="action", value="reset"),
+                SubmitButton(
+                    "Reset Project",
+                    class_="btn-lg btn-danger",
+                    onclick="return confirm('Are you sure?');"
+                )
+            )
 
         main = html.div(class_="container")
         page << hero
