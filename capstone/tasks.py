@@ -175,6 +175,9 @@ def run_checker(site, user_project):
         username=user.username,
     )
 
+    if not result["ok"]:
+        raise Exception(f"result is not OK: {result['log']}")
+
     task_results = result["tasks"]
 
     with db.db.transaction():

@@ -21,14 +21,16 @@ mock_projects = [
         "title": "Test Project",
         "short_description": "test short description",
         "description": "test description",
-        "tags": ["test-tag-1", "test-tag-2"]
+        "tags": ["test-tag-1", "test-tag-2"],
+        "project_type": "web"
     },
     {
         "name": "test-project-2",
         "title": "Test Project 2",
         "short_description": "test short description 2",
         "description": "test description 2",
-        "tags": ["test-2-tag-1", "test-2-tag-2"]
+        "tags": ["test-2-tag-1", "test-2-tag-2"],
+        "project_type": "cli"
     },
 ]
 

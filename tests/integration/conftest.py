@@ -25,6 +25,7 @@ def safe_producer_queue(target, *args, **kwargs):
 def capstone_app(port=5000):
     def producer(q):
         app.run(port=port)
+        raise Exception("app.run() exited")
 
     with safe_producer_queue(producer):
         yield app
