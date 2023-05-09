@@ -933,13 +933,14 @@ class Module(Document):
     def get_course(self) -> Course:
         return Course.find_or_fail(id=self.course_id)
 
-    def get_lesson(self, name: str) -> Lesson:
+    def get_lesson(self, name: str) -> Lesson | None:
         return Lesson.find(module_id=self.id, name=name)
 
     def create_lesson(self, position: int, name: str, title: str, path: str) -> Lesson:
+        assert self.id is not None
         return Lesson(module_id=self.id, position=position, name=name, title=title, path=path).save()
 
-    def get_lessons(self) -> Lesson:
+    def get_lessons(self) -> list[Lesson]:
         return Lesson.find_all(module_id=self.id)
 
     def update_lessons(self, lesson_inputs: list[dict[str, Any]]) -> list[Lesson]:

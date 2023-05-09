@@ -47,6 +47,8 @@ def validate_course_package(path: Path):
 def load_from_package(site: db.Site, path: os.PathLike, overwrite: bool = True) -> db.Course:
     """Loads course from package directory.
     """
+    assert site.id is not None
+
     path = Path(os.fspath(path))
     validate_course_package(path)
 
