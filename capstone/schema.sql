@@ -35,6 +35,7 @@ create table user_account (
 create unique index user_account_site_username_idx on user_account(site_id, lower(username));
 create unique index user_account_site_email_idx on user_account(site_id, lower(email));
 
+create type project_type as enum ('web', 'cli');
 create table project (
     id serial primary key,
     site_id integer not null references site,
@@ -43,6 +44,7 @@ create table project (
     short_description text not null,
     description text not null,
     tags text[] not null,
+    project_type project_type not null default 'web',
 
     -- or status draft/published/archived
     is_published boolean default 'f',

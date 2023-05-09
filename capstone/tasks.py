@@ -44,6 +44,7 @@ class ProjectUpsertModel(BaseModel):
     short_description: str
     description: str
     tags: list[str]
+    project_type: str
     tasks: list[TaskInputModel]
 
 
@@ -120,15 +121,18 @@ def update_user_project(
         user_project = site.get_user_project_by_id_or_fail(id=user_project_id)
 
         # run deployment
-        changelog.details["stage"] = "deployment"
-        result = run_deployer(site=site, user_project=user_project)
-        logger.info(f"Deployment result:\n{result}")
-        if not result["ok"]:
-            logger.error("Deployment failed with result not ok")
-            changelog.details["status"] = "failed"
-            changelog.details["log"] = result["log"]
-            changelog.save()
-            return
+        if user_project.get_project().project_type == "web":
+            changelog.details["stage"] = "deployment"
+            result = run_deployer(site=site, user_project=user_project)
+            logger.info(f"Deployment result:\n{result}")
+            if not result["ok"]:
+                logger.error("Deployment failed with result not ok")
+                changelog.details["status"] = "failed"
+                changelog.details["log"] = result["log"]
+                changelog.save()
+                return
+        else:
+            logger.info("Skipping deployment because project_type is not 'web'")
 
         # run checks
         changelog.details["stage"] = "checks"

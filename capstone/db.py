@@ -288,17 +288,17 @@ class Site(Document):
 class Project(Document):
     _tablename: ClassVar[str] = "project"
     _teaser_fields = [
-        "name", "title", "url", "short_description", "tags", "is_published"
+        "name", "title", "url", "short_description", "tags", "is_published", "project_type",
     ]
     _detail_fields = [
         "name", "title", "url", "short_description", "description",
-        "tags", "is_published", "created", "last_modified",
+        "tags", "is_published", "project_type", "created", "last_modified",
         # "tasks"
         "repo_id", "git_url"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
-        "tags", "is_published", "created", "last_modified",
+        "tags", "is_published", "project_type", "created", "last_modified",
         # private:
         "repo_id", "git_url"
     ]
@@ -309,6 +309,7 @@ class Project(Document):
     short_description: str
     description: str
     tags: list[str]
+    project_type: str  # can be 'web', 'cli'
 
     is_published: bool | None = None
 

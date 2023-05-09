@@ -26,11 +26,14 @@ def create_project(site: db.Site, name: str, title: str) -> db.Project:
     repo_id = gitto.create_repo(name=repo_name)
     repo_info = gitto.get_repo(id=repo_id)
 
+    # the values here except site_id and name don't matter because they will
+    # be overwritten after init_project is called and it makes a git push.
     project = db.Project(
         site_id=site.id, name=name, title=title,
         short_description="placeholder", description="placeholder",
         is_published=False, tags=[],
         git_url=repo_info["git_url"], repo_id=repo_id,
+        project_type="web",
     )
 
     with db.db.transaction():

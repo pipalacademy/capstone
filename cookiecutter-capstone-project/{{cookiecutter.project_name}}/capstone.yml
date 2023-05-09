@@ -18,4 +18,4 @@ tasks:
       **Note:** You will have to start the project first to see your unique Git URL. Otherwise,
       you will only see `git_url` within curly braces.
     checks: []
-is_published: false  # change this when you want to publish
+project_type: web  # builds a docker image for web. other options are: cli
