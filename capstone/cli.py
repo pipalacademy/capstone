@@ -4,6 +4,7 @@ import yaml
 
 from capstone import db, deployment
 from capstone.utils.project_maker import create_project
+from capstone.utils.course import load_from_package as load_course_from_package
 
 
 @click.group()
@@ -58,6 +59,18 @@ def get_users(site_name):
     users = site.get_users()
 
     return users
+
+def get_course(site_name, course_name):
+    site = db.Site.find_or_fail(name=site_name)
+    course = site.get_course_or_fail(name=course_name)
+
+    return course
+
+def get_courses(site_name):
+    site = db.Site.find_or_fail(name=site_name)
+    courses = site.get_courses()
+
+    return courses
 
 def get_user_projects(site_name, username=None, project_name=None):
     site = db.Site.find_or_fail(name=site_name)
@@ -363,6 +376,57 @@ def deploys_new(site, username, project_name):
 
     deployment.new_deployment(user_project=user_project)
     print("Deployment created")
+
+
+## COURSES
+
+@cli.group()
+def courses():
+    """manage courses"""
+    pass
+
+
+@courses.command("load")
+@site_option()
+@click.argument("path", type=click.Path(exists=True))
+def courses_load(site, path):
+    """Create or update a course in a site."""
+    print("Load course", site, path)
+    db_site = db.Site.find_or_fail(name=site)
+    course = load_course_from_package(site=db_site, path=path)
+    print(f"Course loaded: {course.name}")
+
+
+@courses.command("list")
+@site_option()
+def courses_list(site):
+    """List courses in a site."""
+    print("List courses", site)
+    courses = get_courses(site)
+    if courses:
+        print(prettify([c.get_teaser() for c in courses]))
+    else:
+        print("No matching rows found")
+
+
+@courses.command("show")
+@site_option()
+@click.argument("course_name")
+def courses_show(site, course_name):
+    """Show a course in a site."""
+    print("Show course", site, course_name)
+    course = get_course(site, course_name)
+    print(prettify(course.get_dict()))
+
+
+@courses.command("delete")
+@site_option()
+@click.argument("course_name")
+def courses_delete(site, course_name):
+    """Delete a course in a site."""
+    print("Delete course", site, course_name)
+    get_course(site, course_name).delete()
+    print(f"Deleted course {course_name}")
 
 
 if __name__ == "__main__":
