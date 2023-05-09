@@ -793,6 +793,92 @@ class Changelog(Document):
             return None
 
 
+@dataclass(kw_only=True)
+class Course(Document):
+    _tablename = "course"
+    _db_fields = ["id", "site_id", "name", "title", "description", "created", "last_modified"]
+
+    site_id: int
+    name: str
+    title: str
+    description: str | None = None
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def delete(self):
+        with db.transaction():
+            for module in self.get_modules():
+                module.delete()
+            return super().delete()
+
+    def get_site(self) -> Site:
+        return Site.find_or_fail(id=self.site_id)
+
+    def get_modules(self) -> list[Module]:
+        return Module.find_all(course_id=self.id)
+
+
+@dataclass(kw_only=True)
+class Module(Document):
+    _tablename = "module"
+    _db_fields = ["id", "course_id", "name", "title", "created", "last_modified"]
+
+    course_id: int
+    name: str
+    title: str
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def delete(self):
+        with db.transaction():
+            for lesson in self.get_lessons():
+                lesson.delete()
+            return super().delete()
+
+    def get_course(self) -> Course:
+        return Course.find_or_fail(id=self.course_id)
+
+    def get_lessons(self) -> Lesson:
+        return Lesson.find_all(module_id=self.id)
+
+
+@dataclass(kw_only=True)
+class Lesson(Document):
+    _tablename = "lesson"
+    _db_fields = ["id", "module_id", "name", "title", "path", "created", "last_modified"]
+
+    module_id: int
+    name: str
+    title: str
+    path: str
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_module(self) -> Module:
+        return Module.find_or_fail(id=self.module_id)
+
+
+@dataclass(kw_only=True)
+class UserCourse(Document):
+    _tablename = "user_course"
+    _db_fields = ["id", "user_id", "course_id", "created", "last_modified"]
+
+    user_id: int
+    course_id: int
+
+    created: datetime | None = None
+    last_modified: datetime | None = None
+
+    def get_user(self) -> User:
+        return User.find_or_fail(id=self.user_id)
+
+    def get_course(self) -> Course:
+        return Course.find_or_fail(id=self.course_id)
+
+
 # db queries
 
 def find_all(table_name: str, **filters: Any) -> list[dict]:

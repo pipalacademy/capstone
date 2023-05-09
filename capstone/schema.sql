@@ -130,5 +130,60 @@ create table changelog (
     CHECK (json_typeof(details) = 'object')
 );
 
+create table course (
+    id serial primary key,
+    site_id integer not null references site,
+    name text not null,
+    title text not null,
+    description text not null,
+    -- tags?
+
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique (site_id, name),
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$')
+);
+
+create table module (
+    id serial primary key,
+    course_id integer not null references course,
+    position integer not null,
+    name text not null,
+    title text not null,
+
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$'),
+    unique(course_id, name)
+);
+
+create table lesson (
+    id serial primary key,
+    module_id integer not null references module,
+    position integer not null,
+    name text not null,
+    title text not null,
+    path text not null,
+
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    CONSTRAINT ck_name CHECK (name ~ '^[a-z0-9-]+$'),
+    unique(module_id, name)
+);
+
+create table user_course (
+    id serial primary key,
+    course_id integer not null references course,
+    user_id integer not null references user_account,
+
+    created timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+    last_modified timestamp not null default (CURRENT_TIMESTAMP at time zone 'utc'),
+
+    unique(user_id, course_id)
+);
+
 -- How to handle deletes
 --
