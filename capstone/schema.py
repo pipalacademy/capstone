@@ -24,6 +24,7 @@ def migrate():
         add_changelog(schema)
         rename_gito_repo_id_to_repo_id(schema)
         add_app_settings_column_to_user_project(schema)
+        add_courses_tables(schema)
 
 def initial_schema(schema):
     # schema is already initialized
@@ -128,7 +129,7 @@ def add_app_settings_column_to_user_project(schema):
     if not schema.get_table("user_project").has_column("app_settings"):
         db.query("ALTER TABLE user_project ADD COLUMN IF NOT EXISTS app_settings JSON NOT NULL DEFAULT '{}'::json")
 
-def add_tables_for_courses(schema):
+def add_courses_tables(schema):
     db = schema.db
 
     if not schema.has_table("course"):
