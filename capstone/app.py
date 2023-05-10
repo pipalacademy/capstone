@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import Flask, abort, flash, g, redirect, request, url_for
+from flask import Flask, abort, flash, g, redirect, request, send_from_directory, url_for
 from kutty import html, Markdown, Optional
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 
@@ -348,8 +348,16 @@ def course(name):
     return layout.render_page(page)
 
 
+@app.route("/courses/<name>/media/<path:filename>")
+def course_media(name, filename):
+    course = g.site.get_course(name)
+    if not course:
+        abort(404)
+    return send_from_directory(course.get_media_dir().resolve(), filename)
+
+
 @app.route("/courses/<name>/lessons/<module_name>/<lesson_name>")
-def lesson(name, module_name, lesson_name):
+def course_lesson(name, module_name, lesson_name):
     course = g.site.get_course(name)
     if not course:
         abort(404)
