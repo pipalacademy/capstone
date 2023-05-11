@@ -66,7 +66,7 @@ def load_from_package(site: db.Site, path: os.PathLike, overwrite: bool = True) 
     course_def = CourseFileSpec.parse_file(course_file)
 
     with db.db.transaction():
-        course = db.Course.find(name=course_def.name)
+        course = site.get_course(course_def.name)
         if course is None:
             course = db.Course(
                 site_id=site.id,
