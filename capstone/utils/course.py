@@ -6,7 +6,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from capstone import config, db
 
@@ -17,6 +17,14 @@ class LessonSpec(BaseModel):
     name: str
     title: str
     path: str
+
+    @validator("path")
+    def path_must_be_inside_lessons(cls, path):
+        try:
+            normalized_path = Path(path).resolve().relative_to(Path("lessons").resolve())
+            return str(normalized_path)
+        except ValueError:
+            raise ValueError("Lesson path must be inside lessons directory")
 
 class ModuleSpec(BaseModel):
     """Module specification.
