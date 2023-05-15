@@ -31,6 +31,7 @@ layout.navbar.right_entries.add(
     )
 )
 layout.add_stylesheet('/static/style.css')
+layout.add_stylesheet('/static/codehilite-styles.css')
 
 
 def is_authenticated():
