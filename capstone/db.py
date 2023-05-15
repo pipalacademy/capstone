@@ -860,6 +860,9 @@ class Course(Document):
     def get_module(self, name: str) -> Module | None:
         return Module.find(course_id=self.id, name=name)
 
+    def get_module_by_position(self, position: int) -> Module | None:
+        return Module.find(course_id=self.id, position=position)
+
     def get_modules(self) -> list[Module]:
         return Module.find_all(course_id=self.id)
 
@@ -937,12 +940,19 @@ class Module(Document):
     def get_lesson(self, name: str) -> Lesson | None:
         return Lesson.find(module_id=self.id, name=name)
 
+    def get_lesson_by_position(self, position: int) -> Lesson | None:
+        return Lesson.find(module_id=self.id, position=position)
+
+    def get_last_lesson(self) -> Lesson | None:
+        lessons = self.get_lessons(order="position DESC", limit=1)
+        return lessons and lessons[0]
+
     def create_lesson(self, position: int, name: str, title: str, path: str) -> Lesson:
         assert self.id is not None
         return Lesson(module_id=self.id, position=position, name=name, title=title, path=path).save()
 
-    def get_lessons(self) -> list[Lesson]:
-        return Lesson.find_all(module_id=self.id)
+    def get_lessons(self, **kwargs) -> list[Lesson]:
+        return Lesson.find_all(module_id=self.id, **kwargs)
 
     def update_lessons(self, lesson_inputs: list[dict[str, Any]]) -> list[Lesson]:
         assert self.id is not None
@@ -1006,6 +1016,24 @@ class Lesson(Document):
     def get_url(self) -> str:
         course, module = self.get_course(), self.get_module()
         return f"/courses/{course.name}/lessons/{module.name}/{self.name}"
+
+    def get_next(self) -> Lesson | None:
+        module = self.get_module()
+        if (next_lesson := module.get_lesson_by_position(self.position+1)):
+            return next_lesson
+        elif (next_module := self.get_course().get_module_by_position(module.position+1)):
+            return next_module.get_lesson_by_position(0) or None
+        else:
+            return None
+
+    def get_prev(self) -> Lesson | None:
+        module = self.get_module()
+        if (prev_lesson := module.get_lesson_by_position(self.position-1)):
+            return prev_lesson
+        elif (prev_module := self.get_course().get_module_by_position(module.position-1)):
+            return prev_module.get_last_lesson() or None
+        else:
+            return None
 
     def get_html(self) -> str:
         return (self.get_course().get_lessons_dir() / self.path).read_text()

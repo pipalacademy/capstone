@@ -368,6 +368,8 @@ def course_lesson(name, module_name, lesson_name):
     if not lesson:
         abort(404)
 
+    prev_lesson, next_lesson = lesson.get_prev(), lesson.get_next()
+
     page = Page("", container=html.div())
     page << Hero(
         HeroContainer(
@@ -378,11 +380,31 @@ def course_lesson(name, module_name, lesson_name):
             ),
             HeroSeparator(),
             HeroTitle(lesson.title)
-        )
+        ),
     )
 
     container = html.div(class_="container")
-    container << html.div(html.HTML(lesson.get_html()))
+    container << html.div(html.HTML(lesson.get_html()), class_="mb-2")
+
+    container << html.div(class_="my-3").add(
+        Optional(
+            html.a(
+               "<< Prev",
+               class_="btn btn-outline-primary px-2 float-left rounded-right-0",
+               href=prev_lesson and prev_lesson.get_url() or "",
+            ),
+            render_condition=lambda _: bool(prev_lesson),
+        ),
+        Optional(
+            html.a(
+                "Next >>",
+                class_="btn btn-outline-primary px-2 float-right rounded-left-0",
+                href=next_lesson and next_lesson.get_url() or "",
+            ),
+            render_condition=lambda _: bool(next_lesson)
+        ),
+        html.div(style="clear: both")  # to fix the floating (ref https://css-tricks.com/all-about-floats/)
+    )
 
     page << container
     return layout.render_page(page)
