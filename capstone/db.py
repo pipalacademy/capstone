@@ -945,7 +945,7 @@ class Module(Document):
 
     def get_last_lesson(self) -> Lesson | None:
         lessons = self.get_lessons(order="position DESC", limit=1)
-        return lessons and lessons[0]
+        return lessons[0] if lessons else None
 
     def create_lesson(self, position: int, name: str, title: str, path: str) -> Lesson:
         assert self.id is not None
