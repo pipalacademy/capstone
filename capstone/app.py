@@ -74,7 +74,7 @@ def index():
 def home():
     projects = g.site.get_projects(is_published=True)
 
-    page = Page(title="", container=html.div())
+    page = Page(title="", container=html.div(class_="pb-4 pb-md-5"))
     page << html.HTML("""
         <div class="jumbotron hero">
           <div class="container">
@@ -205,7 +205,7 @@ def project(name):
                 flash("Your progress has been reset.")
         return redirect(url_for("project", name=name))
     else:
-        page = Page(title="", container=html.div())
+        page = Page(title="", container=html.div(class_="pb-4 pb-md-5"))
         hero = ProjectHero(
             title=project.title,
             subtitle=project.short_description,
@@ -371,7 +371,7 @@ def course_lesson(name, module_name, lesson_name):
 
     prev_lesson, next_lesson = lesson.get_prev(), lesson.get_next()
 
-    page = Page("", container=html.div())
+    page = Page("", container=html.div(class_="bg-white pb-4 pb-md-5"))
     page << Hero(
         HeroContainer(
             HeroSubtitle(

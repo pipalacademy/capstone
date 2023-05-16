@@ -8,14 +8,16 @@ from kutty.bootstrap import Layout as _Layout, Page as _Page, Card, Hero
 from kutty.bootstrap.base import BootstrapElement
 from kutty.bootstrap.card import CardHeader, CardBody, CardText, CardTitle
 from kutty.components.navbar import NavEntry
+from kutty.components.markdown import Markdown
 
 from . import config
 from .utils import get_random_string
 
 
 class Page(_Page):
-    def __init__(self, *args, title=None, **kwargs):
-        super().__init__(title="", **kwargs)
+    def __init__(self, *args, title=None, container=None, **kwargs):
+        container = container or html.div(class_="container pb-4 pb-md-5")
+        super().__init__(title="", container=container, **kwargs)
 
         self.title = title
         if self.title:
@@ -60,7 +62,7 @@ class Layout(_Layout):
 
 class Footer(BootstrapElement):
     TAG = "footer"
-    CLASS = "footer pt-4 my-4 my-md-5 pt-md-5 border-top"
+    CLASS = "footer pt-4 mb-4 mb-md-5 pt-md-5 border-top"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -417,7 +419,7 @@ class ProjectCard(Card):
         self.is_started = is_started
 
         self.body.add_title(title)
-        self.body.add_text(short_description)
+        self.body.add_text(Markdown(short_description))
         self.body.add(*[ProjectCardTag(tag) for tag in tags])
 
         self.add(
@@ -558,7 +560,6 @@ def get_status_mark(status):
 class CollapsibleLink(LinkWithoutDecoration):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, data_toggle="collapse", **kwargs)
-
 
 green_tick_mark = html.span(
         html.HTML("""<svg style="height: 100%; max-height: 24px;" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M243.8 339.8C232.9 350.7 215.1 350.7 204.2 339.8L140.2 275.8C129.3 264.9 129.3 247.1 140.2 236.2C151.1 225.3 168.9 225.3 179.8 236.2L224 280.4L332.2 172.2C343.1 161.3 360.9 161.3 371.8 172.2C382.7 183.1 382.7 200.9 371.8 211.8L243.8 339.8zM512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256zM256 48C141.1 48 48 141.1 48 256C48 370.9 141.1 464 256 464C370.9 464 464 370.9 464 256C464 141.1 370.9 48 256 48z"/></svg>"""),
