@@ -2,11 +2,13 @@ import argparse
 import json
 import re
 import shutil
+import subprocess
 import tempfile
 from pathlib import Path
 
 import markdown
 import tomli
+import yaml
 from bs4 import BeautifulSoup
 
 
@@ -99,6 +101,93 @@ def from_mdbook(directory, output):
 
     print(json.dumps(course_metadata, indent=4))
 
+def from_mkdocs(directory, output):
+    directory = Path(directory)
+    mkdocs_conf = yaml.safe_load((directory / "mkdocs.yml").read_text())
+    title = mkdocs_conf["site_name"]
+    name = slugify(title)
+
+    output_dir = Path(output)
+    if output_dir.is_dir() and not list(output_dir.iterdir()) == []:
+        raise ValueError(f"Output directory exists and is not empty: {output_dir}")
+
+    mkdocs_exec = directory.resolve() / "venv" / "bin" / "mkdocs"
+    if not mkdocs_exec.is_file():
+        raise ValueError(f"mkdocs executable not found at {mkdocs_exec}")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        site_dir = Path(tmp) / "site"
+        subprocess.check_call([mkdocs_exec, "build", "--site-dir", site_dir], cwd=directory)
+
+        index_soup = BeautifulSoup((site_dir / "index.html").read_text(), "html.parser")
+        elements = index_soup.find("ul", class_="md-nav__list").find_all("li", recursive=False)
+        module_links = [li.a for li in elements]
+        modules = [
+            dict(name=slugify(link.string.strip()), title=link.string.strip(), path=link.attrs["href"])
+            for link in module_links
+        ]
+        styles = []
+        for element in index_soup.find_all("link", {"rel": "stylesheet"}):
+            href = element.attrs["href"]
+            if href and href.startswith("assets/stylesheets"):
+                # ignore mkdocs styles (except plugins)
+                continue
+            if not href.startswith("http"):
+                # convert relative paths to in-terms of media directory
+                element.attrs["href"] = str(Path("../../media") / href)
+            styles.append(element)
+
+        scripts = []
+        for element in index_soup.find_all("script"):
+            src = element.attrs.get("src")
+            if src and src.startswith("assets/javascripts"):
+                # ignore default mkdocs scripts (but not plugins)
+                continue
+            if src and not src.startswith("http"):
+                # convert relative paths to in-terms of media directory
+                element.attrs["src"] = str(Path("../../media") / src)
+            scripts.append(element)
+
+        for module in modules:
+            module_path = site_dir / module.pop("path")
+            module_index = module_path / "index.html"
+            module_soup = BeautifulSoup(module_index.read_text(), "html.parser")
+            module_index.write_text(
+                module_soup.find("div", class_="md-content").prettify()
+                + "\n"
+                + "".join([s.prettify() for s in styles])
+                + "".join([s.prettify() for s in scripts])
+            )
+            lessons = [dict(name=module["name"], title=module["title"], path=module_index)]
+            module["lessons"] = lessons
+
+        course_path = Path(tmp) / "package"
+        course_path.mkdir()
+
+        package_metadata = dict(kind="course", version="0.1", name=name, title=title)
+        (course_path/ "metadata.json").write_text(json.dumps(package_metadata))
+
+        contents_path = course_path / "contents"
+        contents_path.mkdir()
+
+        lessons_path = contents_path / "lessons"
+        lessons_path.mkdir()
+
+        for module in modules:
+            new_module_path = lessons_path / module["name"]
+            new_module_path.mkdir()
+            for lesson in module["lessons"]:
+                new_lesson_path = new_module_path / f"{lesson['name']}.html"
+                new_lesson_path.write_text(lesson["path"].read_text())
+                lesson["path"] = str(new_lesson_path.relative_to(contents_path))
+
+        course_metadata = dict(name=name, title=title, description=title, modules=modules)
+        (contents_path / "course.json").write_text(json.dumps(course_metadata))
+
+        shutil.move(site_dir, contents_path / "media")
+        shutil.move(course_path, output_dir)
+
+
 def slugify(s):
     not_allowed_chars = re.compile(r"[^a-zA-Z0-9-]")
     return not_allowed_chars.sub("", s.lower().replace(" ", "-"))
@@ -121,6 +210,8 @@ def main():
     match args.format:
         case "mdbook":
             from_mdbook(args.directory, args.output)
+        case "mkdocs":
+            from_mkdocs(args.directory, args.output)
         case _:
             raise ValueError(f"Unknown format: {args.format}")
 
