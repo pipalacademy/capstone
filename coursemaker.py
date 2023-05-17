@@ -3,6 +3,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -111,13 +112,12 @@ def from_mkdocs(directory, output):
     if output_dir.is_dir() and not list(output_dir.iterdir()) == []:
         raise ValueError(f"Output directory exists and is not empty: {output_dir}")
 
-    mkdocs_exec = directory.resolve() / "venv" / "bin" / "mkdocs"
-    if not mkdocs_exec.is_file():
-        raise ValueError(f"mkdocs executable not found at {mkdocs_exec}")
-
     with tempfile.TemporaryDirectory() as tmp:
         site_dir = Path(tmp) / "site"
-        subprocess.check_call([mkdocs_exec, "build", "--site-dir", site_dir], cwd=directory)
+        subprocess.check_call(
+            [sys.executable, "-m", "mkdocs", "build", "--site-dir", site_dir],
+            cwd=directory
+        )
 
         index_soup = BeautifulSoup((site_dir / "index.html").read_text(), "html.parser")
         elements = index_soup.find("ul", class_="md-nav__list").find_all("li", recursive=False)
