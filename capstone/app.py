@@ -4,6 +4,7 @@ from flask import Flask, abort, flash, g, redirect, request, send_from_directory
 from kutty import html, Markdown, Optional
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 
+from . import config
 from .api import api
 from .auth import auth_bp, get_authenticated_user
 from .db import Site
@@ -50,7 +51,7 @@ def authenticated(handler):
 
 @app.before_request
 def set_site():
-    domain = request.host.split(":")[0]
+    domain = config.default_site or request.host.split(":")[0]
     site = Site.find(domain=domain)
     if not site:
         page = Page(title="Site not found")

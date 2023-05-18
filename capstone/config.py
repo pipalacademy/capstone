@@ -14,7 +14,11 @@ data_dir = os.getenv("CAPSTONE_DATA_DIR", "data")
 
 docker_registry = os.getenv("CAPSTONE_DOCKER_REGISTRY", "localhost:7979")
 
-# Default Google OAuth Credentials, works only for internal users of Pipal Academy 
+# Set this to disable multi-tenancy and always use this site
+default_site = os.getenv("CAPSTONE_DEFAULT_SITE", "")
+
+
+# Default Google OAuth Credentials, works only for internal users of Pipal Academy
 DEFAULT_GOOGLE_OAUTH_CLIENT_ID = "184068666662-6f05u07212f7s86vueaba15uihkprmui.apps.googleusercontent.com"
 DEFAULT_GOOGLE_OAUTH_CLIENT_SECRET = "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"
 
