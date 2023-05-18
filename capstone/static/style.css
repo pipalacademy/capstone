@@ -114,3 +114,14 @@ pre code {
     border-radius: none;
     background-color: inherit;
 }
+
+
+@media screen and (max-width: 600px) {
+    .hero-image {
+        float: none;
+    }
+
+    .hero-body {
+        margin: 0px;
+    }
+}
