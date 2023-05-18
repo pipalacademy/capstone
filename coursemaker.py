@@ -16,8 +16,8 @@ from bs4 import BeautifulSoup
 def parse_args():
     parser = argparse.ArgumentParser(description="Tool to make capstone course from other formats")
 
-    parser.add_argument("-f", "--format", help="The source format to convert from", required=True)
-    parser.add_argument("-o", "--output", help="The output directory", default="capstone-course")
+    parser.add_argument("-f", "--format", help="The source format to convert from", required=True, choices=["mkdocs", "mdbook"])
+    parser.add_argument("-o", "--output", help="The output directory (default: %(default)s)", default="capstone-course")
     parser.add_argument("directory", help="The directory to convert from")
 
     return parser.parse_args()
@@ -214,6 +214,7 @@ def main():
             from_mkdocs(args.directory, args.output)
         case _:
             raise ValueError(f"Unknown format: {args.format}")
+    print("Generated the course in directory", args.output)
 
 
 if __name__ == "__main__":
