@@ -305,14 +305,23 @@ def user_project_history(name, user):
 @app.route("/courses")
 def courses():
     page = Page(title="Courses")
+
+    grid = html.div(class_="row")
+    page << grid
+
     for course in g.site.get_courses():
-        page << LinkWithoutDecoration(
+
+        wrapper = html.div(class_="col-md-6")
+        wrapper << LinkWithoutDecoration(
             Card(
+                class_="teaser-card",
                 title=course.title,
                 text=html.div(course.description, class_="text-truncate"),
             ),
             href=course.get_url(),
         )
+
+        grid << wrapper
     return layout.render_page(page)
 
 
