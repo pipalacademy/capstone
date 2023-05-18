@@ -120,19 +120,13 @@ def from_mkdocs(directory, output):
         )
 
         index_soup = BeautifulSoup((site_dir / "index.html").read_text(), "html.parser")
-        elements = index_soup.find("ul", class_="md-nav__list").find_all("li", recursive=False)
-        module_links = [li.a for li in elements]
-        modules = [
-            dict(name=slugify(link.string.strip()), title=link.string.strip(), path=link.attrs["href"])
-            for link in module_links
-        ]
         styles = []
         for element in index_soup.find_all("link", {"rel": "stylesheet"}):
             href = element.attrs["href"]
             if href and href.startswith("assets/stylesheets"):
                 # ignore mkdocs styles (except plugins)
                 continue
-            if not href.startswith("http"):
+            if not is_relative_url(href):
                 # convert relative paths to in-terms of media directory
                 element.attrs["href"] = str(Path("../../media") / href)
             styles.append(element)
@@ -143,23 +137,48 @@ def from_mkdocs(directory, output):
             if src and src.startswith("assets/javascripts"):
                 # ignore default mkdocs scripts (but not plugins)
                 continue
-            if src and not src.startswith("http"):
+            if src and not is_relative_url(src):
                 # convert relative paths to in-terms of media directory
                 element.attrs["src"] = str(Path("../../media") / src)
             scripts.append(element)
 
+        modules = []
+        elements = index_soup.find(class_="md-nav--primary").find("ul", class_="md-nav__list").find_all("li", recursive=False)
+        for li in elements:
+            module_link = li.find("a", class_="md-nav__link", recursive=False) or li.find(class_="md-nav__link", recursive=False)
+            module_title = next(s for s in module_link.stripped_strings if s)
+            module_name = slugify(module_title)
+            module = dict(name=module_name, title=module_title)
+            if module_link.name == "a":
+                module["lessons"] = [{
+                    "name": module_name,
+                    "title": module_title,
+                    "path": Path(module_link.attrs["href"]) / "index.html"
+                }]
+            else:
+                module["lessons"] = [
+                    {
+                        "name": slugify(lesson_link.string.strip()),
+                        "title": lesson_link.string.strip(),
+                        "path": Path(lesson_link.attrs["href"]) / "index.html"
+                    }
+                    for lesson_link in li.find_all("a", class_="md-nav__link")
+                ]
+            modules.append(module)
+
         for module in modules:
-            module_path = site_dir / module.pop("path")
-            module_index = module_path / "index.html"
-            module_soup = BeautifulSoup(module_index.read_text(), "html.parser")
-            module_index.write_text(
-                module_soup.find("div", class_="md-content").prettify()
-                + "\n"
-                + "".join([s.prettify() for s in styles])
-                + "".join([s.prettify() for s in scripts])
-            )
-            lessons = [dict(name=module["name"], title=module["title"], path=module_index)]
-            module["lessons"] = lessons
+            for lesson in module["lessons"]:
+                lesson_path = site_dir / lesson["path"]
+                lesson_soup = BeautifulSoup(lesson_path.read_text(), "html.parser")
+                for img in lesson_soup.find_all("img"):
+                    if is_relative_url(img.attrs["src"]):
+                        img.attrs["src"] = str("../../media" / lesson["path"].parent / img.attrs["src"])
+                lesson_path.write_text(
+                    lesson_soup.find("div", class_="md-content").prettify()
+                    + "\n"
+                    + "".join([s.prettify() for s in styles])
+                    + "".join([s.prettify() for s in scripts])
+                )
 
         course_path = Path(tmp) / "package"
         course_path.mkdir()
@@ -177,8 +196,9 @@ def from_mkdocs(directory, output):
             new_module_path = lessons_path / module["name"]
             new_module_path.mkdir()
             for lesson in module["lessons"]:
+                lesson_path = site_dir / lesson["path"]
                 new_lesson_path = new_module_path / f"{lesson['name']}.html"
-                new_lesson_path.write_text(lesson["path"].read_text())
+                new_lesson_path.write_text(lesson_path.read_text())
                 lesson["path"] = str(new_lesson_path.relative_to(contents_path))
 
         course_metadata = dict(name=name, title=title, description=title, modules=modules)
@@ -203,6 +223,10 @@ def infer_tab_length(text):
         if line.startswith("    "):
             return 4
     return 2
+
+
+def is_relative_url(url):
+    return not url.startswith("http")
 
 
 def main():
