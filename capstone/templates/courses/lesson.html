@@ -1,0 +1,85 @@
+<div class="container page lesson-page">
+<div class="lesson">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/courses">All Courses</a></li>
+            <li class="breadcrumb-item"><a href="{{course.get_url()}}">{{course.title}}</a></li>
+            <li class="breadcrumb-item">{{module.title}}</li>
+            <li class="breadcrumb-item active" aria-current="page">{{lesson.title}}</li>
+        </ol>
+    </nav>
+
+    <div class="row lesson-wrapper">
+
+    <div class="course-outline-sidebar col-lg-2 col-md-4">
+        <div class="course-outline">
+            <div class="course-title">{{course.title}}</div>
+
+            {% for module in course.get_modules() %}
+            <div class="module-title">{{loop.index}}. {{module.title}}</div>
+                {% for lesson_ in module.get_lessons() %}
+                    <div class="lesson-title {{'active' if lesson_.title==lesson.title}}"><a href="{{lesson_.get_url()}}">{{lesson_.title}}</a></div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="lesson-body-wrapper col-lg-10 col-md-8">
+        <div class="lesson-body">
+            {{lesson.get_html() | safe}}
+        </div>
+        <div class="lesson-pagination">
+            {% set prev_lesson = lesson.get_prev() %}
+            {% set next_lesson = lesson.get_next() %}
+            {% if prev_lesson %}
+                <a href="{{prev_lesson.get_url()}}" class="float-start btn btn-secondary">&larr; Previous Lesson</a>
+            {% endif %}
+            {% if next_lesson %}
+                <a href="{{next_lesson.get_url()}}" class="float-end btn btn-primary">Next Lesson &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+
+<!--
+prev_lesson, next_lesson = lesson.get_prev(), lesson.get_next()
+
+page = Page("", container=html.div(class_="bg-white pb-4 pb-md-5"))
+page << Hero(
+    HeroContainer(
+        HeroSubtitle(
+            html.a(course.title, href=course.get_url()),
+            " / ",
+            html.a(module.title),
+        ),
+        HeroSeparator(),
+        HeroTitle(lesson.title)
+    ),
+)
+
+container = html.div(class_="container")
+container << html.div(html.HTML(lesson.get_html()), class_="mb-2")
+
+container << html.div(class_="my-3").add(
+    Optional(
+        html.a(
+           "<< Prev",
+           class_="btn btn-outline-primary px-2 float-left rounded-right-0",
+           href=prev_lesson and prev_lesson.get_url() or "",
+        ),
+        render_condition=lambda _: bool(prev_lesson),
+    ),
+    Optional(
+        html.a(
+            "Next >>",
+            class_="btn btn-outline-primary px-2 float-right rounded-left-0",
+            href=next_lesson and next_lesson.get_url() or "",
+        ),
+        render_condition=lambda _: bool(next_lesson)
+    ),
+    html.div(style="clear: both")  # to fix the floating (ref https://css-tricks.com/all-about-floats/)
+)
+
+page << container -->

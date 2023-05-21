@@ -1,6 +1,11 @@
 from functools import wraps
 
-from flask import Flask, abort, flash, g, redirect, request, send_from_directory, url_for
+from flask import (
+    Flask,
+    abort, flash, g, redirect, request,
+    send_from_directory, url_for,
+    render_template
+)
 from kutty import html, Markdown, Optional
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 
@@ -312,7 +317,7 @@ def courses():
 
     for course in g.site.get_courses():
 
-        wrapper = html.div(class_="col-md-6")
+        wrapper = html.div(class_="col-md-6 mb-3")
         wrapper << LinkWithoutDecoration(
             Card(
                 class_="teaser-card",
@@ -332,30 +337,7 @@ def course(name):
     if not course:
         abort(404)
 
-    page = Page("", container=html.div())
-    page << Hero(
-        title=course.title,
-    )
-
-    container = html.div(class_="container")
-    page << container
-
-    container << html.tag("ol").add(
-        *[
-            html.li(
-                html.div(
-                    html.strong(module.title),
-                    html.tag("ol", type_="a").add(
-                        *[
-                            html.li(html.a(lesson.title, href=lesson.get_url()))
-                            for lesson in module.get_lessons()
-                        ]
-                    )
-                )
-            )
-            for module in course.get_modules()
-        ]
-    )
+    page = render_template("courses/course.html", course=course)
     return layout.render_page(page)
 
 
@@ -379,45 +361,7 @@ def course_lesson(name, module_name, lesson_name):
     if not lesson:
         abort(404)
 
-    prev_lesson, next_lesson = lesson.get_prev(), lesson.get_next()
-
-    page = Page("", container=html.div(class_="bg-white pb-4 pb-md-5"))
-    page << Hero(
-        HeroContainer(
-            HeroSubtitle(
-                html.a(course.title, href=course.get_url()),
-                " / ",
-                html.a(module.title),
-            ),
-            HeroSeparator(),
-            HeroTitle(lesson.title)
-        ),
-    )
-
-    container = html.div(class_="container")
-    container << html.div(html.HTML(lesson.get_html()), class_="mb-2")
-
-    container << html.div(class_="my-3").add(
-        Optional(
-            html.a(
-               "<< Prev",
-               class_="btn btn-outline-primary px-2 float-left rounded-right-0",
-               href=prev_lesson and prev_lesson.get_url() or "",
-            ),
-            render_condition=lambda _: bool(prev_lesson),
-        ),
-        Optional(
-            html.a(
-                "Next >>",
-                class_="btn btn-outline-primary px-2 float-right rounded-left-0",
-                href=next_lesson and next_lesson.get_url() or "",
-            ),
-            render_condition=lambda _: bool(next_lesson)
-        ),
-        html.div(style="clear: both")  # to fix the floating (ref https://css-tricks.com/all-about-floats/)
-    )
-
-    page << container
+    page = render_template("courses/lesson.html", lesson=lesson, module=module, course=course)
     return layout.render_page(page)
 
 

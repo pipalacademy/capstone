@@ -1,0 +1,22 @@
+<div class="container page course-page">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/courses">All Courses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{course.title}}</li>
+        </ol>
+    </nav>
+
+    <h2>{{course.title}}</h2>
+
+    <div class="course-outline">
+        <h3>Course Outline</h3>
+
+        {% for module in course.get_modules() %}
+        <div class="module-title">{{loop.index}}. {{module.title}}</div>
+            {% for lesson in module.get_lessons() %}
+                <div class="lesson-title"><a href="{{lesson.get_url()}}">{{lesson.title}}</a></div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
