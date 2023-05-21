@@ -74,6 +74,7 @@ class Footer(BootstrapElement):
                     "About", href="/about",
                     target="_blank", class_="mr-3 text-reset"
                 ),
+                html.HTML("&nbsp;"),
                 html.a(
                     "GitHub", href=config.github_repository,
                     target="_blank", class_="text-reset"
