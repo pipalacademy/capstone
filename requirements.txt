@@ -7,7 +7,8 @@ pyyaml>=6.0
 beautifulsoup4>=4.11.1
 Click
 git+https://github.com/pipalacademy/toolkit.git#egg=toolkit
-git+https://github.com/pipalacademy/kutty.git#egg=kutty
+#git+https://github.com/pipalacademy/kutty.git#egg=kutty
+-e ../kutty
 pydantic>=1.10.6
 gunicorn>=20.1
 git+https://github.com/pipalacademy/capstone-checker@main
@@ -18,3 +19,4 @@ redis>=4.5.4
 python-nomad>=1.5.0
 beautifulsoup4>=4.12.2
 tomli==2.0.1
+MarkupSafe==2.1.2

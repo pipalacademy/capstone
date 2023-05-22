@@ -10,6 +10,7 @@ import jinja2
 import markdown
 from kutty import html, Markdown, Optional
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
+from markupsafe import Markup
 
 from . import config
 from .api import api
@@ -32,7 +33,7 @@ md = markdown.Markdown()
 
 @app.template_filter("markdown")
 def markdown_filter(text):
-    return jinja2.utils.Markup(md.convert(text))
+    return Markup(md.convert(text))
 
 @app.context_processor
 def template_components():
