@@ -52,7 +52,7 @@ jobs:
     - name: Build capstone runner image
       run: ./runner/build-and-replace-docker-image.sh
     - name: Run tests
-      run: ./runtests.sh
+      run: ./runtests.sh --integration
 
   deploy-staging:
     runs-on: ubuntu-latest

@@ -1,3 +1,6 @@
+# these aren't exactly integration tests, but they need gitto and nomad
+# to be there  to run  so they're here along with integration tests
+
 import os
 import subprocess
 from pathlib import Path
@@ -6,7 +9,7 @@ from unittest.mock import patch
 from capstone import config, db
 from capstone.utils.user_project import delete_user_project, start_user_project
 
-from .test_db import site_id, project_id, user_id
+from ..test_db import site_id, project_id, user_id
 
 
 def test_start_user_project(project_id, user_id, tmp_path):
