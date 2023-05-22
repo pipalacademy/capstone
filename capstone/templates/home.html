@@ -1,0 +1,28 @@
+<div class="jumbotron hero">
+    <div class="container">
+      <div class="hero-image">
+        <img src="/static/images/undraw-programming-dark.svg" style="width: 100%;">
+      </div>
+
+      <div class="hero-body">
+        <h1 class="hero-title">What would you like to build today?</h1>
+        <p class="lead">Level up your coding skills by building something challenging.</p>
+
+        <p>The capstone platform makes it easier to work with complex projects by taking care of deploying the application and validating it on every git push.</p>
+        <p>Ready to start?</p>
+      </div>
+
+      <div style="clear: both;"></div>
+    </div>
+</div>
+
+<div class="container section">
+    <h2>Featured Projects</h2>
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-md-4">
+            {{ ProjectTeaser(project, is_started=False) | safe }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
