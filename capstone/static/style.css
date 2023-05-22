@@ -149,7 +149,7 @@ pre code {
 }
 
 .lesson-pagination {
-    margin-top: 20px;
+    margin: 20px 0px;
     /* padding: 0px 40px; */
     /* margin: 20px 0px; */
 }
@@ -236,4 +236,77 @@ pre code {
 
 .lesson-body h2 {
     font-size: 1.2em;
+}
+
+.project-hero {
+    background: #ddf;
+}
+
+
+
+.topic-hero .breadcrumb a {
+    color: inherit;
+}
+
+.topic-hero {
+    color: #444;
+    margin-bottom: 0px;
+}
+
+.topic-hero h1 {
+    color: #222;
+}
+
+.hero-actions {
+    margin-top: 2rem;
+}
+
+.project-page,
+.course-page {
+    background-color: white;
+}
+
+.project-page .container,
+.course-page .container {
+    padding: 20px 0px;
+}
+
+.project-task-title {
+    margin: 10px 0px;
+}
+
+
+.course-hero {
+    background: linear-gradient(to right bottom, #0f523e, #1ea97f);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.project-hero {
+    background: linear-gradient(to right bottom, #05181e, #155c75);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.course-hero h1,
+.project-hero h1 {
+    color: inherit;
+}
+
+.course-hero .btn {
+    background: white;
+    color: #0f523e;
+}
+
+.course-cta,
+.course-cta:hover,
+.project-cta,
+.project-cta:hover {
+    font-weight: 500;
+    color: inherit;
+    /* text-transform: uppercase; */
+    text-decoration: none;
+    margin: 20px 0px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
 }

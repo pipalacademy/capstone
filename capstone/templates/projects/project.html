@@ -1,0 +1,46 @@
+<div class="hero topic-hero project-hero">
+    <div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/projects">All Projects</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{project.title}}</li>
+        </ol>
+    </nav>
+
+    <h1>{{project.title}}</h1>
+
+    <div class="project-short">
+        {{project.short_description | markdown}}
+    </div>
+
+    <div class="hero-actions">
+        {% if user_project %}
+        <a class="project-cta">Continue &rarr;</a>
+        {% elif user %}
+            <form method="POST">
+                <button type="submit" class="project-cta">Start Projet</button>
+            </form>
+        {% else %}
+            <a class="project-cta" href="/auth/login?next={{project.get_url()}}">Start Project</a>
+        {% endif %}
+    </div>
+    </div>
+</div>
+
+
+ <div class="project-page">
+    <div class="container">
+        <h2>Description</h2>
+    <div>
+        {{project.description | markdown}}
+    </div>
+
+    <h2>Tasks</h2>
+
+    {% for task in project.get_tasks() %}
+        <div class="project-task-title">{{loop.index}}. {{task.title}}</div>
+    {% endfor %}
+</div>
+</div>
+
+</div>

@@ -6,6 +6,8 @@ from flask import (
     send_from_directory, url_for,
     render_template
 )
+import jinja2
+import markdown
 from kutty import html, Markdown, Optional
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 
@@ -25,6 +27,12 @@ app = Flask(__name__)
 app.secret_key = "hello, world!"  # TODO: change this
 app.register_blueprint(api, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/auth")
+
+md = markdown.Markdown()
+
+@app.template_filter("markdown")
+def markdown_filter(text):
+    return jinja2.Markup(md.convert(text))
 
 layout = Layout("Capstone")
 layout.navbar.add_link("Projects", url="/projects")
@@ -190,6 +198,9 @@ def project(name):
 
     user = get_authenticated_user()
     user_project = project.get_user_project(user.id) if user else None
+
+    page = render_template("projects/project.html", project=project, user=user, user_project=user_project)
+    return layout.render_page(page)
 
     # TODO: split this into two methods
 

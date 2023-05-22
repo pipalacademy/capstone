@@ -328,6 +328,9 @@ class Project(Document):
             self.url = f"http://{site.domain}/api/projects/{self.name}"
             self.html_url = f"http://{site.domain}/projects/{self.name}"
 
+    def get_url(self) -> str:
+        return f"/projects/{self.name}"
+
     def delete(self) -> int:
         with db.transaction():
             self.delete_tasks()
