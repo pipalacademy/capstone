@@ -32,7 +32,7 @@ md = markdown.Markdown()
 
 @app.template_filter("markdown")
 def markdown_filter(text):
-    return jinja2.Markup(md.convert(text))
+    return jinja2.utils.Markup(md.convert(text))
 
 @app.context_processor
 def template_components():
