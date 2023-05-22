@@ -147,7 +147,7 @@ def dashboard(user):
     return layout.render_page(page)
 
 
-@app.route("/projects/<name>", methods=["GET", "POST"])
+@app.route("/projects/<name>", methods=["GET"])
 def project(name):
     project = g.site.get_project(name=name)
     if project is None:
@@ -159,64 +159,33 @@ def project(name):
     page = render_template("projects/project.html", project=project, user=user, user_project=user_project)
     return layout.render_page(page)
 
-    # TODO: split this into two methods
 
-    if request.method == "POST":
-        if not user:
-            abort(401)
-        action = request.form.get("action", "start")
-        if action == "start":
-            if user_project:
-                flash("You have already started this project.")
-            else:
-                start_user_project(user=user, project=project)
-                flash("You have started this project.")
-        elif action == "reset":
-            if not user_project:
-                flash("You have not started this project yet.")
-            else:
-                delete_user_project(user_project)
-                flash("Your progress has been reset.")
+@app.route("/projects/<name>", methods=["POST"])
+@authenticated
+def start_or_reset_project(name, user):
+    project = g.site.get_project(name=name)
+    if not project:
+        abort(404)
+
+    action = request.form.get("action", "start")
+    if action == "start":
+        user_project = project.get_user_project(user.id)
+        if user_project:
+            flash("You have already started this project.")
+        else:
+            start_user_project(user=user, project=project)
+            flash("You have started this project.")
+        return redirect(url_for("project", name=name))
+    elif action == "reset":
+        user_project = project.get_user_project(user.id)
+        if not user_project:
+            flash("You have not started this project yet.")
+        else:
+            delete_user_project(user_project)
+            flash("Your progress has been reset.")
         return redirect(url_for("project", name=name))
     else:
-        page = Page(title="", container=html.div(class_="pb-4 pb-md-5"))
-        hero = ProjectHero(
-            title=project.title,
-            subtitle=project.short_description,
-            text=Markdown(project.description),
-            app_url=None,
-        )
-        if not user:
-            hero.body.add(LinkButton("Start Project",
-                                     class_="btn-lg", href=url_for("auth.login")))
-        elif not user_project:
-            hero.body << Form(method="POST").add(
-                HiddenInput(name="action", value="start"),
-                SubmitButton("Start Project", class_="btn-lg"),
-            )
-        else:
-            hero.body << Form(method="POST").add(
-                HiddenInput(name="action", value="reset"),
-                SubmitButton(
-                    "Reset Project",
-                    class_="btn-lg btn-danger",
-                    onclick="return confirm('Are you sure?');"
-                )
-            )
-
-        main = html.div(class_="container")
-        page << hero
-        page << main
-        for task in project.get_tasks():
-            task_status = user_project and user_project.get_task_status(task)
-            main << TaskDetails(
-                task,
-                status=task_status and task_status.status or None,
-                description_vars=user_project and user_project.get_context_vars() or None,
-                check_statuses=task_status and task_status.get_check_statuses() or (),
-            )
-
-        return layout.render_page(page)
+        abort(400)
 
 
 @app.route("/projects/<name>/history")
