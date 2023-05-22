@@ -259,10 +259,6 @@ class DeployTask(Task):
                 self.logger.exception(f"Failed to get deployment from Nomad: {e}")
                 return None, str(e), False
 
-            if depl is None:
-                self.logger.error(f"Job {job_id} not found")
-                return None, f"Job {job_id} not found", False
-
             status = depl["Status"]
             if status == "successful":
                 return None, None, True
