@@ -1,0 +1,21 @@
+<div class="hero topic-hero project-hero">
+    <div class="container">
+        <h1>Guided Projects</h1>
+
+        <div class="project-short">
+            <p class="lead">Level up your coding skills by building something challenging.</p>
+
+            <p>The capstone platform makes it easier to work with complex projects by taking care of deploying the application and validating it on every git push.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container section">
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-md-4">
+            {{ ProjectTeaser(project, is_started=False) | safe }}
+        </div>
+        {% endfor %}
+    </div>
+</div>

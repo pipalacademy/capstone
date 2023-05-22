@@ -1,0 +1,30 @@
+<div class="hero topic-hero course-hero">
+    <div class="container">
+        <h1>Interactice Courses</h1>
+
+        <div class="project-short">
+            <p class="lead">Learn a new programming language, a new framework or dive deep into a new concept.</p>
+
+            <p>With interactive courses, you can try code examples without leaving the course page.
+            You can even modify the example and execute them without leaving the lesson.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container section">
+    <div class="row">
+        {% for course in courses %}
+        <div class="col-md-4">
+            <a class="text-decoration-none text-reset" href="{{ course.get_url() }}">
+                <div class="card teaser-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{course.title}}</h5>
+                        <p class="card-text"></p>
+                        <div>{{course.description | markdown}}</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>

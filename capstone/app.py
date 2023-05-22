@@ -100,19 +100,7 @@ def home():
 @app.route("/projects")
 def projects():
     projects = g.site.get_projects(is_published=True)
-
-    page = Page(title="Projects")
-    page << ProjectGrid(
-        class_="mt-3",
-        columns=[
-            ProjectTeaser(project, is_started=False) for project in projects
-        ],
-    )
-    page << Optional(
-        # empty state
-        html.em("No projects available."),
-        render_condition=lambda _: not projects,
-    )
+    page = render_template("projects/index.html", projects=projects)
     return layout.render_page(page)
 
 
@@ -289,26 +277,9 @@ def user_project_history(name, user):
 
 @app.route("/courses")
 def courses():
-    page = Page(title="Courses")
-
-    grid = html.div(class_="row")
-    page << grid
-
-    for course in g.site.get_courses():
-
-        wrapper = html.div(class_="col-md-6 mb-3")
-        wrapper << LinkWithoutDecoration(
-            Card(
-                class_="teaser-card",
-                title=course.title,
-                text=html.div(course.description, class_="text-truncate"),
-            ),
-            href=course.get_url(),
-        )
-
-        grid << wrapper
+    courses = g.site.get_courses()
+    page = render_template("courses/index.html", courses=courses)
     return layout.render_page(page)
-
 
 @app.route("/courses/<name>")
 def course(name):
