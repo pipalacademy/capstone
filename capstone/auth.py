@@ -1,6 +1,6 @@
 import string
 import requests
-from flask import Blueprint, g, redirect, request, session, url_for
+from flask import Blueprint, g, request, redirect, request, session, url_for
 from urllib.parse import urlencode
 
 from . import config
@@ -21,7 +21,8 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 @auth_bp.route("/login")
 def login():
-    return redirect(url_for("auth.google_oauth_login"))
+    next = request.args.get("next")
+    return redirect(url_for("auth.google_oauth_login", next=next))
 
 
 @auth_bp.route("/logout")
@@ -32,13 +33,14 @@ def logout():
 
 @auth_bp.route("/google")
 def google_oauth_login():
-    auth_url = get_google_auth_url(CLIENT_ID)
+    auth_url = get_google_auth_url(CLIENT_ID, next=request.args.get("next"))
     return redirect(auth_url)
 
 
 @auth_bp.route("/google/callback")
 def google_oauth_callback():
     code = request.args.get("code")
+    next = request.args.get("state")
     user_info = get_user_info(CLIENT_ID, CLIENT_SECRET, code)
     if not user_info:
         return "Error getting user info", 400
@@ -49,7 +51,7 @@ def google_oauth_callback():
     email = user_info["email"]
     user = get_or_create_user(site=g.site, email=email, full_name=user_info["name"])
     login_user(user_id=user.id)
-    return redirect("/")
+    return redirect(next or "/")
 
 
 # create user
@@ -125,12 +127,13 @@ def logout_user():
 
 # google oauth helpers
 
-def get_google_auth_url(client_id):
+def get_google_auth_url(client_id, next=""):
     params = {
         "client_id": client_id,
         "response_type": "code",
         "scope": "openid email profile",
         "redirect_uri": url_for("auth.google_oauth_callback", _external=True),
+        "state": next or ""
     }
     return f"{GOOGLE_OAUTH_URL}?{urlencode(params)}"
 
