@@ -18,7 +18,7 @@
         <a class="project-cta">Continue &rarr;</a>
         {% elif user %}
             <form method="POST">
-                <button type="submit" class="project-cta">Start Projet</button>
+                <button type="submit" class="project-cta">Start Project</button>
             </form>
         {% else %}
             <a class="project-cta" href="/auth/login?next={{project.get_url()}}">Start Project</a>
