@@ -464,6 +464,9 @@ class Task(Document):
     def get_site(self) -> Site:
         return self.get_project().get_site()
 
+    def get_url(self) -> str:
+        return f"/projects/{self.get_project().name}/tasks/{self.name}"
+
     def get_detail(self) -> dict[str, Any]:
         d = super().get_detail()
         d["checks"] = [c.get_detail() for c in self.get_checks()]
@@ -645,6 +648,10 @@ class UserProject(Document):
     def get_task_status(self, task: Task) -> UserTaskStatus | None:
         return UserTaskStatus.find(
             user_project_id=self.id, task_id=task.id)
+
+    def get_in_progress_task_status(self) -> UserTaskStatus | None:
+        return UserTaskStatus.find(
+            user_project_id=self.id, status="In Progress")
 
     def update_task_status(self, task: Task, status: str) -> UserTaskStatus:
         assert task.project_id == self.project_id

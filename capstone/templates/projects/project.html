@@ -1,3 +1,5 @@
+{% set tasks = project.get_tasks() %}
+
 <div class="hero topic-hero project-hero">
     <div class="container">
     <nav aria-label="breadcrumb">
@@ -15,7 +17,15 @@
 
     <div class="hero-actions">
         {% if user_project %}
-        <a class="project-cta">Continue &rarr;</a>
+            {% set current_task_status = user_project.get_in_progress_task_status() %}
+            {% if current_task_status %}
+                <a href="{{current_task_status.get_task().get_url()}}" class="project-cta">Continue &rarr;</a>
+            {% elif tasks %}
+                {# default to first task #}
+                <a href="{{tasks[0].get_url()}}" class="project-cta">Continue &rarr;</a>
+            {% else %}
+                <button href="#" class="project-cta disabled my-0">No tasks</button>
+            {% endif %}
         {% elif user %}
             <form method="POST">
                 <button type="submit" class="project-cta">Start Project</button>
@@ -37,7 +47,7 @@
 
     <h2>Tasks</h2>
 
-    {% for task in project.get_tasks() %}
+    {% for task in tasks %}
         <div class="project-task-title">{{loop.index}}. {{task.title}}</div>
     {% endfor %}
 </div>
