@@ -9,6 +9,7 @@ from flask import (
 import jinja2
 import markdown
 from kutty import html, Markdown, Optional
+from kutty.html import HTML
 from kutty.bootstrap.hero import Hero, HeroContainer, HeroTitle, HeroSeparator, HeroSubtitle
 from markupsafe import Markup
 
@@ -95,13 +96,13 @@ def index():
 def home():
     projects = g.site.get_projects(is_published=True)
 
-    page = render_template("home.html", projects=projects)
+    page = HTML(render_template("home.html", projects=projects))
     return layout.render_page(page)
 
 @app.route("/projects")
 def projects():
     projects = g.site.get_projects(is_published=True)
-    page = render_template("projects/index.html", projects=projects)
+    page = HTML(render_template("projects/index.html", projects=projects))
     return layout.render_page(page)
 
 
@@ -156,7 +157,7 @@ def project(name):
     user = get_authenticated_user()
     user_project = project.get_user_project(user.id) if user else None
 
-    page = render_template("projects/project.html", project=project, user=user, user_project=user_project)
+    page = HTML(render_template("projects/project.html", project=project, user=user, user_project=user_project))
     return layout.render_page(page)
 
 
@@ -248,7 +249,7 @@ def user_project_history(name, user):
 @app.route("/courses")
 def courses():
     courses = g.site.get_courses()
-    page = render_template("courses/index.html", courses=courses)
+    page = HTML(render_template("courses/index.html", courses=courses))
     return layout.render_page(page)
 
 @app.route("/courses/<name>")
@@ -257,7 +258,7 @@ def course(name):
     if not course:
         abort(404)
 
-    page = render_template("courses/course.html", course=course)
+    page = HTML(render_template("courses/course.html", course=course))
     return layout.render_page(page)
 
 
@@ -281,7 +282,7 @@ def course_lesson(name, module_name, lesson_name):
     if not lesson:
         abort(404)
 
-    page = render_template("courses/lesson.html", lesson=lesson, module=module, course=course)
+    page = HTML(render_template("courses/lesson.html", lesson=lesson, module=module, course=course))
     return layout.render_page(page)
 
 
