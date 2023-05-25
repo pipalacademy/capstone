@@ -189,6 +189,29 @@ def start_or_reset_project(name, user):
         abort(400)
 
 
+@app.route("/projects/<name>/<int:task_num>")
+def project_task(name, task_num):
+    project = g.site.get_project(name=name)
+    if project is None:
+        abort(404)
+
+    user = get_authenticated_user()
+    user_project = project.get_user_project(user.id) if user else None
+
+    if not user_project:
+        return redirect(url_for("project", name=name))
+
+    tasks = project.get_tasks()
+    index = task_num-1
+    if 0 <= index < len(tasks):
+        task = tasks[index]
+    else:
+        return redirect(url_for("project", name=name))
+
+    page = render_template("projects/task.html", project=project, user=user, user_project=user_project, task=task)
+    return layout.render_page(page)
+
+
 @app.route("/projects/<name>/history")
 @authenticated
 def project_history(name, user):

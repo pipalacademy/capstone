@@ -1,0 +1,32 @@
+<div class="container page lesson-page">
+    <div class="lesson">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/courses">All Projects</a></li>
+                <li class="breadcrumb-item"><a href="{{project.get_url()}}">{{project.title}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{task.title}}</li>
+            </ol>
+        </nav>
+
+        <div class="row lesson-wrapper">
+
+        <div class="course-outline-sidebar col-lg-3 col-md-4 order-md-first order-last mt-0 mt-sm-1">
+            <div class="course-outline">
+                <div class="course-title">{{project.title}}</div>
+
+                {% for t in project.get_tasks() %}
+                    <div class="lesson-title {{'active' if t.name==task.name}}"><a href="{{project.get_url()}}/{{loop.index}}">{{loop.index}}. {{t.title}}</a></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="lesson-body-wrapper col-lg-9 col-md-8">
+            <div class="lesson-body">
+                <h2>{{task.title}}</h2>
+                {{task.render_description() | markdown }}
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
