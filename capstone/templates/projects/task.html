@@ -1,3 +1,22 @@
+{% macro task_status_icon(user_project, task) %}
+
+    {% set task_status = none %}
+    {% if user_project %}
+        {% set task_status = user_project.get_task_status(task) %}
+    {% endif %}
+
+    {% if not task_status %}
+        {# nothing #}
+    {% elif task_status.status == "Success" %}
+        <span class="p-2" style="color: #28a745; font-size: 13px;">&check;</span>
+    {% elif task_status.status == "Failing" %}
+        <span class="p-2" style="color: #dc3545; font-size: 13px;">&otimes;</span>
+    {% elif task_status.status == "In Progress" %}
+        <span class="p-2" style="color: #ffc107; font-size: 13px;">&#9210;</span>
+    {% endif %}
+
+{% endmacro %}
+
 <div class="container page lesson-page">
     <div class="lesson">
         <nav aria-label="breadcrumb">
@@ -15,7 +34,7 @@
                 <div class="course-title">{{project.title}}</div>
 
                 {% for t in project.get_tasks() %}
-                    <div class="lesson-title {{'active' if t.name==task.name}}"><a href="{{project.get_url()}}/{{loop.index}}">{{loop.index}}. {{t.title}}</a></div>
+                    <div class="lesson-title {{'active' if t.name==task.name}}"><a href="{{project.get_url()}}/{{loop.index}}">{{loop.index}}. {{t.title}} {{ task_status_icon(user_project, t) if user_project else "" }}</a></div>
                 {% endfor %}
             </div>
         </div>

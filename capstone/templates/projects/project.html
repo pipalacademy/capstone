@@ -1,5 +1,24 @@
 {% set tasks = project.get_tasks() %}
 
+{% macro task_status_icon(user_project, task) %}
+
+    {% set task_status = none %}
+    {% if user_project %}
+        {% set task_status = user_project.get_task_status(task) %}
+    {% endif %}
+
+    {% if not task_status %}
+        {# nothing #}
+    {% elif task_status.status == "Success" %}
+        <span class="p-2" style="color: #28a745; font-size: 13px;">&check;</span>
+    {% elif task_status.status == "Failing" %}
+        <span class="p-2" style="color: #dc3545; font-size: 13px;">&otimes;</span>
+    {% elif task_status.status == "In Progress" %}
+        <span class="p-2" style="color: #ffc107; font-size: 13px;">&#9210;</span>
+    {% endif %}
+
+{% endmacro %}
+
 <div class="hero topic-hero project-hero">
     <div class="container">
         <nav aria-label="breadcrumb">
@@ -48,7 +67,10 @@
         <h2>Tasks</h2>
 
         {% for task in tasks %}
-            <div class="project-task-title">{{loop.index}}. {{task.title}}</div>
+            <div class="project-task-title">
+                {{loop.index}}. {{task.title}}
+                {{ task_status_icon(user_project, task) }}
+            </div>
         {% endfor %}
     </div>
 </div>
