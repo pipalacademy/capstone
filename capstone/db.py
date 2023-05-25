@@ -465,7 +465,7 @@ class Task(Document):
         return self.get_project().get_site()
 
     def get_url(self) -> str:
-        return f"/projects/{self.get_project().name}/tasks/{self.name}"
+        return f"{self.get_project().get_url()}/{self.position+1}"
 
     def get_detail(self) -> dict[str, Any]:
         d = super().get_detail()

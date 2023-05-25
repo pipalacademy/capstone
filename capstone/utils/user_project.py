@@ -41,6 +41,11 @@ def start_user_project(project: db.Project, user: db.User) -> db.UserProject:
             id=repo_id, webhook_url=user_project.get_webhook_url(),
         )
 
+        # set first task to be in progress
+        tasks = project.get_tasks()
+        if tasks:
+            user_project.update_task_status(task=tasks[0], status="In Progress")
+
     return user_project
 
 
