@@ -604,6 +604,11 @@ class UserProject(Document):
     created: datetime | None = None
     last_modified: datetime | None = None
 
+    def delete(self):
+        for task_status in self.get_task_statuses():
+            task_status.delete()
+        return super().delete()
+
     def get_detail(self) -> dict[str, Any]:
         d = super().get_detail()
         d["project_name"] = self.get_project().name
@@ -670,17 +675,22 @@ class UserProject(Document):
 
     def set_in_progress_task(self):
         task_statuses = self.get_task_statuses()
-        with db.transaction():
-            for task_status, next_status in zip(task_statuses, task_statuses[1:]+[None]):
-                if task_status.status == "In Progress":
-                    task_status.status = "Pending"
-                    task_status.save()
+        if task_statuses:
+            with db.transaction():
+                for task_status, next_status in zip(task_statuses, task_statuses[1:]+[None]):
+                    if task_status.status == "In Progress":
+                        task_status.status = "Pending"
+                        task_status.save()
 
-                if (task_status.status in {"Pending", "Failing"} and
-                        (not next_status or next_status.status == "Pending")):
-                    task_status.status = "In Progress"
-                    task_status.save()
-                    return
+                    if (task_status.status in {"Pending", "Failing"} and
+                            (not next_status or next_status.status == "Pending")):
+                        task_status.status = "In Progress"
+                        task_status.save()
+                        return
+        else:
+            tasks = self.get_project().get_tasks()
+            if tasks:
+                self.update_task_status(tasks[0], status="In Progress")
 
     def get_webhook_url(self) -> str:
         site = self.get_site()
