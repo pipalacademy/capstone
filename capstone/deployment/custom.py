@@ -1,4 +1,8 @@
+import subprocess
+import tempfile
+import time
 from datetime import datetime
+from pathlib import Path
 from typing import Any, IO
 
 import requests
@@ -127,13 +131,13 @@ class CustomDeployment(Deployment):
         r.raise_for_status()
         return r.text
 
-    def wait_for_status(self, app_id: str, deployment_id: int) -> None:
-        while True:
+    def wait_for_status(self, app_id: str, deployment_id: int) -> DeploymentInfo:
+        for _ in range(100):  # 100 retries (~100 seconds)
             deployment = self.get_deployment(app_id=app_id, deployment_id=deployment_id)
             if deployment.status == "IN-PROGRESS":
                 time.sleep(1)
-            else:
-                return deployment
+
+        return deployment
 
     def run(self, site: Site, user_project: UserProject) -> dict[str, Any]:
         """

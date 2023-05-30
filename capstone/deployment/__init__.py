@@ -1,7 +1,7 @@
 """Deployment interface for capstone.
 """
 
-from typing import Any, Type
+from typing import Any
 
 from capstone import config, db
 from capstone.db import Site, UserProject
@@ -44,10 +44,12 @@ def get_deployments(
     ]
 
 
-def get_deployer(type: str) -> Type[Deployment]:
+def get_deployer(type: str) -> Deployment:
     if type == "nomad":
         return NomadDeployment()
     elif type == "custom":
+        if not config.custom_deployment_url:
+            raise Exception("Custom deployment URL is not set")
         return CustomDeployment(
             url=config.custom_deployment_url,
             token=config.custom_deployment_token,
