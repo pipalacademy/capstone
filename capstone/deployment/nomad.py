@@ -1,6 +1,3 @@
-"""Deployment interface for capstone.
-"""
-
 import logging
 import os
 import subprocess
@@ -15,41 +12,8 @@ import nomad
 from jinja2 import Template
 
 from capstone import config
-from capstone.db import db, Site, UserProject
-
-
-def get_deployments(site, user_id=None, project_id=None):
-    filters = {"site_id": site.id}
-    if user_id:
-        filters["user_id"] = user_id
-    if project_id:
-        filters["project_id"] = project_id
-    deployments = db.where("changelog", action="deploy", **filters)
-    return [
-        {
-            "timestamp": deployment["timestamp"],
-            "type": deployment["details"]["type"],
-            "project": site.get_projects(id=deployment["project_id"])[0].name,
-            "user": site.get_users(id=deployment["user_id"])[0].username,
-            "git_hash": deployment["details"]["git_commit_hash"],
-            "app_url": deployment["details"]["app_url"],
-        }
-        for deployment in deployments
-    ]
-
-
-def new_deployment(user_project, type="nomad"):
-    site = user_project.get_site()
-    if type == "nomad":
-        return NomadDeployment.run(site=site, user_project=user_project)
-    else:
-        raise ValueError(f"Unknown deployment type: {type}")
-
-
-class Deployment:
-    @classmethod
-    def run(cls, site, user_project):
-        raise NotImplementedError
+from capstone.db import Site, UserProject
+from .base import Deployment
 
 
 NOMAD_JOB_TEMPLATE = """
@@ -302,6 +266,14 @@ class NomadDeployment(Deployment):
 
     @classmethod
     def run(cls, site: Site, user_project: UserProject) -> dict[str, Any]:
+        """
+        Returns a result dict:
+        { 
+            "ok": bool,
+            "logs": str,
+            "app_url": optional str  # only if ok is True
+        }
+        """
         if site.id != user_project.get_site().id:
             raise ValueError("Site and user_project must be from the same site")
 
