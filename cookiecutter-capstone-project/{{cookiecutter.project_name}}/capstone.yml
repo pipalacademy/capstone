@@ -19,3 +19,4 @@ tasks:
       you will only see `git_url` within curly braces.
     checks: []
 project_type: web  # builds a docker image for web. other options are: cli
+deployment_type: nomad

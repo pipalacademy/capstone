@@ -130,7 +130,9 @@ def test_user_project_gets_deployed_and_checked(capstone_app, tmp_path):
     assert re.search(r"^Status(\s+)= running$", proc.stdout, re.MULTILINE)
 
     # Test checks:
-    must_pass, must_fail = user_project.get_task_statuses()
+    task_statuses = user_project.get_task_statuses()
+    assert len(task_statuses) == 2
+    must_pass, must_fail = task_statuses
     assert must_pass.status == "Completed"
     assert must_fail.status == "In Progress"
     assert must_fail.get_check_statuses()[0].status == "fail"

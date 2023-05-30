@@ -200,3 +200,12 @@ def add_project_type_column(schema):
     if not schema.get_table("project").has_column("project_type"):
         db.query("create type project_type as enum ('web', 'cli')")
         db.query("ALTER TABLE project ADD COLUMN project_type project_type not null default 'web'")
+
+
+def add_deployment_type_column(schema):
+    db = schema.db
+
+    if not schema.get_table("project").has_column("deployment_type"):
+        db.query("create type deployment_type as enum ('nomad', 'custom')")
+        db.query("alter table project add column deployment_type deployment_type not null default 'nomad'")
+        db.query("alter table project add column deployment_options json not null default '{}'::json")

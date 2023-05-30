@@ -36,6 +36,7 @@ create unique index user_account_site_username_idx on user_account(site_id, lowe
 create unique index user_account_site_email_idx on user_account(site_id, lower(email));
 
 create type project_type as enum ('web', 'cli');
+create type deployment_type as enum ('nomad', 'custom');
 create table project (
     id serial primary key,
     site_id integer not null references site,
@@ -45,6 +46,8 @@ create table project (
     description text not null,
     tags text[] not null,
     project_type project_type not null default 'web',
+    deployment_type deployment_type not null default 'nomad',
+    deployment_options json not null default '{}'::json,
 
     -- or status draft/published/archived
     is_published boolean default 'f',
