@@ -7,8 +7,10 @@ from .base import Deployment
 class CustomDeployment(Deployment):
     TYPE = "custom"
 
-    @classmethod
-    def run(cls, site: Site, user_project: UserProject) -> dict[str, Any]:
+    def __init__(self, url: str):
+        self.url = url
+
+    def run(self, site: Site, user_project: UserProject) -> dict[str, Any]:
         """
         Returns a result dict:
         {

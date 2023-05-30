@@ -34,6 +34,8 @@ def create_project(site: db.Site, name: str, title: str) -> db.Project:
         is_published=False, tags=[],
         git_url=repo_info["git_url"], repo_id=repo_id,
         project_type="web",
+        deployment_type="nomad",
+        deployment_options={},
     )
 
     with db.db.transaction():

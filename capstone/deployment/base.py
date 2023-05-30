@@ -4,8 +4,8 @@ from capstone.db import Site, UserProject
 
 
 class Deployment:
-    @classmethod
-    def run(cls, site: Site, user_project: UserProject) -> dict[str, Any]:
+
+    def run(self, site: Site, user_project: UserProject) -> dict[str, Any]:
         """
         Must return a result dict:
         {

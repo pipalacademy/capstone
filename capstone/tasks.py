@@ -6,13 +6,13 @@ import yaml
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, root_validator
 from toolkit import setup_logger
 from redis import Redis
 from rq import Queue
 
 from . import config, db
-from .deployment import NomadDeployment
+from .deployment import get_deployment_class
 from .utils import git
 from .utils.user_project import run_checks
 
@@ -45,7 +45,30 @@ class ProjectUpsertModel(BaseModel):
     description: str
     tags: list[str]
     project_type: str
+    deployment_type: str
+    deployment_options: dict[str, Any] = Field(default_factory=dict)
     tasks: list[TaskInputModel]
+
+    @root_validator(pre=True)
+    def split_deployment_type_into_key_and_options(cls, values):
+        if "deployment_type" not in values:
+            # default validation will catch this
+            return values
+
+        deployment_type = values["deployment_type"]
+        if isinstance(deployment_type, dict):
+            deployment_type_items = list(deployment_type.items())
+            if len(deployment_type_items) != 1:
+                raise ValueError(
+                    "deployment_type must either be a string or a dict with only one key"
+                )
+
+            deployment_type, deployment_options = deployment_type_items[0]
+            return dict(
+                values, deployment_type=deployment_type, deployment_options=deployment_options
+            )
+        else:
+            return values
 
 
 def update_project(site_id: int, project_id: int, changelog_id: int) -> None:
@@ -158,7 +181,9 @@ def update_user_project(
 
 
 def run_deployer(site, user_project):
-    result = NomadDeployment.run(site=site, user_project=user_project)
+    project = user_project.get_project()
+    deployer = (get_deployment_class(project.deployment_type))(**project.deployment_options)
+    result = deployer.run(site=site, user_project=user_project)
     if result["ok"]:
         user_project.set_app_url(result["app_url"])
     return result

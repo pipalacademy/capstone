@@ -1,10 +1,12 @@
 """Deployment interface for capstone.
 """
 
-from typing import Any
+from typing import Any, Type
 
 from capstone import db
 from capstone.db import Site, UserProject
+from .base import Deployment
+from .custom import CustomDeployment
 from .nomad import NomadDeployment
 
 
@@ -42,11 +44,10 @@ def get_deployments(
     ]
 
 
-def new_deployment(user_project: UserProject, type: str = "nomad") -> dict[str, Any]:
-    site = user_project.get_site()
+def get_deployment_class(type: str) -> Type[Deployment]:
     if type == "nomad":
-        return NomadDeployment.run(site=site, user_project=user_project)
+        return NomadDeployment
     elif type == "custom":
-        raise NotImplementedError
+        return CustomDeployment
     else:
         raise ValueError(f"Unknown deployment type: {type}")

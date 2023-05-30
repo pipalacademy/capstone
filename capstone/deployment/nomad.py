@@ -264,11 +264,10 @@ class NomadDeployer:
 class NomadDeployment(Deployment):
     TYPE = "nomad"
 
-    @classmethod
-    def run(cls, site: Site, user_project: UserProject) -> dict[str, Any]:
+    def run(self, site: Site, user_project: UserProject) -> dict[str, Any]:
         """
         Returns a result dict:
-        { 
+        {
             "ok": bool,
             "logs": str,
             "app_url": optional str  # only if ok is True
