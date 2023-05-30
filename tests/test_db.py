@@ -24,7 +24,6 @@ mock_projects = [
         "tags": ["test-tag-1", "test-tag-2"],
         "project_type": "web",
         "deployment_type": "nomad",
-        "deployment_options": {},
     },
     {
         "name": "test-project-2",
@@ -34,9 +33,6 @@ mock_projects = [
         "tags": ["test-2-tag-1", "test-2-tag-2"],
         "project_type": "cli",
         "deployment_type": "custom",
-        "deployment_options": {
-            "url": "https://example.com",
-        },
     },
 ]
 

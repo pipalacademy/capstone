@@ -47,7 +47,6 @@ create table project (
     tags text[] not null,
     project_type project_type not null default 'web',
     deployment_type deployment_type not null default 'nomad',
-    deployment_options json not null default '{}'::json,
 
     -- or status draft/published/archived
     is_published boolean default 'f',

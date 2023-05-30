@@ -3,7 +3,7 @@
 
 from typing import Any, Type
 
-from capstone import db
+from capstone import config, db
 from capstone.db import Site, UserProject
 from .base import Deployment
 from .custom import CustomDeployment
@@ -11,7 +11,7 @@ from .nomad import NomadDeployment
 
 
 def get_deployments(
-        site: Site, user_id: int | None = None, project_id: int | None = None
+    site: Site, user_id: int | None = None, project_id: int | None = None
 ) -> list[dict[str, Any]]:
     """
     Returns a list of deployments for a given site, and optionally a user or
@@ -44,10 +44,13 @@ def get_deployments(
     ]
 
 
-def get_deployment_class(type: str) -> Type[Deployment]:
+def get_deployer(type: str) -> Type[Deployment]:
     if type == "nomad":
-        return NomadDeployment
+        return NomadDeployment()
     elif type == "custom":
-        return CustomDeployment
+        return CustomDeployment(
+            url=config.custom_deployment_url,
+            token=config.custom_deployment_token,
+        )
     else:
         raise ValueError(f"Unknown deployment type: {type}")

@@ -44,3 +44,6 @@ app_url_scheme = os.getenv("CAPSTONE_APP_URL_SCHEME", "http")
 copyright_owner = os.getenv("CAPSTONE_COPYRIGHT_OWNER", "Pipal Academy LLP")
 github_repository = os.getenv(
     "CAPSTONE_GITHUB_REPOSITORY", "https://github.com/pipalacademy/capstone")
+
+custom_deployment_url = os.getenv("CAPSTONE_CUSTOM_DEPLOYMENT_URL", None)
+custom_deployment_token = os.getenv("CAPSTONE_CUSTOM_DEPLOYMENT_TOKEN", None)

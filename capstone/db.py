@@ -293,14 +293,14 @@ class Project(Document):
     ]
     _detail_fields = [
         "name", "title", "url", "short_description", "description",
-        "tags", "is_published", "project_type", "deployment_type", "deployment_options",
+        "tags", "is_published", "project_type", "deployment_type",
         "created", "last_modified",
         # "tasks"
         "repo_id", "git_url"
     ]
     _db_fields = [
         "id", "site_id", "name", "title", "short_description", "description",
-        "tags", "is_published", "project_type", "deployment_type", "deployment_options",
+        "tags", "is_published", "project_type", "deployment_type",
         "created", "last_modified",
         # private:
         "repo_id", "git_url"
@@ -314,7 +314,6 @@ class Project(Document):
     tags: list[str]
     project_type: str  # can be 'web', 'cli'
     deployment_type: str  # can be 'nomad', 'custom'
-    deployment_options: dict[str, Any]  # can be an empty dict
 
     is_published: bool | None = None
 
