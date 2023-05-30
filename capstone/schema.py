@@ -26,6 +26,7 @@ def migrate():
         add_app_settings_column_to_user_project(schema)
         add_courses_tables(schema)
         add_project_type_column(schema)
+        add_deployment_type_column(schema)
 
 def initial_schema(schema):
     # schema is already initialized
