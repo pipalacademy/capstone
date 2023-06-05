@@ -65,8 +65,8 @@ class CustomDeployment(Deployment):
 
     def _get_request_headers(self):
         headers = {}
-        if token:
-            headers.update({"Authorization": f"Bearer {token}"})
+        if self.token:
+            headers.update({"Authorization": f"Bearer {self.token}"})
         return headers
 
     def create_app(self, username: str, project_name: str) -> AppInfo:
