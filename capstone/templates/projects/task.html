@@ -42,7 +42,8 @@
         <div class="lesson-body-wrapper col-lg-9 col-md-8">
             <div class="lesson-body">
                 <h2>{{task.title}}</h2>
-                {{task.render_description() | markdown }}
+                {% set app_vars = user_project.get_context_vars() if user_project else dict() %}
+                {{task.render_description(app_vars) | markdown }}
             </div>
         </div>
         </div>
